@@ -14,6 +14,8 @@ namespace PofudukFilo.Player
 
         public event Action<float, float> HealthChanged; // current, max
         public event Action Died;
+        /// <summary>Damage actually taken (after armour and i-frames). Feeds the DifficultyDirector.</summary>
+        public event Action<float> Damaged;
 
         private float _invulnerableUntil;
 
@@ -47,8 +49,10 @@ namespace PofudukFilo.Player
         {
             if (!IsAlive || Time.time < _invulnerableUntil) return;
 
-            CurrentHp = Mathf.Max(0f, CurrentHp - Mathf.Max(1f, amount - Armor));
+            float taken = Mathf.Max(1f, amount - Armor);
+            CurrentHp = Mathf.Max(0f, CurrentHp - taken);
             _invulnerableUntil = Time.time + invulnerabilitySeconds;
+            Damaged?.Invoke(taken);
             HealthChanged?.Invoke(CurrentHp, MaxHp);
 
             if (!IsAlive) Died?.Invoke();

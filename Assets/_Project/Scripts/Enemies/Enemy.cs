@@ -21,6 +21,10 @@ namespace PofudukFilo.Enemies
         [SerializeField] private Vector2 velocity = new(0f, -1.2f);
         [SerializeField] private float swayAmplitude = 0.6f;
         [SerializeField] private float swayFrequency = 1.5f;
+        [Tooltip("Speed while flying into a formation slot.")]
+        [SerializeField] private float formationEntrySpeed = 4f;
+        [Tooltip("Seconds a formation member holds its slot before diving down and off screen.")]
+        [SerializeField] private float formationHoldSeconds = 25f;
 
         [Header("Attack")]
         [SerializeField] private int bulletTypeIndex;
@@ -43,6 +47,9 @@ namespace PofudukFilo.Enemies
         private float _age;
         private float _flashTimer;
         private float _originX;
+        private bool _hasSlot;
+        private Vector2 _slot;
+        private float _slotTimer;
 
         public int Id { get; private set; }
         public float HitRadius => hitRadius;
@@ -60,12 +67,25 @@ namespace PofudukFilo.Enemies
 
         public float BaseHp => baseHp;
 
+        /// <summary>Formation this enemy belongs to (Chicken Invaders layer), or null for swarm enemies.</summary>
+        public FormationGroup Group { get; set; }
+
+        /// <summary>Fly to <paramref name="slot"/> and hover there (formation layer).</summary>
+        public void AssignFormationSlot(Vector2 slot)
+        {
+            _hasSlot = true;
+            _slot = slot;
+            _slotTimer = formationHoldSeconds;
+        }
+
         public virtual void OnSpawned()
         {
             Id = s_nextId++;
             _age = 0f;
             _fireTimer = fireInterval * Random.Range(0.5f, 1f);
             _originX = transform.position.x;
+            _hasSlot = false;
+            Group = null;
             SetFlash(0f);
         }
 
@@ -74,11 +94,8 @@ namespace PofudukFilo.Enemies
         public virtual void Tick(float dt, Vector2 playerPosition)
         {
             _age += dt;
-            Vector3 p = transform.position;
-            p.y += velocity.y * dt;
-            _originX += velocity.x * dt;
-            p.x = _originX + Mathf.Sin(_age * swayFrequency) * swayAmplitude;
-            transform.position = p;
+            if (_hasSlot) TickFormation(dt);
+            else TickSwarm(dt);
 
             if (_flashTimer > 0f)
             {
@@ -91,6 +108,29 @@ namespace PofudukFilo.Enemies
             {
                 _fireTimer = fireInterval;
                 FireVolley(playerPosition);
+            }
+        }
+
+        private void TickSwarm(float dt)
+        {
+            Vector3 p = transform.position;
+            p.y += velocity.y * dt;
+            _originX += velocity.x * dt;
+            p.x = _originX + Mathf.Sin(_age * swayFrequency) * swayAmplitude;
+            transform.position = p;
+        }
+
+        private void TickFormation(float dt)
+        {
+            // Hover around the slot with a gentle sway; after the hold time, dive like a swarm enemy.
+            Vector2 target = _slot + new Vector2(Mathf.Sin(_age * swayFrequency) * swayAmplitude * 0.5f, 0f);
+            transform.position = Vector2.MoveTowards(transform.position, target, formationEntrySpeed * dt);
+
+            _slotTimer -= dt;
+            if (_slotTimer <= 0f)
+            {
+                _hasSlot = false;
+                _originX = transform.position.x;
             }
         }
 

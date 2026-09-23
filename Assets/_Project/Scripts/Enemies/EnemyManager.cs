@@ -26,8 +26,9 @@ namespace PofudukFilo.Enemies
         [SerializeField] private Enemy[] prewarmPrefabs = Array.Empty<Enemy>();
         [SerializeField] private float despawnBelowY = -8f;
 
-        /// <summary>Position, xp value, gold value. XP gems / VFX / audio listen to this.</summary>
-        public event Action<Vector2, int, int> EnemyKilled;
+        /// <summary>Raised on the main thread when an enemy dies. XP gems / VFX / audio / WaveDirector listen.
+        /// The enemy stays valid until the next Update, when it returns to its pool.</summary>
+        public event Action<Enemy> EnemyKilled;
 
         private readonly List<Enemy> _active = new(256);
         private readonly List<Enemy> _toDespawn = new(64);
@@ -78,7 +79,8 @@ namespace PofudukFilo.Enemies
             Enemy enemy = _active[proxyIndex];
             if (enemy.TakeDamage(damage))
             {
-                EnemyKilled?.Invoke(enemy.transform.position, enemy.XpValue, enemy.GoldValue);
+                enemy.Group?.OnMemberKilled();
+                EnemyKilled?.Invoke(enemy);
                 _toDespawn.Add(enemy);
             }
         }
@@ -96,7 +98,11 @@ namespace PofudukFilo.Enemies
             {
                 Enemy e = _active[i];
                 e.Tick(dt, playerPos);
-                if (e.transform.position.y < despawnBelowY) _toDespawn.Add(e);
+                if (e.transform.position.y < despawnBelowY)
+                {
+                    e.Group?.OnMemberLost();
+                    _toDespawn.Add(e);
+                }
             }
 
             Count = _active.Count;
