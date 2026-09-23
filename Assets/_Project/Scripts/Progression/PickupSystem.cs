@@ -38,6 +38,7 @@ namespace PofudukFilo.Progression
         [Header("Visuals (index = PickupKind)")]
         [SerializeField] private PickupVisual[] visuals = new PickupVisual[7];
         [SerializeField] private int renderLayer;
+        [SerializeField] private float renderZ = -0.5f;
 
         [Header("Movement")]
         [SerializeField] private float baseMagnetRadius = 1.5f;
@@ -230,7 +231,7 @@ namespace PofudukFilo.Progression
             {
                 PickupData p = _pickups[i];
                 float scale = visuals[(int)p.Kind].scale;
-                _drawer.Add((int)p.Kind, p.Position, 0f, scale > 0f ? scale : 0.3f);
+                _drawer.Add((int)p.Kind, p.Position, 0f, scale > 0f ? scale : 0.3f, renderZ);
             }
             _drawer.FlushAll();
         }

@@ -28,10 +28,11 @@ namespace PofudukFilo.Core
             }
         }
 
-        public void Add(int type, Vector2 position, float angleDegrees, float scale)
+        /// <param name="z">Depth: with 2D orthographic transparency sorting, smaller z draws on top.</param>
+        public void Add(int type, Vector2 position, float angleDegrees, float scale, float z = 0f)
         {
             _matrices[type][_counts[type]++] = Matrix4x4.TRS(
-                new Vector3(position.x, position.y, 0f),
+                new Vector3(position.x, position.y, z),
                 Quaternion.Euler(0f, 0f, angleDegrees),
                 new Vector3(scale, scale, 1f));
 

@@ -45,6 +45,15 @@ namespace PofudukFilo.Player
             HealthChanged?.Invoke(CurrentHp, MaxHp);
         }
 
+        /// <summary>Mid-run max HP change (Carrot Shield passive): keeps the current HP ratio.</summary>
+        public void SetMaxHpKeepRatio(float maxHp)
+        {
+            float ratio = MaxHp > 0f ? CurrentHp / MaxHp : 1f;
+            MaxHp = maxHp;
+            CurrentHp = maxHp * ratio;
+            HealthChanged?.Invoke(CurrentHp, MaxHp);
+        }
+
         public void TakeDamage(float amount)
         {
             if (!IsAlive || Time.time < _invulnerableUntil) return;

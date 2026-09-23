@@ -51,4 +51,4 @@ commands:
   build: "Unity -batchmode -quit -projectPath . -buildTarget Android"
   test: "Unity -runTests -projectPath . -testPlatform PlayMode"
   run: "Builds/<Target>/<Game>.exe -screen-width 1280 -screen-height 720 -screen-fullscreen 0"
-  smoke: "Unity -batchmode -quit -projectPath . -executeMethod SmokeCheck.Run"
+  smoke: "Unity -batchmode -projectPath . -executeMethod PofudukFilo.EditorTools.SmokeCheck.Run"

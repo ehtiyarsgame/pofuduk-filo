@@ -12,11 +12,13 @@ namespace PofudukFilo.Feel
         private readonly Transform _parent;
         private readonly Stack<SpriteRenderer> _free = new();
         private readonly int _sortingOrder;
+        private readonly Material _material;
 
-        public SpritePool(Transform parent, int sortingOrder)
+        public SpritePool(Transform parent, int sortingOrder, Material material)
         {
             _parent = parent;
             _sortingOrder = sortingOrder;
+            _material = material;
         }
 
         public SpriteRenderer Get(Sprite sprite, Vector2 position, float scale, Color color)
@@ -33,6 +35,7 @@ namespace PofudukFilo.Feel
                 go.transform.SetParent(_parent, false);
                 r = go.AddComponent<SpriteRenderer>();
                 r.sortingOrder = _sortingOrder;
+                if (_material != null) r.sharedMaterial = _material;
             }
 
             r.sprite = sprite;
@@ -59,6 +62,8 @@ namespace PofudukFilo.Feel
 
         [SerializeField] private Sprite circleSprite;
         [SerializeField] private Material lineMaterial;
+        [Tooltip("Unlit sprite material, so pooled sprites never depend on 2D lights.")]
+        [SerializeField] private Material spriteMaterial;
         [SerializeField] private ParticleSystem confetti;
         [SerializeField] private int sortingOrder = 50;
         [Tooltip("Soft cap on simultaneous pop effects (VFX budget, architecture.md §7).")]
@@ -92,7 +97,7 @@ namespace PofudukFilo.Feel
         private void Awake()
         {
             Instance = this;
-            _sprites = new SpritePool(transform, sortingOrder);
+            _sprites = new SpritePool(transform, sortingOrder, spriteMaterial);
         }
 
         private void OnDestroy()

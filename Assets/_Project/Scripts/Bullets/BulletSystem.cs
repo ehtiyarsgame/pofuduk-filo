@@ -27,6 +27,8 @@ namespace PofudukFilo.Bullets
         [SerializeField] private float despawnMargin = 1.5f;
         [SerializeField] private float grazeRadius = 0.55f;
         [SerializeField] private int renderLayer;
+        [SerializeField] private float playerBulletZ = -1f;
+        [SerializeField] private float enemyBulletZ = -2f;
 
         /// <summary>Raised on the main thread for each graze (near miss) — feeds bonus XP and UI.</summary>
         public event Action<Vector2> Grazed;
@@ -224,9 +226,9 @@ namespace PofudukFilo.Bullets
             Compact(_playerBullets);
             Compact(_enemyBullets);
 
-            // Enemy bullets are drawn last so they sit on top of the player's (art-bible §2.2).
-            Draw(_playerBullets);
-            Draw(_enemyBullets);
+            // Enemy bullets sit closest to the camera so they are never hidden (art-bible §2.2).
+            Draw(_playerBullets, playerBulletZ);
+            Draw(_enemyBullets, enemyBulletZ);
         }
 
         private void ApplyHits()
@@ -278,7 +280,7 @@ namespace PofudukFilo.Bullets
                 if (!bullets[i].Alive) bullets.RemoveAtSwapBack(i);
         }
 
-        private void Draw(NativeList<BulletData> bullets)
+        private void Draw(NativeList<BulletData> bullets, float z)
         {
             for (int i = 0; i < bullets.Length; i++)
             {
@@ -287,7 +289,7 @@ namespace PofudukFilo.Bullets
                 float angle = type.alignToVelocity
                     ? math.degrees(math.atan2(b.Velocity.y, b.Velocity.x)) - 90f
                     : 0f;
-                _drawer.Add(b.TypeIndex, b.Position, angle, type.visualScale);
+                _drawer.Add(b.TypeIndex, b.Position, angle, type.visualScale, z);
             }
             // Flush per list so enemy bullets are drawn after (on top of) player bullets.
             _drawer.FlushAll();

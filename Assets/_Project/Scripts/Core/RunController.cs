@@ -122,6 +122,7 @@ namespace PofudukFilo.Core
             waveDirector.BossDefeated += OnBossDefeated;
             waveDirector.RunCompleted += OnRunCompleted;
             EnemyManager.Instance.EnemyKilled += OnEnemyKilled;
+            inventory.PassivesChanged += OnPassivesChanged;
             EnterMenu();
         }
 
@@ -247,6 +248,14 @@ namespace PofudukFilo.Core
             // game-concept.md §6: full inventory → heal if hurt, otherwise gold.
             if (player.CurrentHp < player.MaxHp) player.Heal(fallbackHeal);
             else _fallbackGoldEarned += fallbackGold;
+        }
+
+        /// <summary>Stats that live outside the weapons (max HP, luck) follow passive changes mid-run.</summary>
+        private void OnPassivesChanged()
+        {
+            PlayerStats stats = inventory.Stats;
+            player.SetMaxHpKeepRatio(baseMaxHp * (1f + stats.GetBonus(StatType.MaxHp)));
+            draft.Luck = stats.GetBonus(StatType.Luck);
         }
 
         // ---------------------------------------------------------------- Combat events

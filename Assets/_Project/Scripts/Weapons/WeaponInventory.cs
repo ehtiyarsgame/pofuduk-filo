@@ -20,6 +20,7 @@ namespace PofudukFilo.Weapons
         private readonly Dictionary<PassiveDefinition, int> _passives = new(MaxPassives);
 
         public event Action<WeaponDefinition, WeaponDefinition> WeaponEvolved; // from, to
+        public event Action PassivesChanged;
 
         public PlayerStats Stats { get; } = new();
         public IReadOnlyList<WeaponBehaviour> Weapons => _weapons;
@@ -86,6 +87,7 @@ namespace PofudukFilo.Weapons
             if (level == 0 && !HasFreePassiveSlot) return;
             _passives[passive] = Mathf.Min(level + 1, passive.maxLevel);
             RecalculatePassiveStats();
+            PassivesChanged?.Invoke();
         }
 
         /// <summary>Weapon at max level whose evolution passive is owned (weapon-system.md §3.2).</summary>

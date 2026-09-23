@@ -39,11 +39,12 @@ namespace PofudukFilo.Enemies
 
         [Header("Feel")]
         [SerializeField] private SpriteRenderer spriteRenderer;
+        [Tooltip("Shared white-silhouette material swapped in for the hit flash. Swapping shared materials keeps\n" +
+                 "sprites batched, unlike a MaterialPropertyBlock per enemy.")]
+        [SerializeField] private Material flashMaterial;
 
         private static int s_nextId = 1;
-        private static readonly int FlashAmountId = Shader.PropertyToID("_FlashAmount");
-
-        private MaterialPropertyBlock _mpb;
+        private Material _normalMaterial;
         private float _hp;
         private float _maxHp;
         private float _fireTimer;
@@ -224,11 +225,9 @@ namespace PofudukFilo.Enemies
 
         private void SetFlash(float amount)
         {
-            if (spriteRenderer == null) return;
-            _mpb ??= new MaterialPropertyBlock();
-            spriteRenderer.GetPropertyBlock(_mpb);
-            _mpb.SetFloat(FlashAmountId, amount);
-            spriteRenderer.SetPropertyBlock(_mpb);
+            if (spriteRenderer == null || flashMaterial == null) return;
+            if (_normalMaterial == null) _normalMaterial = spriteRenderer.sharedMaterial;
+            spriteRenderer.sharedMaterial = amount > 0f ? flashMaterial : _normalMaterial;
         }
     }
 }
