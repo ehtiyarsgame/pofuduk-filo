@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>NU1701;CS0618;CS0649;CS0414</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="../.cache/math/Unity.Mathematics/**/*.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Core/Formulas.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Progression/WeightedPicker.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Enemies/DifficultyDirector.cs" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/FormulasTests.cs" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/WeightedPickerTests.cs" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/DifficultyDirectorTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="../.cache/modules/lib/net45/UnityEngine.CoreModule.dll" />
+    <Reference Include="../.cache/nunit/lib/netstandard2.0/nunit.framework.dll" />
+    <Reference Include="../.cache/nunitlite/lib/netstandard2.0/nunitlite.dll" />
+  </ItemGroup>
+</Project>
