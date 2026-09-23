@@ -91,6 +91,7 @@ namespace PofudukFilo.Core
         private int _revivesLeft;
         private int _kills;
         private int _fallbackGoldEarned;
+        private bool _freeReviveUsed;
 
         public GameState State { get; private set; } = GameState.MainMenu;
         public MetaProgressionService Meta { get; private set; }
@@ -101,6 +102,9 @@ namespace PofudukFilo.Core
         public int BanishesLeft => _banishesLeft;
         public int ChapterIndex => _chapterIndex;
         public int Kills => _kills;
+        /// <summary>The once-per-run rewarded-ad continue is still available.</summary>
+        public bool FreeReviveAvailable => !_freeReviveUsed;
+        public int RevivesLeft => _revivesLeft;
         public int RunGold => (pickups != null ? pickups.RunGold : 0) + _fallbackGoldEarned;
 
         private void Awake()
@@ -166,6 +170,7 @@ namespace PofudukFilo.Core
             _revivesLeft = Mathf.RoundToInt(stats.GetBonus(StatType.Revives));
             _kills = 0;
             _fallbackGoldEarned = 0;
+            _freeReviveUsed = false;
 
             waveDirector.StartRun(chapters[_chapterIndex]);
             SetState(GameState.Playing);
@@ -288,7 +293,12 @@ namespace PofudukFilo.Core
         public void Revive(bool free = false)
         {
             if (State != GameState.Dead) return;
-            if (!free)
+            if (free)
+            {
+                if (_freeReviveUsed) return;
+                _freeReviveUsed = true;
+            }
+            else
             {
                 if (_revivesLeft <= 0) return;
                 _revivesLeft--;
