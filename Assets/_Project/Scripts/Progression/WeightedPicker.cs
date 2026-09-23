@@ -1,5 +1,5 @@
 using System;
-using Unity.Mathematics;
+using Random = Unity.Mathematics.Random;
 
 namespace PofudukFilo.Progression
 {

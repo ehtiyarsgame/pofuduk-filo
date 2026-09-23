@@ -1,0 +1,5 @@
+.cache/
+compile/bin/
+compile/obj/
+tests/bin/
+tests/obj/
