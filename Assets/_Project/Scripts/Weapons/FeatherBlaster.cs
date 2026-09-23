@@ -1,0 +1,53 @@
+using PofudukFilo.Bullets;
+using UnityEngine;
+
+namespace PofudukFilo.Weapons
+{
+    /// <summary>
+    /// Starting weapon: a fan of feathers straight up. Lv5 fires a giant feather every Nth shot
+    /// (weapon-system.md §3.2 — 1) Tüy Blaster). Parallel lanes for Lv2, fan from Lv3.
+    /// </summary>
+    public sealed class FeatherBlaster : WeaponBehaviour
+    {
+        [SerializeField] private float laneSpacing = 0.25f;
+        [SerializeField] private int giantBulletTypeIndex = -1;
+        [SerializeField] private Vector2 muzzleOffset = new(0f, 0.5f);
+
+        protected override void Fire(in WeaponLevelStats s)
+        {
+            BulletSystem bullets = BulletSystem.Instance;
+            if (bullets == null) return;
+
+            Vector2 origin = (Vector2)transform.position + muzzleOffset;
+            float speed = s.projectileSpeed * Stats.SpeedMultiplier;
+            float lifetime = s.lifetime * Stats.DurationMultiplier;
+
+            bool special = s.specialEveryN > 0 && ShotCounter % s.specialEveryN == 0;
+            int typeIndex = special && giantBulletTypeIndex >= 0 ? giantBulletTypeIndex : Definition.bulletTypeIndex;
+            float damageScale = special ? s.specialDamageMultiplier : 1f;
+
+            int count = Mathf.Max(1, s.projectileCount);
+            bool fan = s.spreadDegrees > 0f && count > 1;
+
+            for (int i = 0; i < count; i++)
+            {
+                float t = count == 1 ? 0f : i / (count - 1f) - 0.5f; // -0.5 … 0.5
+                Vector2 position = origin;
+                Vector2 direction = Vector2.up;
+
+                if (fan)
+                {
+                    float angle = (90f + t * s.spreadDegrees) * Mathf.Deg2Rad;
+                    direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                }
+                else
+                {
+                    position.x += t * laneSpacing * (count - 1);
+                }
+
+                bullets.SpawnPlayerBullet(typeIndex, position, direction * speed,
+                    RollDamage(s.damage * damageScale), s.pierce, lifetime);
+            }
+        }
+    }
+}
