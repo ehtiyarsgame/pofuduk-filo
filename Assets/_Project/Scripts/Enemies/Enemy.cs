@@ -45,6 +45,7 @@ namespace PofudukFilo.Enemies
 
         private MaterialPropertyBlock _mpb;
         private float _hp;
+        private float _maxHp;
         private float _fireTimer;
         private float _age;
         private float _flashTimer;
@@ -69,7 +70,19 @@ namespace PofudukFilo.Enemies
         public void Initialize(float maxHp)
         {
             _hp = maxHp;
+            _maxHp = maxHp;
         }
+
+        public float HpFraction => _maxHp > 0f ? Mathf.Clamp01(_hp / _maxHp) : 0f;
+
+        /// <summary>Seconds between volleys; bosses change it per phase.</summary>
+        protected float FireInterval
+        {
+            get => fireInterval;
+            set => fireInterval = value;
+        }
+
+        protected SpriteRenderer SpriteRenderer => spriteRenderer;
 
         public float BaseHp => baseHp;
 
@@ -157,7 +170,13 @@ namespace PofudukFilo.Enemies
             }
         }
 
-        public void Stun(float seconds) => _stunTimer = Mathf.Max(_stunTimer, seconds);
+        public void Stun(float seconds)
+        {
+            if (CanBeStunned) _stunTimer = Mathf.Max(_stunTimer, seconds);
+        }
+
+        /// <summary>Bosses opt out so a chain-lightning build cannot silence a whole fight.</summary>
+        protected virtual bool CanBeStunned => true;
 
         /// <summary>Movement speed × <paramref name="factor"/> for <paramref name="seconds"/> (Gum Rings).</summary>
         public void Slow(float factor, float seconds)
