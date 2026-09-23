@@ -87,6 +87,8 @@ namespace PofudukFilo.Enemies
             EnemyManager.Instance.ChapterIndex = run.chapterIndex;
         }
 
+        public void StopRun() => _running = false;
+
         private void Update()
         {
             if (!_running) return;

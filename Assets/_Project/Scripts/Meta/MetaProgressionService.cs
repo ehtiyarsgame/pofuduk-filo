@@ -23,6 +23,7 @@ namespace PofudukFilo.Meta
 
         public long Gold => _data.gold;
         public int Stardust => _data.stardust;
+        public int HighestChapterCleared => _data.highestChapterCleared;
 
         public int GetLevel(MetaUpgradeDefinition upgrade)
         {

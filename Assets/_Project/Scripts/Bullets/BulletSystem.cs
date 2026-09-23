@@ -103,6 +103,19 @@ namespace PofudukFilo.Bullets
             _pendingEnemy.Add(Create(typeIndex, position, velocity, damage, 0, lifetime));
         }
 
+        /// <summary>Removes every bullet immediately (new run / back to menu).</summary>
+        public void ClearAll()
+        {
+            _handle.Complete();
+            _jobsScheduled = false;
+            _playerBullets.Clear();
+            _enemyBullets.Clear();
+            _pendingPlayer.Clear();
+            _pendingEnemy.Clear();
+            _playerHits.Clear();
+            _enemyHits.Clear();
+        }
+
         /// <summary>Bomb / Supernova Omelette: removes every enemy bullet after this frame's jobs finish.</summary>
         public void RequestClearEnemyBullets() => _clearEnemyBulletsRequested = true;
 

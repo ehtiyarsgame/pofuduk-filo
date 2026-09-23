@@ -77,6 +77,8 @@ namespace PofudukFilo.Progression
 
         public void Banish(ScriptableObject card) => _banished.Add(card);
 
+        public void ClearBanished() => _banished.Clear();
+
         public int Roll(List<UpgradeOption> results)
         {
             results.Clear();

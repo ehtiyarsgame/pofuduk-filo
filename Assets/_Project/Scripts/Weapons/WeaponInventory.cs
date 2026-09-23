@@ -27,8 +27,19 @@ namespace PofudukFilo.Weapons
         public bool HasFreeWeaponSlot => _weapons.Count < MaxWeapons;
         public bool HasFreePassiveSlot => _passives.Count < MaxPassives;
 
-        private void Start()
+        public WeaponDefinition StartingWeapon
         {
+            get => startingWeapon;
+            set => startingWeapon = value;
+        }
+
+        /// <summary>Destroys the loadout and re-equips the starting weapon (new run).</summary>
+        public void ResetLoadout()
+        {
+            for (int i = 0; i < _weapons.Count; i++) Destroy(_weapons[i].gameObject);
+            _weapons.Clear();
+            _passives.Clear();
+            Stats.ClearPassiveBonuses();
             if (startingWeapon != null) AddOrLevelWeapon(startingWeapon);
         }
 

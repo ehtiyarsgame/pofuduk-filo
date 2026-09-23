@@ -12,7 +12,13 @@ namespace PofudukFilo.Weapons
         CritChance,
         MaxHp,
         MagnetRadius,
-        Luck
+        Luck,
+        // Meta-only stats (Workshop). Armor, Rerolls, Banishes, Revives are flat counts; Experience is a fraction.
+        Armor,
+        Experience,
+        Rerolls,
+        Banishes,
+        Revives
     }
 
     [CreateAssetMenu(menuName = "Pofuduk Filo/Passive", fileName = "Passive")]

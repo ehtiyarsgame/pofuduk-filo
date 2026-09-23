@@ -124,6 +124,15 @@ namespace PofudukFilo.Enemies
             return best;
         }
 
+        /// <summary>Returns every enemy to its pool without kill events (new run / back to menu).</summary>
+        public void ClearAll()
+        {
+            for (int i = 0; i < _active.Count; i++) _pools[_active[i].SourcePrefab].Release(_active[i]);
+            _active.Clear();
+            _toDespawn.Clear();
+            Count = 0;
+        }
+
         /// <summary>Screen-wide bomb: damages every living enemy.</summary>
         public void DamageAll(float damage)
         {

@@ -27,6 +27,14 @@ namespace PofudukFilo.Progression
             set => xpBonus = value;
         }
 
+        public void ResetRun()
+        {
+            Level = 1;
+            CurrentXp = 0;
+            PendingLevelUps = 0;
+            XpChanged?.Invoke(CurrentXp, RequiredXp);
+        }
+
         public void AddXp(int amount)
         {
             CurrentXp += Mathf.Max(1, Mathf.RoundToInt(amount * (1f + xpBonus)));
