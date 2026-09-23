@@ -52,6 +52,9 @@ namespace PofudukFilo.Enemies
         private bool _hasSlot;
         private Vector2 _slot;
         private float _slotTimer;
+        private float _stunTimer;
+        private float _slowTimer;
+        private float _slowFactor = 1f;
 
         public int Id { get; private set; }
         public float HitRadius => hitRadius;
@@ -89,6 +92,9 @@ namespace PofudukFilo.Enemies
             _originX = transform.position.x;
             _hasSlot = false;
             Group = null;
+            _stunTimer = 0f;
+            _slowTimer = 0f;
+            _slowFactor = 1f;
             SetFlash(0f);
         }
 
@@ -97,13 +103,27 @@ namespace PofudukFilo.Enemies
         public virtual void Tick(float dt, Vector2 playerPosition)
         {
             _age += dt;
-            if (_hasSlot) TickFormation(dt);
-            else TickSwarm(dt);
+            if (_slowTimer > 0f)
+            {
+                _slowTimer -= dt;
+                if (_slowTimer <= 0f) _slowFactor = 1f;
+            }
+
+            float moveDt = dt * _slowFactor;
+            if (_hasSlot) TickFormation(moveDt);
+            else TickSwarm(moveDt);
 
             if (_flashTimer > 0f)
             {
                 _flashTimer -= dt;
                 if (_flashTimer <= 0f) SetFlash(0f);
+            }
+
+            // Stunned enemies cannot shoot (Spark Cat Lv3, weapon-system.md §3.2).
+            if (_stunTimer > 0f)
+            {
+                _stunTimer -= dt;
+                return;
             }
 
             _fireTimer -= dt;
@@ -135,6 +155,23 @@ namespace PofudukFilo.Enemies
                 _hasSlot = false;
                 _originX = transform.position.x;
             }
+        }
+
+        public void Stun(float seconds) => _stunTimer = Mathf.Max(_stunTimer, seconds);
+
+        /// <summary>Movement speed × <paramref name="factor"/> for <paramref name="seconds"/> (Gum Rings).</summary>
+        public void Slow(float factor, float seconds)
+        {
+            _slowFactor = Mathf.Min(_slowFactor, Mathf.Clamp01(factor));
+            _slowTimer = Mathf.Max(_slowTimer, seconds);
+        }
+
+        /// <summary>External push/pull (Galaxy Vortex). Keeps sway origin and formation slot in step.</summary>
+        public void Nudge(Vector2 delta)
+        {
+            transform.position += (Vector3)delta;
+            _originX += delta.x;
+            if (_hasSlot) _slot += delta;
         }
 
         /// <returns>True if this hit killed the enemy.</returns>

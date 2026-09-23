@@ -46,6 +46,7 @@ namespace PofudukFilo.Bullets
         private float4 _bounds;
 
         private InstancedDrawer _drawer;
+        private readonly System.Collections.Generic.List<IBulletAbsorber> _absorbers = new();
 
         public int PlayerBulletCount => _playerBullets.Length;
         public int EnemyBulletCount => _enemyBullets.Length;
@@ -98,10 +99,23 @@ namespace PofudukFilo.Bullets
         }
 
         public void SpawnEnemyBullet(int typeIndex, Vector2 position, Vector2 velocity, float damage,
-            float lifetime = 8f)
+            float lifetime = 8f, bool absorbable = true)
         {
-            _pendingEnemy.Add(Create(typeIndex, position, velocity, damage, 0, lifetime));
+            BulletData b = Create(typeIndex, position, velocity, damage, 0, lifetime);
+            b.Absorbable = absorbable;
+            _pendingEnemy.Add(b);
         }
+
+        /// <summary>
+        /// Weapons that eat enemy bullets (Bubble Orbit, Gum Rings) register here; absorption runs on
+        /// the main thread in LateUpdate after the jobs complete.
+        /// </summary>
+        public void RegisterAbsorber(IBulletAbsorber absorber)
+        {
+            if (!_absorbers.Contains(absorber)) _absorbers.Add(absorber);
+        }
+
+        public void UnregisterAbsorber(IBulletAbsorber absorber) => _absorbers.Remove(absorber);
 
         /// <summary>Removes every bullet immediately (new run / back to menu).</summary>
         public void ClearAll()
@@ -199,6 +213,7 @@ namespace PofudukFilo.Bullets
             _jobsScheduled = false;
 
             ApplyHits();
+            Absorb();
 
             if (_clearEnemyBulletsRequested)
             {
@@ -225,6 +240,35 @@ namespace PofudukFilo.Bullets
             {
                 if (hit.Kind == BulletHitKind.Player) player.TakeDamage(hit.Damage);
                 else Grazed?.Invoke(hit.Position);
+            }
+        }
+
+        private void Absorb()
+        {
+            if (_absorbers.Count == 0) return;
+
+            for (int a = 0; a < _absorbers.Count; a++)
+            {
+                IBulletAbsorber absorber = _absorbers[a];
+                for (int c = 0; c < absorber.AbsorberCount; c++)
+                {
+                    if (!absorber.CanAbsorb(c)) continue;
+                    Vector2 center = absorber.GetAbsorberCenter(c);
+                    float radius = absorber.GetAbsorberRadius(c);
+
+                    for (int i = 0; i < _enemyBullets.Length; i++)
+                    {
+                        BulletData b = _enemyBullets[i];
+                        if (!b.Alive || !b.Absorbable) continue;
+                        float r = radius + b.Radius;
+                        if (math.distancesq(b.Position, (float2)center) > r * r) continue;
+
+                        b.Alive = false;
+                        _enemyBullets[i] = b;
+                        absorber.OnAbsorbed(c, b.Position);
+                        if (!absorber.CanAbsorb(c)) break;
+                    }
+                }
             }
         }
 

@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using PofudukFilo.Enemies;
+using PofudukFilo.Feel;
 using UnityEngine;
 
 namespace PofudukFilo.Weapons
@@ -47,6 +50,24 @@ namespace PofudukFilo.Weapons
             _cooldownTimer = Stats.FinalCooldown(s.cooldown);
             ShotCounter++;
             Fire(s);
+        }
+
+        /// <summary>Scratch list for enemy queries; weapons run on the main thread one at a time.</summary>
+        protected static readonly List<Enemy> Scratch = new(64);
+
+        protected static EnemyManager Enemies => EnemyManager.Instance;
+        protected static VfxSystem Vfx => VfxSystem.Instance;
+        protected Vector2 Origin => transform.position;
+
+        protected float AreaOf(in WeaponLevelStats s) => s.area * Stats.AreaMultiplier;
+        protected float DurationOf(in WeaponLevelStats s) => s.lifetime * Stats.DurationMultiplier;
+
+        /// <summary>Damages every enemy in the circle. Returns the number hit.</summary>
+        protected int DamageArea(Vector2 center, float radius, float damage)
+        {
+            int n = Enemies.QueryCircle(center, radius, Scratch);
+            for (int i = 0; i < n; i++) Enemies.DamageEnemy(Scratch[i], RollDamage(damage));
+            return n;
         }
 
         protected float RollDamage(float baseDamage)

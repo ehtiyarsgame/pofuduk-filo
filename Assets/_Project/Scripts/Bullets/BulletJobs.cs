@@ -20,6 +20,8 @@ namespace PofudukFilo.Bullets
         public int LastHitEnemyId;
         public bool Grazed;
         public bool Alive;
+        /// <summary>False for boss special attacks, which bubbles and omelettes must not eat.</summary>
+        public bool Absorbable;
     }
 
     /// <summary>Collision snapshot of one enemy, written by EnemyManager each frame.</summary>
