@@ -16,6 +16,8 @@
     <Compile Include="../../../Assets/_Project/Tests/EditMode/FormulasTests.cs" />
     <Compile Include="../../../Assets/_Project/Tests/EditMode/WeightedPickerTests.cs" />
     <Compile Include="../../../Assets/_Project/Tests/EditMode/DifficultyDirectorTests.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Progression/PickupRules.cs" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/PickupRulesTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="../.cache/modules/lib/net45/UnityEngine.CoreModule.dll" />

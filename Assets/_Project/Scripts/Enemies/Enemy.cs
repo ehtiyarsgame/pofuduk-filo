@@ -16,6 +16,8 @@ namespace PofudukFilo.Enemies
         [SerializeField] private float hitRadius = 0.4f;
         [SerializeField] private int xpValue = 1;
         [SerializeField] private int goldValue = 1;
+        [Tooltip("Golden-crowned elite: drops a chest and triggers hitstop on death.")]
+        [SerializeField] private bool isElite;
 
         [Header("Movement")]
         [SerializeField] private Vector2 velocity = new(0f, -1.2f);
@@ -56,6 +58,7 @@ namespace PofudukFilo.Enemies
         public int XpValue => xpValue;
         public int GoldValue => goldValue;
         public bool IsDead => _hp <= 0f;
+        public bool IsElite => isElite;
 
         /// <summary>The prefab this instance came from; EnemyManager uses it to return it to the right pool.</summary>
         public Enemy SourcePrefab { get; set; }

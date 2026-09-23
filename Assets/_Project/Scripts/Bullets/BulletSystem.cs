@@ -1,4 +1,5 @@
 using System;
+using PofudukFilo.Core;
 using PofudukFilo.Enemies;
 using PofudukFilo.Player;
 using Unity.Collections;
@@ -17,8 +18,6 @@ namespace PofudukFilo.Bullets
     [DefaultExecutionOrder(100)]
     public sealed class BulletSystem : MonoBehaviour
     {
-        private const int InstancesPerDraw = 1023;
-
         public static BulletSystem Instance { get; private set; }
 
         [SerializeField] private BulletTypeDefinition[] bulletTypes = Array.Empty<BulletTypeDefinition>();
@@ -46,9 +45,7 @@ namespace PofudukFilo.Bullets
         private float _maxBulletRadius;
         private float4 _bounds;
 
-        private Matrix4x4[][] _matrices;
-        private int[] _matrixCounts;
-        private RenderParams[] _renderParams;
+        private InstancedDrawer _drawer;
 
         public int PlayerBulletCount => _playerBullets.Length;
         public int EnemyBulletCount => _enemyBullets.Length;
@@ -65,15 +62,15 @@ namespace PofudukFilo.Bullets
             _playerHits = new NativeQueue<BulletHit>(Allocator.Persistent);
             _enemyHits = new NativeQueue<BulletHit>(Allocator.Persistent);
 
-            _matrices = new Matrix4x4[bulletTypes.Length][];
-            _matrixCounts = new int[bulletTypes.Length];
-            _renderParams = new RenderParams[bulletTypes.Length];
+            var meshes = new Mesh[bulletTypes.Length];
+            var materials = new Material[bulletTypes.Length];
             for (int i = 0; i < bulletTypes.Length; i++)
             {
-                _matrices[i] = new Matrix4x4[InstancesPerDraw];
-                _renderParams[i] = new RenderParams(bulletTypes[i].material) { layer = renderLayer };
+                meshes[i] = bulletTypes[i].mesh;
+                materials[i] = bulletTypes[i].material;
                 _maxBulletRadius = Mathf.Max(_maxBulletRadius, bulletTypes[i].hitRadius);
             }
+            _drawer = new InstancedDrawer(meshes, materials, renderLayer);
 
             RecalculateBounds();
         }
@@ -230,26 +227,13 @@ namespace PofudukFilo.Bullets
             {
                 BulletData b = bullets[i];
                 BulletTypeDefinition type = bulletTypes[b.TypeIndex];
-
-                Quaternion rotation = type.alignToVelocity
-                    ? Quaternion.Euler(0f, 0f, math.degrees(math.atan2(b.Velocity.y, b.Velocity.x)) - 90f)
-                    : Quaternion.identity;
-
-                _matrices[b.TypeIndex][_matrixCounts[b.TypeIndex]++] =
-                    Matrix4x4.TRS(new Vector3(b.Position.x, b.Position.y, 0f), rotation, Vector3.one * type.visualScale);
-
-                if (_matrixCounts[b.TypeIndex] == InstancesPerDraw) Flush(b.TypeIndex);
+                float angle = type.alignToVelocity
+                    ? math.degrees(math.atan2(b.Velocity.y, b.Velocity.x)) - 90f
+                    : 0f;
+                _drawer.Add(b.TypeIndex, b.Position, angle, type.visualScale);
             }
-
-            for (int t = 0; t < bulletTypes.Length; t++)
-                if (_matrixCounts[t] > 0) Flush(t);
-        }
-
-        private void Flush(int typeIndex)
-        {
-            Graphics.RenderMeshInstanced(_renderParams[typeIndex], bulletTypes[typeIndex].mesh, 0,
-                _matrices[typeIndex], _matrixCounts[typeIndex]);
-            _matrixCounts[typeIndex] = 0;
+            // Flush per list so enemy bullets are drawn after (on top of) player bullets.
+            _drawer.FlushAll();
         }
 
         private BulletData Create(int typeIndex, Vector2 position, Vector2 velocity, float damage, int pierce, float lifetime)

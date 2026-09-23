@@ -76,13 +76,60 @@ namespace PofudukFilo.Enemies
         public void ApplyDamage(int proxyIndex, float damage, Vector2 hitPosition)
         {
             if ((uint)proxyIndex >= (uint)Count) return;
-            Enemy enemy = _active[proxyIndex];
-            if (enemy.TakeDamage(damage))
+            DamageEnemy(_active[proxyIndex], damage);
+        }
+
+        /// <summary>Damage from non-bullet sources (areas, chains, orbiters, bombs).</summary>
+        /// <returns>True if the hit killed the enemy.</returns>
+        public bool DamageEnemy(Enemy enemy, float damage)
+        {
+            if (enemy == null || !enemy.TakeDamage(damage)) return false;
+
+            enemy.Group?.OnMemberKilled();
+            EnemyKilled?.Invoke(enemy);
+            _toDespawn.Add(enemy); // removed next Update, so indices and iteration stay valid this frame
+            return true;
+        }
+
+        /// <summary>Living enemies whose hit circle overlaps the query circle. Clears <paramref name="results"/>.</summary>
+        public int QueryCircle(Vector2 center, float radius, List<Enemy> results)
+        {
+            results.Clear();
+            for (int i = 0; i < _active.Count; i++)
             {
-                enemy.Group?.OnMemberKilled();
-                EnemyKilled?.Invoke(enemy);
-                _toDespawn.Add(enemy);
+                Enemy e = _active[i];
+                if (e.IsDead) continue;
+                float r = radius + e.HitRadius;
+                if (((Vector2)e.transform.position - center).sqrMagnitude <= r * r) results.Add(e);
             }
+            return results.Count;
+        }
+
+        /// <summary>Nearest living enemy within <paramref name="maxDistance"/> that is not in <paramref name="exclude"/>.</summary>
+        public Enemy FindNearest(Vector2 position, float maxDistance, List<Enemy> exclude = null)
+        {
+            Enemy best = null;
+            float bestSq = maxDistance * maxDistance;
+            for (int i = 0; i < _active.Count; i++)
+            {
+                Enemy e = _active[i];
+                if (e.IsDead || (exclude != null && exclude.Contains(e))) continue;
+                float sq = ((Vector2)e.transform.position - position).sqrMagnitude;
+                if (sq < bestSq)
+                {
+                    bestSq = sq;
+                    best = e;
+                }
+            }
+            return best;
+        }
+
+        /// <summary>Screen-wide bomb: damages every living enemy.</summary>
+        public void DamageAll(float damage)
+        {
+            // Iterate by count snapshot; kills only queue despawns, so the list does not shift.
+            int count = _active.Count;
+            for (int i = 0; i < count; i++) DamageEnemy(_active[i], damage);
         }
 
         private void Update()
