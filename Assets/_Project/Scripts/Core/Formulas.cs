@@ -80,9 +80,12 @@ namespace PofudukFilo.Core
         public static float RushMeterGain(float killValue, int combo, float comboBonus) =>
             killValue * (1f + Math.Clamp(combo, 0, RushComboCap) * comboBonus);
 
-        /// <summary>Meter needed for a rush at run minute t: base · (1 + growth · t). Kill rate climbs all run, so the bar must too.</summary>
-        public static float RushMeterMax(float baseMax, float growthPerMinute, float minutes) =>
-            baseMax * (1f + growthPerMinute * Math.Max(0f, minutes));
+        /// <summary>
+        /// Meter needed for a rush at run minute t: base · (1 + growth · max(0, t − start)). Kill rate climbs all run,
+        /// so the bar must too — but not before <paramref name="startMinutes"/>, so a new player still meets the first rush early.
+        /// </summary>
+        public static float RushMeterMax(float baseMax, float growthPerMinute, float minutes, float startMinutes = 0f) =>
+            baseMax * (1f + growthPerMinute * Math.Max(0f, minutes - startMinutes));
 
         /// <summary>
         /// Final cooldown = base · Π(1 − r_i), floored at 35 % of base (weapon-system.md §4).

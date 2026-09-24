@@ -82,6 +82,8 @@ namespace PofudukFilo.Tests
             Assert.That(Formulas.RushMeterMax(120f, 0.5f, 0f), Is.EqualTo(120f).Within(1e-4f));
             Assert.That(Formulas.RushMeterMax(120f, 0.5f, 5f), Is.EqualTo(420f).Within(1e-4f));
             Assert.That(Formulas.RushMeterMax(120f, 0.5f, -1f), Is.EqualTo(120f).Within(1e-4f));
+            Assert.That(Formulas.RushMeterMax(120f, 0.35f, 1.5f, 2f), Is.EqualTo(120f).Within(1e-4f));
+            Assert.That(Formulas.RushMeterMax(120f, 0.35f, 5f, 2f), Is.EqualTo(246f).Within(1e-3f));
         }
     }
 }

@@ -29,7 +29,7 @@ bullets is what keeps the sugar flowing.
 
 ### Rush meter
 - Each kill adds `killValue × (1 + min(combo, 40) × comboBonus)` to the meter. `killValue` is 1 for normal enemies, `eliteKillValue` for elites and `bossKillValue` for bosses. Combo above 40 still shows and counts for Best Combo but adds no more meter.
-- The meter needed grows over the run: `meterMax × (1 + meterGrowthPerMinute × minutes)`. *(2026-09-24, QA run 24: late-run kill rate and combos of 150+ produced a rush every ~15 s from minute 4, each bomb wiping enemy bullets — the late game went easy again.)*
+- From minute `meterGrowthStartMinutes` on, the meter needed grows: `meterMax × (1 + meterGrowthPerMinute × max(0, minutes − meterGrowthStartMinutes))`. *(2026-09-24, QA run 24: late-run kill rate and combos of 150+ produced a rush every ~15 s from minute 4, each bomb wiping enemy bullets — the late game went easy again.)*
 - Getting hit multiplies the meter by `meterKeptOnHit` (the rest is spilled).
 - When the meter reaches `meterMax` it is **banked** (Ready): a pulsing **ŞEKER!** button appears bottom-left
   with a countdown strip. Tapping it fires the **Sugar Bomb** — `bombBaseDamage + bombDamagePerMinute × minutes`
@@ -56,8 +56,8 @@ bullets is what keeps the sugar flowing.
 | Name | Formula | Variables | Range | Example |
 |---|---|---|---|---|
 | Meter gain | `g = v × (1 + min(c, 40) × b)` | v = kill value (1 / 10 / 35), c = combo after this kill, b = `comboBonus` (0.03) | 1.03 – 77 | Combo 20, normal kill: 1 × 1.6 = 1.6; combo 173: 1 × 2.2 = 2.2 |
-| Meter needed | `M = meterMax × (1 + k × t)` | `meterMax` = 120, k = `meterGrowthPerMinute` (0.35), t = run minutes | 120 – 330 at 5 min | t = 1: 162; t = 5: 330 |
-| Kills to rush | `≈ M / mean(g)` | — | 55–190 kills | Minute 5, capped combo, no hits: 330 / 2.2 ≈ 150 kills ≈ 20 s at 7.5 kills/s (was ~55 kills ≈ 8 s); every hit spills half, so a player who is being hit waits much longer |
+| Meter needed | `M = meterMax × (1 + k × max(0, t − s))` | `meterMax` = 120, k = `meterGrowthPerMinute` (0.35), s = `meterGrowthStartMinutes` (2), t = run minutes | 120 – 246 at 5 min | t ≤ 2: 120; t = 5: 246 |
+| Kills to rush | `≈ M / mean(g)` | — | 55–190 kills | Minute 5, capped combo, no hits: 246 / 2.2 ≈ 112 kills ≈ 15 s at 7.5 kills/s — a flawless streak earns it (was ~55 kills ≈ 8 s); every hit spills half, so a player who is being hit waits much longer |
 | Wingman damage | `d = baseDamage × power × DamageMultiplier` | baseDamage = 7, power = 1 + 0.25 × extra rescues | 7 – ~30 | 2 extras, +30 % damage stat: 7 × 1.5 × 1.3 = 13.7 |
 | Wingman DPS | `d × rushFireRate / fireInterval` | fireInterval = 0.6 s | 11.7 – 85 per wingman | 7 / 0.6 = 11.7; during a rush: 19.8 |
 
@@ -90,6 +90,7 @@ bullets is what keeps the sugar flowing.
 | `comboWindow` | 1.6 s | 1.0–2.5 | How forgiving combos are; below 1.0 combos only last during dense waves |
 | `meterMax` | 120 | 70–160 | Rush frequency (target: about one rush per 60–90 s for a decent player) |
 | `meterGrowthPerMinute` | 0.35 | 0.2–0.5 | Keeps late-run rush frequency near the early one as kill rate climbs. QA run 25 at 0.5: only 2 rushes in 5 min and 2 deaths — too stingy |
+| `meterGrowthStartMinutes` | 2 | 1–3 | Protects the first rush (target: within ~60 s). Runs 25/26 grew from minute 0: first rush at 100–140 s |
 | `RushComboCap` (code constant) | 40 | 25–60 | Largest combo that still speeds the meter |
 | `comboBonus` | 0.03 | 0–0.06 | How much skill (keeping a long combo) speeds up rushes |
 | `meterKeptOnHit` | 0.5 | 0.25–0.8 | How hard getting hit is punished |
