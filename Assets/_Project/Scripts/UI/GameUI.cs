@@ -249,21 +249,56 @@ namespace PofudukFilo.UI
         private GameObject BuildCard(in UpgradeOption option, int index)
         {
             Describe(option, out string title, out string body, out Rarity rarity);
+            Sprite icon = option.Kind switch
+            {
+                UpgradeKind.Weapon => option.Weapon.icon,
+                UpgradeKind.Passive => option.Passive.icon,
+                _ => null
+            };
 
             int captured = index;
-            Button button = _ui.Button(_cardRow, "", Palette.Rarity[(int)rarity], () => OnCardClicked(captured), 40);
+            Color frame = Palette.Rarity[(int)rarity];
+            Button button = _ui.Button(_cardRow, "", frame, () => OnCardClicked(captured), 40);
             Transform face = button.transform.Find("Face");
 
-            Image inner = _ui.Panel(face, Palette.Lavender, "Inner");
+            Image inner = _ui.Panel(face, Color.Lerp(Palette.Lavender, Palette.Outline, 0.25f), "Inner");
             UIFactory.Place(inner, 0f, 0f, 1f, 1f, 12f);
             inner.raycastTarget = false;
 
-            Text titleText = _ui.Label(inner.transform, title, 60, Palette.Cream, TextAnchor.UpperLeft);
-            UIFactory.Place(titleText, 0.05f, 0.5f, 0.95f, 0.92f);
-            Text bodyText = _ui.Label(inner.transform, body, 42, Palette.White, TextAnchor.UpperLeft);
-            UIFactory.Place(bodyText, 0.05f, 0.06f, 0.95f, 0.5f);
+            float textLeft = 0.05f;
+            if (icon != null)
+            {
+                Image well = _ui.Panel(inner.transform, new Color(0.23f, 0.16f, 0.31f, 0.55f), "IconWell");
+                UIFactory.Place(well, 0.03f, 0.1f, 0.25f, 0.9f);
+                well.raycastTarget = false;
+                var img = _ui.Node("Icon", well.transform).gameObject.AddComponent<Image>();
+                img.sprite = icon;
+                img.preserveAspect = true;
+                img.raycastTarget = false;
+                UIFactory.Place(img, 0.06f, 0.06f, 0.94f, 0.94f);
+                textLeft = 0.29f;
+            }
+
+            Text titleText = _ui.Label(inner.transform, title, 54, Palette.Cream, TextAnchor.UpperLeft);
+            UIFactory.Place(titleText, textLeft, 0.5f, 0.97f, 0.9f);
+            Text bodyText = _ui.Label(inner.transform, body, 40, Palette.White, TextAnchor.UpperLeft);
+            UIFactory.Place(bodyText, textLeft, 0.08f, 0.97f, 0.5f);
+
+            Image chip = _ui.Panel(inner.transform, frame, "Rarity");
+            UIFactory.Place(chip, 0.72f, 0.8f, 0.98f, 0.98f);
+            chip.raycastTarget = false;
+            Text chipText = _ui.Label(chip.transform, RarityName(rarity), 30, Palette.Outline);
+            chipText.GetComponent<Outline>().enabled = false;
             return button.gameObject;
         }
+
+        private static string RarityName(Rarity r) => r switch
+        {
+            Rarity.Rare => "NADİR",
+            Rarity.Epic => "EPİK",
+            Rarity.Legendary => "EFSANE",
+            _ => "YAYGIN"
+        };
 
         private void Describe(in UpgradeOption option, out string title, out string body, out Rarity rarity)
         {

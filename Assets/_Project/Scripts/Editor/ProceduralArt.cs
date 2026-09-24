@@ -973,6 +973,48 @@ namespace PofudukFilo.EditorTools
             return p;
         }
 
+        /// <summary>Weapon/passive icon: shaded badge plus a symbol. Evolutions and fusions get gold.</summary>
+        public static Painter Icon(string id)
+        {
+            bool legendary = id is "supernova_omelette" or "galaxy_vortex" or "gum_rings" or "storm_cat" or "prism_beam"
+                or "rainbow_storm" or "cosmic_breakfast" or "candy_shield_galaxy";
+            (Color badge, Painter symbol, float scale) = id switch
+            {
+                "feather_blaster" => (Sky, Feather(false), 1.45f),
+                "rainbow_storm" => (Honey, Feather(true), 1.45f),
+                "egg_mortar" => (Coral, Egg(), 1.35f),
+                "supernova_omelette" or "cosmic_breakfast" => (Honey, Egg(), 1.35f),
+                "star_boomerang" => (Lilac, MiniStar(Honey), 1.45f),
+                "galaxy_vortex" => (Honey, MiniStar(Lilac), 1.45f),
+                "bubble_orbit" => (Pink, Bubble(), 1.35f),
+                "gum_rings" or "candy_shield_galaxy" => (Honey, Bubble(), 1.35f),
+                "spark_cat" => (Sky, Cat(), 0.72f),
+                "storm_cat" => (Honey, Cat(), 0.72f),
+                "prism_beam" => (Honey, GemSprite(Sky), 1.4f),
+                "crystal_glasses" => (Lilac, GemSprite(Sky), 1.3f),
+                "hot_pan" => (Coral, Coin(), 1.3f),
+                "moon_dust" => (Hex(0x6B5B95), MiniStar(Lilac), 1.4f),
+                "stretchy_gum" => (Mint, Bubble(), 1.3f),
+                "battery_collar" => (Mint, MiniStar(Honey), 1.4f),
+                "carrot_shield" => (Mint, HeartPickup(), 1.3f),
+                "magnet_ears" => (Sky, MagnetPickup(), 1.3f),
+                "lucky_clover" => (Leaf, GemSprite(Leaf), 1.3f),
+                _ => (Lilac, MiniStar(Color.white), 1.4f)
+            };
+
+            var p = new Painter(128, 128);
+            p.Volume((x, y) => Painter.RoundRectSdf(x, y, 10, 10, 118, 118, 28), 64, 64, 54, 54, badge, 6f, shadow: false, gloss: 0.6f);
+            // Soft dark inset behind the symbol so it pops on any badge colour.
+            p.Fill((x, y) => Painter.CircleSdf(x, y, 64, 62, 40), new Color(0.23f, 0.16f, 0.31f, 0.35f), 16f);
+            p.Blit(symbol, 64, 62, scale);
+            if (legendary)
+            {
+                p.Star(104, 104, 17, 7, Painter.Outline);
+                p.Star(104, 104, 13, 5.5f, Color.white);
+            }
+            return p;
+        }
+
         /// <summary>9-slice screen-edge glow (Şeker Hücumu): clear centre, soft bright rim.</summary>
         public static Painter EdgeGlow()
         {

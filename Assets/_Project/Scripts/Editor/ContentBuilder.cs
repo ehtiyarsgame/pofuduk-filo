@@ -211,9 +211,18 @@ namespace PofudukFilo.EditorTools
             p.valuePerLevel = value;
             p.maxLevel = 5;
             p.rarity = rarity;
+            p.icon = IconFor(id);
             p = SaveAsset(p, "Data/Passives", id);
             Passives.Add(p);
             return p;
+        }
+
+        private Sprite IconFor(string id)
+        {
+            string key = "icon_" + id;
+            if (!Sprites.TryGetValue(key, out Sprite sprite))
+                Sprites[key] = sprite = ArtRecipes.Icon(id).SaveSprite(PathFor("Art/Icons", key + ".png"), 128);
+            return sprite;
         }
 
         private static WeaponLevelStats L(float dmg, float cd, int count, float spread, float speed, int pierce,
@@ -237,6 +246,7 @@ namespace PofudukFilo.EditorTools
             w.levels = levels;
             w.evolutionPassive = key;
             w.evolvesInto = evolvesInto;
+            w.icon = IconFor(id);
             return SaveAsset(w, "Data/Weapons", id);
         }
 

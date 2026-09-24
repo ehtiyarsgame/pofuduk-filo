@@ -73,6 +73,14 @@ internal static class Program
         ParameterInfo[] ps = m.GetParameters();
         if (ps.Length == 0) { yield return Array.Empty<object>(); yield break; }
         if (ps.Length == 1 && ps[0].ParameterType == typeof(bool)) { yield return new object[] { false }; yield return new object[] { true }; yield break; }
+        if (ps.Length == 1 && ps[0].ParameterType == typeof(string))
+        {
+            foreach (string id in new[] { "feather_blaster", "egg_mortar", "star_boomerang", "bubble_orbit", "spark_cat", "prism_beam",
+                         "rainbow_storm", "galaxy_vortex", "crystal_glasses", "hot_pan", "moon_dust", "stretchy_gum",
+                         "battery_collar", "carrot_shield", "magnet_ears", "lucky_clover" })
+                yield return new object[] { id };
+            yield break;
+        }
         if (ps[0].ParameterType == typeof(Color))
         {
             var rest = new object[ps.Length];
