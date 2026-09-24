@@ -22,7 +22,8 @@ namespace PofudukFilo.Tests
         {
             Assert.That(Loc.ToEnglish("ATEŞ GÜCÜ\nSv.3  ·  60 altın"), Is.EqualTo("FIREPOWER\nLv.3  ·  60 gold"));
             Assert.That(Loc.ToEnglish("ATEŞ HIZI\nSv.40  ·  MAKS"), Is.EqualTo("FIRE RATE\nLv.40  ·  MAX"));
-            Assert.That(Loc.ToEnglish("SONSUZ\nRekor 4:05"), Is.EqualTo("ENDLESS\nBest 4:05"));
+            Assert.That(Loc.ToEnglish("Rekor: 4:05"), Is.EqualTo("Best: 4:05"));
+            Assert.That(Loc.ToEnglish("Bölüm 2 başladı!"), Is.EqualTo("Stage 2 begins!"));
         }
 
         [Test]

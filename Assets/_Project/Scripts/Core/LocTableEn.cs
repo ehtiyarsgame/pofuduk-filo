@@ -223,17 +223,17 @@ namespace PofudukFilo.Core
             // ---- Ads
             ["Kilitli — açınca kart havuzuna girer"] = "Locked — unlocking adds it to the card pool",
             ["Sv. Atla"] = "Level Up",
-            ["SONSUZ"] = "ENDLESS",
             ["ATEŞ GÜCÜ"] = "FIREPOWER",
             ["ATEŞ HIZI"] = "FIRE RATE",
             ["YENİ REKOR!"] = "NEW RECORD!",
+            ["Güzel uçuş!"] = "Nice flight!",
             ["Reklam hazır değil, biraz sonra dene."] = "Ad not ready, try again soon."
         };
 
         public static readonly Dictionary<string, string> Templates = new()
         {
             ["Sv. {0}"] = "Lv. {0}",
-            ["SONSUZ\nRekor {0}"] = "ENDLESS\nBest {0}",
+            ["Bölüm {0} başladı!"] = "Stage {0} begins!",
             ["Rekor: {0}"] = "Best: {0}",
             ["{0}\nSv.{1}  ·  {2} altın"] = "{0}\nLv.{1}  ·  {2} gold",
             ["{0}\nSv.{1}  ·  MAKS"] = "{0}\nLv.{1}  ·  MAX",
@@ -256,7 +256,7 @@ namespace PofudukFilo.Core
             ["{0} toz"] = "{0} dust",
             ["{0} geliştirmesi hazır!"] = "{0} upgrade ready!",
             ["{0} için {1} altın kaldı"] = "{1} gold to {0}",
-            ["Bölüm {0}"] = "Chapter {0}",
+            ["Bölüm {0}"] = "Stage {0}",
             ["Bölüm {0}  (kilitli)"] = "Chapter {0}  (locked)",
             ["Bölüm {0}'i bitir"] = "Clear Chapter {0}",
             ["Pilot: {0}"] = "Pilot: {0}",

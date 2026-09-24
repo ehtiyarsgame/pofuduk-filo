@@ -41,6 +41,8 @@ namespace PofudukFilo.Enemies
         /// <summary>Boss, isFinalBoss. Open the chest (evolution pity rule) here.</summary>
         public event Action<Enemy, bool> BossDefeated;
         public event Action RunCompleted;
+        /// <summary>Sonsuz Mod crossed a stage: the cleared chapter index and the one starting now.</summary>
+        public event Action<int, int> StageAdvanced;
 
         private readonly DifficultyDirector _dda = new();
         private readonly List<Vector2> _formationOffsets = new(32);
@@ -57,10 +59,17 @@ namespace PofudukFilo.Enemies
         private Enemy _currentBoss;
         private bool _currentBossIsFinal;
         private bool _endlessMode;
+        private IReadOnlyList<RunDefinition> _stages;
+        private int _stage;
+        private float _stageStartedAt;
         private float _nextEndlessBoss;
         private int _endlessBossCycle;
 
         public float RunMinutes => _elapsed / 60f;
+        /// <summary>Minutes into the current stage's timeline (phases start from here).</summary>
+        private float StageMinutes => (_elapsed - _stageStartedAt) / 60f;
+        /// <summary>1-based stage number in Sonsuz Mod.</summary>
+        public int StageNumber => _stage + 1;
         public RunPhase CurrentPhase => _phaseIndex >= 0 ? run.phases[_phaseIndex] : null;
         public float DifficultyMultiplier => _dda.Multiplier;
         public bool IsBossAlive => _currentBoss != null;
@@ -79,11 +88,24 @@ namespace PofudukFilo.Enemies
             if (PlayerHealth.Instance != null) PlayerHealth.Instance.Damaged -= OnPlayerDamaged;
         }
 
-        /// <param name="endlessMode">Sonsuz Mod from the menu: the final boss does not end the run; the waves roll on.</param>
+        /// <summary>
+        /// Sonsuz Mod (power-match.md §3.3): the chapters play back to back as stages; each final boss opens
+        /// the next stage, and after the last one the waves repeat forever with returning bosses.
+        /// </summary>
+        public void StartEndless(IReadOnlyList<RunDefinition> stages)
+        {
+            _stages = stages;
+            StartRun(stages[0], true);
+        }
+
+        /// <param name="endlessMode">The final boss does not end the run; the waves roll on.</param>
         public void StartRun(RunDefinition definition, bool endlessMode = false)
         {
             run = definition;
             _endlessMode = endlessMode;
+            if (!endlessMode) _stages = null;
+            _stage = 0;
+            _stageStartedAt = 0f;
             _endlessBossCycle = 0;
             _running = true;
             _elapsed = 0f;
@@ -120,6 +142,17 @@ namespace PofudukFilo.Enemies
             _breatherUntil = _elapsed + run.breatherSeconds;
             _nextEndlessBoss = _elapsed + endlessBossEverySeconds;
             _running = true;
+        }
+
+        private void NextStage()
+        {
+            int cleared = run.chapterIndex;
+            run = _stages[++_stage];
+            _phaseIndex = -1;
+            _stageStartedAt = _elapsed + run.breatherSeconds; // the new timeline starts after the breather
+            _breatherUntil = _stageStartedAt;
+            EnemyManager.Instance.ChapterIndex = run.chapterIndex;
+            StageAdvanced?.Invoke(cleared, run.chapterIndex);
         }
 
         /// <summary>Endless: the chapter's bosses return in rotation, each tougher on the clock and Power Match.</summary>
@@ -177,7 +210,7 @@ namespace PofudukFilo.Enemies
             }
             if (IsBossAlive) return;
 
-            int target = run.PhaseIndexAt(RunMinutes);
+            int target = run.PhaseIndexAt(StageMinutes);
             while (_phaseIndex < target && !IsBossAlive)
                 EnterPhase(++_phaseIndex);
         }
@@ -219,7 +252,8 @@ namespace PofudukFilo.Enemies
             {
                 // Sonsuz Mod: the final boss is a milestone, not the end.
                 BossDefeated?.Invoke(enemy, false);
-                ContinueEndless();
+                if (_stages != null && _stage + 1 < _stages.Count) NextStage();
+                else ContinueEndless();
                 return;
             }
             BossDefeated?.Invoke(enemy, isFinal);

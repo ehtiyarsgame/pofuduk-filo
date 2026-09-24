@@ -111,6 +111,9 @@ namespace PofudukFilo.Core
         private int _goldAlreadyGranted;
         private bool _lastRunWasVictory;
         private bool _endlessFromStart;
+        private int _stageGold;
+        private int _stageStardust;
+        private int _highestStageCleared = -1;
 
         public GameState State { get; private set; } = GameState.MainMenu;
         public MetaProgressionService Meta { get; private set; }
@@ -149,6 +152,7 @@ namespace PofudukFilo.Core
             player.Died += OnPlayerDied;
             waveDirector.BossDefeated += OnBossDefeated;
             waveDirector.RunCompleted += OnRunCompleted;
+            waveDirector.StageAdvanced += OnStageAdvanced;
             EnemyManager.Instance.EnemyKilled += OnEnemyKilled;
             inventory.PassivesChanged += OnPassivesChanged;
             inventory.WeaponEvolved += OnWeaponEvolved;
@@ -182,10 +186,10 @@ namespace PofudukFilo.Core
         public bool IsChapterUnlocked(int index) => index <= Meta.HighestChapterCleared + 1;
 
         /// <summary>
-        /// Sonsuz Mod (Ball Blast-style, power-match.md §3.3): the chapter's timeline, then endless waves with
-        /// returning bosses until the player falls. Plays the highest unlocked chapter's roster.
+        /// The game's one mode (Ball Blast-style, power-match.md §3.3): every chapter plays back to back as a
+        /// stage, then endless waves with returning bosses, until the player falls. OYNA starts it.
         /// </summary>
-        public void StartEndless() => StartRun(Mathf.Min(Meta.HighestChapterCleared + 1, chapters.Length - 1), true);
+        public void StartEndless() => StartRun(0, true);
 
         public void StartRun(int chapterIndex) => StartRun(chapterIndex, false);
 
@@ -239,7 +243,11 @@ namespace PofudukFilo.Core
             _goldAlreadyGranted = 0;
             _lastRunWasVictory = false;
 
-            waveDirector.StartRun(chapters[_chapterIndex], endless);
+            _stageGold = 0;
+            _stageStardust = 0;
+            _highestStageCleared = -1;
+            if (endless) waveDirector.StartEndless(chapters);
+            else waveDirector.StartRun(chapters[_chapterIndex]);
             SetState(GameState.Playing);
         }
 
@@ -367,6 +375,15 @@ namespace PofudukFilo.Core
 
         private void OnRunCompleted() => EndRun(true);
 
+        /// <summary>A stage cleared in Sonsuz Mod pays what a chapter victory used to; it is banked for the run end.</summary>
+        private void OnStageAdvanced(int cleared, int next)
+        {
+            _chapterIndex = next;
+            _stageGold += Mathf.RoundToInt(Formulas.ExpectedRunGold(cleared) * victoryGoldBonusFraction);
+            _stageStardust += victoryStardustBase + cleared;
+            _highestStageCleared = Mathf.Max(_highestStageCleared, cleared);
+        }
+
         /// <summary>Yıldızpati: every evolution adds permanent damage for the rest of the run.</summary>
         private void OnWeaponEvolved(WeaponDefinition from, WeaponDefinition to)
         {
@@ -462,9 +479,13 @@ namespace PofudukFilo.Core
             int gold = RunGold;
             int stardust = 0;
             bool newRecord = false;
+            int cleared = victory ? _chapterIndex : -1;
             if (_endlessFromStart)
             {
-                // Every Endless run is a "loss" that still pays; the record is the goal.
+                // Every run ends in a fall that still pays; stages cleared add their bonus; the record is the goal.
+                gold += _stageGold;
+                stardust = _stageStardust;
+                cleared = _highestStageCleared;
                 newRecord = Meta.RecordEndless(waveDirector.RunMinutes * 60f, _kills);
             }
             else if (_endless)
@@ -479,7 +500,7 @@ namespace PofudukFilo.Core
             }
 
             // Gold is always kept, even on death (game-concept.md §3.5).
-            Meta.GrantRunRewards(gold, stardust, victory ? _chapterIndex : -1);
+            Meta.GrantRunRewards(gold, stardust, cleared);
             _lastRunWasVictory = victory;
 
             var summary = new RunSummary(victory, gold, stardust, xpSystem.Level, _kills,

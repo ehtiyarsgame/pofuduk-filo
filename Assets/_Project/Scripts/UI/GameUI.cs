@@ -66,9 +66,7 @@ namespace PofudukFilo.UI
         private GameObject _menu;
         private GameObject _workshop;
         private Text _walletText;
-        private Text _chapterText;
         private Button _playButton;
-        private int _selectedChapter;
         private Transform _workshopList;
 
         private void Start()
@@ -100,6 +98,7 @@ namespace PofudukFilo.UI
             waveDirector.BossSpawned += OnBossSpawned;
             waveDirector.FormationCleared += _ => Toast("Formasyon Temizlendi!");
             waveDirector.PhaseStarted += p => { if (p.kind != PhaseKind.Waves) ShowBossBanner(p.label); };
+            waveDirector.StageAdvanced += (cleared, next) => Toast($"Bölüm {next + 1} başladı!", 2.4f);
             inventory.WeaponEvolved += (from, to) => Toast($"EVRİM! {to.displayName}");
 
             OnStateChanged(run.State);
@@ -423,8 +422,7 @@ namespace PofudukFilo.UI
             // One big call to action (game-concept.md §4.5 step 4).
             Button again = _ui.Button(screen.transform, "Tekrar Oyna", Palette.HotPink, () => AfterRunAd(() =>
             {
-                if (run.IsEndlessRun) run.StartEndless();
-                else run.StartRun(run.ChapterIndex);
+                run.StartEndless();
             }), 80);
             UIFactory.Place(again, 0.1f, 0.22f, 0.9f, 0.33f);
             _upgradeButton = _ui.Button(screen.transform, "Geliştir", Palette.Lavender, OpenWorkshopFromEnd, 52);
@@ -436,7 +434,7 @@ namespace PofudukFilo.UI
 
         private void OnRunEnded(RunSummary s)
         {
-            _endTitle.text = Loc.T(s.NewRecord ? "YENİ REKOR!" : s.Endless ? "Sonsuz Mod bitti!" : s.Victory ? "Zafer!" : "Az kaldı!");
+            _endTitle.text = Loc.T(s.NewRecord ? "YENİ REKOR!" : run.IsEndlessRun ? "Güzel uçuş!" : s.Endless ? "Sonsuz Mod bitti!" : s.Victory ? "Zafer!" : "Az kaldı!");
             _endlessButton.gameObject.SetActive(run.CanContinueEndless);
             int minutes = Mathf.FloorToInt(s.Minutes);
             int seconds = Mathf.FloorToInt((s.Minutes - minutes) * 60f);
@@ -445,7 +443,8 @@ namespace PofudukFilo.UI
             if (run.IsEndlessRun)
             {
                 float best = run.Meta.BestEndlessSeconds;
-                _endStats.text += "\n" + Loc.T($"Rekor: {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}");
+                _endStats.text += "\n" + Loc.T($"Bölüm {waveDirector.StageNumber}") + "   ·   " +
+                                  Loc.T($"Rekor: {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}");
             }
 
             _goldShown = 0f;
@@ -527,16 +526,11 @@ namespace PofudukFilo.UI
             _pilotText = _ui.Label(_menu.transform, "", 46, Palette.Pink);
             UIFactory.Place(_pilotText, 0.1f, 0.5f, 0.9f, 0.535f);
 
-            UIFactory.Place(_ui.Button(_menu.transform, "<", Palette.Lavender, () => SelectChapter(-1)), 0.08f, 0.44f, 0.22f, 0.49f);
-            UIFactory.Place(_ui.Button(_menu.transform, ">", Palette.Lavender, () => SelectChapter(1)), 0.78f, 0.44f, 0.92f, 0.49f);
-            _chapterText = _ui.Label(_menu.transform, "", 60, Palette.White);
-            UIFactory.Place(_chapterText, 0.22f, 0.44f, 0.78f, 0.49f);
-
-            // Two ways in: the chapter story, or Sonsuz Mod — Ball Blast's endless climb (power-match.md §3.3).
-            _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, () => run.StartRun(_selectedChapter), 110);
-            UIFactory.Place(_playButton, 0.04f, 0.335f, 0.6f, 0.43f);
-            _endlessMenuButton = _ui.Button(_menu.transform, "SONSUZ", Palette.Honey, run.StartEndless, 44);
-            UIFactory.Place(_endlessMenuButton, 0.62f, 0.335f, 0.96f, 0.43f);
+            // One way in, Ball Blast-style: OYNA starts the endless climb through every stage (power-match.md §3.3).
+            _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, run.StartEndless, 120);
+            UIFactory.Place(_playButton, 0.12f, 0.37f, 0.88f, 0.48f);
+            _recordText = _ui.Label(_menu.transform, "", 44, Palette.Honey);
+            UIFactory.Place(_recordText, 0.1f, 0.33f, 0.9f, 0.365f);
 
             // The Forge: always something to buy between runs (power-match.md §3.4).
             _forgePowerButton = _ui.Button(_menu.transform, "", Palette.Mint, () => BuyForge(ForgeTrack.Power), 40);
@@ -551,7 +545,7 @@ namespace PofudukFilo.UI
             UIFactory.Place(_ui.Button(_menu.transform, "Takımyıldız", Palette.Lavender, OpenConstellation, 32), 0.74f, 0.1f, 0.98f, 0.195f);
         }
 
-        private Button _endlessMenuButton;
+        private Text _recordText;
         private Button _forgePowerButton;
         private Button _forgeSpeedButton;
 
@@ -568,9 +562,9 @@ namespace PofudukFilo.UI
             SetForge(_forgeSpeedButton, "ATEŞ HIZI", ForgeTrack.Speed, meta);
 
             float best = meta.BestEndlessSeconds;
-            UIFactory.SetText(_endlessMenuButton, best > 0f
-                ? $"SONSUZ\nRekor {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}"
-                : "SONSUZ");
+            _recordText.text = best > 0f
+                ? Loc.T($"Rekor: {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}")
+                : "";
         }
 
         private static void SetForge(Button b, string title, ForgeTrack track, MetaProgressionService meta)
@@ -596,9 +590,7 @@ namespace PofudukFilo.UI
 
         private void RefreshMenu()
         {
-            _selectedChapter = Mathf.Clamp(_selectedChapter, 0, Mathf.Max(0, run.Chapters.Count - 1));
             RefreshWallet();
-            SelectChapter(0);
             RefreshPilot();
         }
 
@@ -608,16 +600,6 @@ namespace PofudukFilo.UI
             RefreshForge();
             if (_workshop != null && _workshop.activeSelf) RefreshWorkshop();
             RefreshOpenMetaScreen();
-        }
-
-        private void SelectChapter(int delta)
-        {
-            int count = run.Chapters.Count;
-            if (count == 0) return;
-            _selectedChapter = Mathf.Clamp(_selectedChapter + delta, 0, count - 1);
-            bool unlocked = run.IsChapterUnlocked(_selectedChapter);
-            _chapterText.text = Loc.T(unlocked ? $"Bölüm {_selectedChapter + 1}" : $"Bölüm {_selectedChapter + 1}  (kilitli)");
-            _playButton.interactable = unlocked;
         }
 
         // ---------------------------------------------------------------- Workshop

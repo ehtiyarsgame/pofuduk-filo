@@ -25,13 +25,13 @@ Device feedback on 2026-09-24: *"sonuna doğru çok basitleşiyor"* (it gets too
 - **Rush kills:** a 6 s ×1.7 fire-rate spike would push the scale up for power that goes away.
 - **Elites and bosses:** their long fights would drag the average and hide a snowballing build.
 
-### 3.3 Sonsuz Mod
-- The menu's **SONSUZ** button starts the highest unlocked chapter's timeline in endless mode (`WaveDirector.StartRun(run, endlessMode: true)`).
-- Killing the final boss opens the chest and continues into endless waves. The last wave phase repeats, with HP and budget still scaling with the clock and Power Match.
-- In endless mode, a boss from the chapter's roster returns `endlessBossEverySeconds` after the previous one dies. Bosses come in rotation, each with the current Power Match scale.
-- The run ends only on death, after revives or a give-up. It pays its gold normally (no ×1.5; that bonus stays with the "continue after victory" button).
-- The time survived is compared with `bestEndlessSeconds`. A new best shows **YENİ REKOR!**. The record is shown on the SONSUZ button (`SONSUZ / Rekor m:ss`) and on the run-end screen.
-- **Tekrar Oyna** repeats the mode that was played.
+### 3.3 Sonsuz Mod — the only mode
+*(2026-09-24, user: "sonsuz mod, levelleri boşver, oyna diyince oynasın" (endless mode; forget the levels; pressing play should just start the game).)* The chapter selector is gone. The main menu's **OYNA** (`RunController.StartEndless`) starts one endless climb:
+- **Stages.** The chapters play back to back (`WaveDirector.StartEndless(chapters)`). Each final boss opens the chest, shows the toast **"Bölüm N başladı!"** ("Stage N begins!") and, after the breather, starts the next chapter's timeline from its minute 0.
+- **Difficulty keeps climbing.** HP keeps the run clock (`RunMinutes`), the new chapter's `1.22^c` factor, and the Power Match scale.
+- **After the last chapter,** its last wave phase repeats forever. A boss from its roster returns `endlessBossEverySeconds` after the previous one dies, in rotation.
+- **Stage rewards.** Clearing a stage banks what a chapter victory used to pay, `ExpectedRunGold(c) · victoryGoldBonusFraction` gold plus `victoryStardustBase + c` stardust. The bank is paid at the run end, along with the run's gold. The highest cleared stage is recorded, so pilot unlocks tied to chapters still work.
+- **End and record.** The run ends only on death, after revives or a give-up. The time survived is compared with `bestEndlessSeconds`. A new best shows **YENİ REKOR!**; otherwise the title is "Güzel uçuş!" ("Nice flight!"). The menu shows "Rekor: m:ss" under OYNA, and the run-end screen shows "Bölüm N · Rekor: m:ss". **Tekrar Oyna** starts a new climb.
 
 ### 3.4 Ocak (Forge)
 - **Ateş Gücü:** all weapon and wingman damage × `ForgePowerMultiplier(L)`. No cap.
@@ -69,7 +69,7 @@ Rationale for the cost curve: a chapter-1 run pays about 250 gold (`ExpectedRunG
 - **RunController**: `StartEndless`, `Forge.Configure`, `RecordEndless`, the run summary's `NewRecord`.
 - **MetaProgressionService / SaveData**: Forge levels and costs, the Endless record.
 - **WeaponBehaviour, Fleet**: read `Forge.DamageMultiplier` and `Forge.FireRate`.
-- **GameUI**: the menu's OYNA/SONSUZ row, the Forge buttons, run-end record text.
+- **GameUI**: the single OYNA button and record line, the Forge buttons, the stage toast, run-end stage and record text.
 - **QaAutopilot**: plays Sonsuz Mod for 420 s and logs `pw(ttk)` = scale (average/baseline).
 
 ## 7. Tuning Knobs
@@ -95,7 +95,7 @@ Rationale for the cost curve: a chapter-1 run pays about 250 gold (`ExpectedRunG
    - `ForgeCost(0/1/10)` = 40/45/150.
 2. QA telemetry (`pw` column) shows scale 1.00 until about 75 s. After that the scale rises while the build snowballs. At no 10 s row after minute 4 do both of these hold: "HP full and zero enemies on screen".
 3. Menu:
-   - OYNA and SONSUZ sit side by side. The two Forge buttons show level and cost, and are disabled when gold is short.
+   - A single OYNA button starts the climb, with the record under it. The two Forge buttons show level and cost, and are disabled when gold is short.
    - Buying a level deducts the cost, raises the level by one and updates the wallet at once.
-4. A Sonsuz Mod run continues after the final boss, with a boss banner again about 2 min later. It ends only on death. When it beats the stored time, the run-end title reads YENİ REKOR! and the SONSUZ button shows the new record.
+4. After the chapter-1 final boss the toast "Bölüm 2 başladı!" appears, and chapter 2's timeline starts about 9 s later. After the last chapter a boss returns about 2 min after each boss kill. It ends only on death. When it beats the stored time, the run-end title reads YENİ REKOR! and the menu shows it under OYNA.
 5. English: "ATEŞ GÜCÜ\nSv.3  ·  60 altın" renders as "FIREPOWER\nLv.3  ·  60 gold" (LocTests).
