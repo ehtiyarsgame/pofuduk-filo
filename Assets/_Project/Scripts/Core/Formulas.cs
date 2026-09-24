@@ -45,6 +45,29 @@ namespace PofudukFilo.Core
         }
 
         /// <summary>Gold per cleared run for chapter c: ≈ 250 · 1.35^c.</summary>
+        // ---- Permanent progression (meta-economy.md §3.6)
+
+        public const int MaxWeaponMastery = 10;
+        public const float MasteryDamagePerLevel = 0.08f;
+        public const int MaxPilotLevel = 10;
+        public const float PilotBonusPerLevel = 0.03f;
+
+        /// <summary>Gold to raise a weapon's mastery from <paramref name="level"/> to level+1: 150·1.55^L, rounded to 10.</summary>
+        public static int MasteryCost(int level)
+        {
+            if (level < 0 || level >= MaxWeaponMastery) throw new ArgumentOutOfRangeException(nameof(level));
+            return (int)(Math.Round(150 * Math.Pow(1.55, level) / 10.0, MidpointRounding.AwayFromZero) * 10);
+        }
+
+        /// <summary>Gold to raise a pilot from <paramref name="level"/> (1-based) to level+1: 300·1.6^(L−1), rounded to 10.</summary>
+        public static int PilotLevelCost(int level)
+        {
+            if (level < 1 || level >= MaxPilotLevel) throw new ArgumentOutOfRangeException(nameof(level));
+            return (int)(Math.Round(300 * Math.Pow(1.6, level - 1) / 10.0, MidpointRounding.AwayFromZero) * 10);
+        }
+
+        public static float MasteryMultiplier(int level) => 1f + MasteryDamagePerLevel * Math.Clamp(level, 0, MaxWeaponMastery);
+
         public static int ExpectedRunGold(int chapterIndex) =>
             (int)Math.Round(250 * Math.Pow(1.35, chapterIndex));
 

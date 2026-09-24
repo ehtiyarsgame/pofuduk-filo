@@ -218,6 +218,8 @@ namespace PofudukFilo.Core
             ["Final: Kraliçe Tavuk!"] = "Final: Queen Hen!",
 
             // ---- Ads
+            ["Kilitli — açınca kart havuzuna girer"] = "Locked — unlocking adds it to the card pool",
+            ["Sv. Atla"] = "Level Up",
             ["Reklam hazır değil, biraz sonra dene."] = "Ad not ready, try again soon."
         };
 
@@ -254,7 +256,9 @@ namespace PofudukFilo.Core
             ["{0} KOMBO"] = "{0} COMBO",
             ["Filoya katıldı! ({0})"] = "Joined the fleet! ({0})",
             ["{0} + {1}"] = "{0} + {1}",
-            ["{0}\n<size=34>{1}</size>"] = "{0}\n<size=34>{1}</size>",
+            ["<size={0}>{1}</size>"] = "<size={0}>{1}</size>",
+            ["Ustalık {0}/{1}"] = "Mastery {0}/{1}",
+            ["Pilot Sv. {0}/{1}  (+%{2} hasar ve can)"] = "Pilot Lv. {0}/{1}  (+{2}% damage and HP)",
             ["{0} — Dalga {1}"] = "{0} — Wave {1}",
             ["Dalga {0}: Kaos"] = "Wave {0}: Chaos",
             ["Dalga {0}"] = "Wave {0}",

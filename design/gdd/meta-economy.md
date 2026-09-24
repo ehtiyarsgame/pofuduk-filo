@@ -121,7 +121,32 @@ oyuncu kendi yolunu seçer (tam doldurma ≈ 150 ✨ ≈ 30 boss zaferi).
   "Alınan hasar −2", "Seviye atlamada 4 kart".
 - **Ertelendi:** Evrim Kitapları (evrim şu an kitapsız çalışır), silah ustalığı ve kozmetikler (§3.3 E).
 
+### 3.6 Kalıcı güç: Silah Ustalığı ve Pilot Seviyesi (2026-09-24)
+
+Cihaz testi geri bildirimi: "karakter almak, silah almak… gelişim çok basit olmamalı." İki yeni altın
+harcama noktası eklendi. İkisi de sonsuz değil, tavanlı ve pahalılaşan:
+
+- **Silah Ustalığı (Laboratuvar):** Her ana silahın 0–10 ustalık seviyesi var. Her seviye o silaha
+  **+%8 hasar** verir. Evrimi (ve evrimin evrimi) aynı ustalığı devralır. Böylece bir silaha yatırım
+  evrimden sonra da boşa gitmez. Kilitli silah önce açılmalıdır (açma = kart havuzuna girme).
+- **Pilot Seviyesi (Hangar):** Sahip olunan her pilot 1–10 seviye atlar. Sv. 1'in üstündeki her seviye
+  o pilotla **+%3 hasar ve +%3 maks. can** verir. Oyuncuyu bir "ana" pilota bağlar, ama pilot
+  değiştirmek sıfırdan başlamak demek. Koleksiyonun derinliği buradan gelir.
+
 ## 4. Formulas
+
+| Ad | Formül | Değişkenler | Aralık | Örnek |
+|---|---|---|---|---|
+| Ustalık maliyeti | `round10(150 · 1.55^L)` | L = mevcut ustalık (0–9) | 150 – ~7.100 | L=3 → 560 |
+| Ustalık çarpanı | `1 + 0.08 · L` | L = 0–10 | ×1.0 – ×1.8 | L=5 → ×1.4 |
+| Pilot seviye maliyeti | `round10(300 · 1.6^(L−1))` | L = mevcut seviye (1–9) | 300 – ~20.600 | L=4 → 1.230 |
+| Pilot bonusu | `0.03 · (L − 1)` hasar ve maks. can | L = 1–10 | %0 – %27 | L=6 → +%15 |
+
+Bir silahı tamamen ustalaştırmak ≈ 20.600 altın, bir pilotu Sv. 10'a çıkarmak ≈ 48.000 altındır. Koşu
+başına ~250–750 altınla bu, haftalar süren bir hedeftir. Atölye kalıcı statları kapandıktan sonra da altının
+anlamlı kalmasını sağlar.
+
+
 
 ```
 Atölye_maliyeti(L)  = round10( Taban × Büyüme^(L−1) )

@@ -49,5 +49,23 @@ namespace PofudukFilo.Tests
             Assert.That(Formulas.SpawnBudget(0f, 10f), Is.EqualTo(1.5f * 1.15f).Within(1e-5f));
             Assert.That(Formulas.SpawnBudget(0f, 0f), Is.EqualTo(1.5f * 0.75f).Within(1e-5f));
         }
+
+        [Test]
+        public void test_mastery_cost_grows_and_rounds()
+        {
+            Assert.That(Formulas.MasteryCost(0), Is.EqualTo(150));
+            Assert.That(Formulas.MasteryCost(1), Is.EqualTo(230));
+            Assert.That(Formulas.MasteryCost(9), Is.GreaterThan(7000));
+        }
+
+        [Test]
+        public void test_pilot_level_cost_and_mastery_multiplier()
+        {
+            Assert.That(Formulas.PilotLevelCost(1), Is.EqualTo(300));
+            Assert.That(Formulas.PilotLevelCost(2), Is.EqualTo(480));
+            Assert.That(Formulas.MasteryMultiplier(0), Is.EqualTo(1f));
+            Assert.That(Formulas.MasteryMultiplier(10), Is.EqualTo(1.8f).Within(1e-5f));
+            Assert.That(Formulas.MasteryMultiplier(99), Is.EqualTo(1.8f).Within(1e-5f));
+        }
     }
 }

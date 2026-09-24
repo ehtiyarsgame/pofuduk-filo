@@ -5,7 +5,7 @@ import re, pathlib
 root = pathlib.Path(__file__).resolve().parents[2] / "Assets/_Project/Scripts"
 files = list((root / "UI").glob("*.cs")) + [root / "Editor/ContentBuilder.cs"]
 lit = re.compile(r'(\$?)"((?:[^"\\]|\\.)*)"')
-samples = [("displayName", "Tüy Blaster"), ("perkText", "Kedi. Sersemletme süresi 2 kat."),
+samples = [("levelLine", ""), ("displayName", "Tüy Blaster"), ("perkText", "Kedi. Sersemletme süresi 2 kat."),
            ("description", "+%3 hasar"), ("chapterName", "Şekerkamışı"), ("state", "  (açık)")]
 skip_calls = ("Node(", "Panel(", "FindProperty", "Debug.", "Tooltip", "Header", "SaveAsset", "PathFor",
               "Sprites[", "Shader.Find", "GameObject(", "Find(\"", "WeaponPrefab", "EnemyPrefab")

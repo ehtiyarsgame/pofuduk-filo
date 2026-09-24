@@ -19,6 +19,9 @@ namespace PofudukFilo.Meta
         {
             _data = data ?? throw new ArgumentNullException(nameof(data));
             _persist = persist ?? SaveService.Save;
+            // Saves from before mastery/pilot levels existed deserialize these as null.
+            _data.weaponMastery ??= new List<UpgradeLevelEntry>();
+            _data.pilotLevels ??= new List<UpgradeLevelEntry>();
         }
 
         public long Gold => _data.gold;
@@ -59,6 +62,61 @@ namespace PofudukFilo.Meta
             _persist(_data);
             WalletChanged?.Invoke();
             return true;
+        }
+
+        // ---------------------------------------------------------------- Weapon mastery & pilot levels
+
+        public int GetMastery(string weaponId) => FindIn(_data.weaponMastery, weaponId)?.level ?? 0;
+
+        public bool CanUpgradeMastery(WeaponDefinition w)
+        {
+            int level = GetMastery(w.id);
+            return IsUnlocked(w) && level < Core.Formulas.MaxWeaponMastery && _data.gold >= Core.Formulas.MasteryCost(level);
+        }
+
+        public bool TryUpgradeMastery(WeaponDefinition w)
+        {
+            if (!CanUpgradeMastery(w)) return false;
+            int level = GetMastery(w.id);
+            _data.gold -= Core.Formulas.MasteryCost(level);
+            SetIn(_data.weaponMastery, w.id, level + 1);
+            _persist(_data);
+            WalletChanged?.Invoke();
+            return true;
+        }
+
+        public int GetPilotLevel(string characterId) => Math.Max(1, FindIn(_data.pilotLevels, characterId)?.level ?? 1);
+
+        public bool CanLevelPilot(CharacterDefinition c)
+        {
+            int level = GetPilotLevel(c.id);
+            return IsUnlocked(c) && level < Core.Formulas.MaxPilotLevel && _data.gold >= Core.Formulas.PilotLevelCost(level);
+        }
+
+        public bool TryLevelPilot(CharacterDefinition c)
+        {
+            if (!CanLevelPilot(c)) return false;
+            int level = GetPilotLevel(c.id);
+            _data.gold -= Core.Formulas.PilotLevelCost(level);
+            SetIn(_data.pilotLevels, c.id, level + 1);
+            _persist(_data);
+            WalletChanged?.Invoke();
+            return true;
+        }
+
+        private static UpgradeLevelEntry FindIn(List<UpgradeLevelEntry> list, string id)
+        {
+            if (list == null) return null;
+            foreach (UpgradeLevelEntry e in list)
+                if (e.id == id) return e;
+            return null;
+        }
+
+        private static void SetIn(List<UpgradeLevelEntry> list, string id, int level)
+        {
+            UpgradeLevelEntry e = FindIn(list, id);
+            if (e == null) list.Add(new UpgradeLevelEntry { id = id, level = level });
+            else e.level = level;
         }
 
         /// <summary>End of run. Gold is always kept, even on death (game-concept.md §3.5).</summary>

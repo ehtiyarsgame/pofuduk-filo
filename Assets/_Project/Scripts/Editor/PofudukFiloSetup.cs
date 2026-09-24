@@ -179,7 +179,10 @@ namespace PofudukFilo.EditorTools
             SetArray(run, "workshop", c.Workshop.ToArray());
             SetArray(run, "characters", c.Characters.ToArray());
             SetArray(run, "fusions", c.Fusions.ToArray());
-            SetArray(run, "labWeapons", c.BaseWeapons.ToArray());
+            // Lab lists every base weapon: the starter too (mastery), paid ones also unlock there.
+            var labWeapons = new System.Collections.Generic.List<Object> { c.StartingWeapon };
+            labWeapons.AddRange(c.BaseWeapons);
+            SetArray(run, "labWeapons", labWeapons.ToArray());
             SetArray(run, "labPassives", c.Passives.ToArray());
             Set(run, "constellation", c.Constellation);
             Set(run, "playerSprite", sr);

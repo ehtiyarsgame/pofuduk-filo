@@ -30,6 +30,8 @@ namespace PofudukFilo.Meta
         public string selectedCharacter = "pitir";
         public long lastRespecUtcTicks;
         public int highestChapterCleared = -1;
+        public List<UpgradeLevelEntry> weaponMastery = new();
+        public List<UpgradeLevelEntry> pilotLevels = new();
     }
 
     [Serializable]

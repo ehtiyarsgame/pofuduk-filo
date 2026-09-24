@@ -146,7 +146,7 @@ namespace PofudukFilo.UI
 
             foreach (CharacterDefinition c in run.Characters)
             {
-                Image row = Row(_hangar.List, c.id, 220f);
+                Image row = Row(_hangar.List, c.id, 250f);
 
                 if (c.sprite != null)
                 {
@@ -159,9 +159,11 @@ namespace PofudukFilo.UI
                     if (!meta.IsUnlocked(c)) icon.color = new Color(0.2f, 0.15f, 0.3f, 1f); // silhouette
                 }
 
-                Text text = _ui.Label(row.transform, $"{c.displayName}\n<size=34>{c.perkText}</size>", 48, Palette.White, TextAnchor.MiddleLeft);
+                int pilotLevel = meta.GetPilotLevel(c.id);
+                string levelLine = meta.IsUnlocked(c) ? $"\n<size=32>Pilot Sv. {pilotLevel}/{Formulas.MaxPilotLevel}  (+%{Mathf.RoundToInt(Formulas.PilotBonusPerLevel * (pilotLevel - 1) * 100f)} hasar ve can)</size>" : "";
+                Text text = _ui.Label(row.transform, $"{c.displayName}\n<size=34>{c.perkText}</size>{levelLine}", 46, Palette.White, TextAnchor.MiddleLeft);
                 text.supportRichText = true;
-                UIFactory.Place(text, 0.22f, 0.06f, 0.64f, 0.94f);
+                UIFactory.Place(text, 0.22f, 0.04f, 0.64f, 0.96f);
 
                 CharacterDefinition captured = c;
                 Button action;
@@ -171,8 +173,20 @@ namespace PofudukFilo.UI
                     action = _ui.Button(row.transform, selected ? "Seçili" : "Seç", selected ? Palette.Mint : Palette.HotPink, () =>
                     {
                         if (meta.SelectCharacter(captured)) RefreshHangar();
-                    }, 46);
+                    }, 42);
                     action.interactable = !selected;
+
+                    // Level-up sits under the select button.
+                    bool maxed = pilotLevel >= Formulas.MaxPilotLevel;
+                    Button levelUp = _ui.Button(row.transform, maxed ? "MAKS" : $"Sv. Atla\n{Formulas.PilotLevelCost(pilotLevel)} altın",
+                        Palette.Honey, () =>
+                        {
+                            if (meta.TryLevelPilot(captured)) RefreshOpenMetaScreen();
+                        }, 30);
+                    levelUp.interactable = !maxed && meta.CanLevelPilot(c);
+                    UIFactory.Place(levelUp, 0.66f, 0.06f, 0.98f, 0.46f);
+                    UIFactory.Place(action, 0.66f, 0.54f, 0.98f, 0.94f);
+                    continue;
                 }
                 else if (c.requiresChapterCleared >= 0)
                 {
@@ -200,33 +214,75 @@ namespace PofudukFilo.UI
 
             foreach (WeaponDefinition w in run.LabWeapons)
             {
-                if (w.labCost <= 0) continue;
+                if (w == null) continue;
                 WeaponDefinition captured = w;
-                LabRow($"{w.displayName}  (silah)", meta.IsUnlocked(w), w.labCost, meta.Gold >= w.labCost,
-                    () => meta.TryUnlock(captured));
+                bool unlocked = meta.IsUnlocked(w);
+                int mastery = meta.GetMastery(w.id);
+                bool maxed = mastery >= Formulas.MaxWeaponMastery;
+
+                Image row = Row(_lab.List, w.id, 210f);
+                AddIcon(row.transform, w.icon, unlocked);
+                string info = unlocked
+                    ? $"{w.displayName}\n<size=34>Ustalık {mastery}/{Formulas.MaxWeaponMastery}</size>\n<size=34>+%{Mathf.RoundToInt(Formulas.MasteryDamagePerLevel * mastery * 100f)} hasar</size>"
+                    : $"{w.displayName}\n<size=34>Kilitli — açınca kart havuzuna girer</size>";
+                Text text = _ui.Label(row.transform, info, 46, Palette.White, TextAnchor.MiddleLeft);
+                text.supportRichText = true;
+                UIFactory.Place(text, 0.22f, 0.04f, 0.64f, 0.96f);
+
+                Button b;
+                if (!unlocked)
+                {
+                    b = _ui.Button(row.transform, $"Aç\n{w.labCost} altın", Palette.Honey, () =>
+                    {
+                        if (meta.TryUnlock(captured)) RefreshOpenMetaScreen();
+                    }, 38);
+                    b.interactable = meta.Gold >= w.labCost;
+                }
+                else if (maxed)
+                {
+                    b = _ui.Button(row.transform, "MAKS", Palette.Mint, null, 44);
+                    b.interactable = false;
+                }
+                else
+                {
+                    b = _ui.Button(row.transform, $"Geliştir\n{Formulas.MasteryCost(mastery)} altın", Palette.HotPink, () =>
+                    {
+                        if (meta.TryUpgradeMastery(captured)) RefreshOpenMetaScreen();
+                    }, 36);
+                    b.interactable = meta.CanUpgradeMastery(w);
+                }
+                UIFactory.Place(b, 0.66f, 0.14f, 0.98f, 0.86f);
             }
+
             foreach (PassiveDefinition p in run.LabPassives)
             {
                 if (p.labCost <= 0) continue;
                 PassiveDefinition captured = p;
-                LabRow($"{p.displayName}  (pasif)", meta.IsUnlocked(p), p.labCost, meta.Gold >= p.labCost,
-                    () => meta.TryUnlock(captured));
+                bool unlocked = meta.IsUnlocked(p);
+                Image row = Row(_lab.List, p.id, 170f);
+                AddIcon(row.transform, p.icon, unlocked);
+                UIFactory.Place(_ui.Label(row.transform, $"{p.displayName}  (pasif)", 44, Palette.White, TextAnchor.MiddleLeft), 0.22f, 0.1f, 0.64f, 0.9f);
+                Button b = unlocked
+                    ? _ui.Button(row.transform, "Havuzda", Palette.Mint, null, 44)
+                    : _ui.Button(row.transform, $"Aç\n{p.labCost} altın", Palette.Honey, () =>
+                    {
+                        if (meta.TryUnlock(captured)) RefreshOpenMetaScreen();
+                    }, 38);
+                b.interactable = !unlocked && meta.Gold >= p.labCost;
+                UIFactory.Place(b, 0.66f, 0.14f, 0.98f, 0.86f);
             }
         }
 
-        private void LabRow(string title, bool unlocked, int cost, bool affordable, Func<bool> unlock)
+        private void AddIcon(Transform row, Sprite sprite, bool unlocked)
         {
-            Image row = Row(_lab.List, title, 150f);
-            UIFactory.Place(_ui.Label(row.transform, title, 46, Palette.White, TextAnchor.MiddleLeft), 0.04f, 0.1f, 0.62f, 0.9f);
-
-            Button b = unlocked
-                ? _ui.Button(row.transform, "Havuzda", Palette.Mint, null, 44)
-                : _ui.Button(row.transform, $"{cost} altın", Palette.Honey, () =>
-                {
-                    if (unlock()) RefreshOpenMetaScreen();
-                }, 46);
-            b.interactable = !unlocked && affordable;
-            UIFactory.Place(b, 0.64f, 0.14f, 0.97f, 0.86f);
+            if (sprite == null) return;
+            RectTransform node = _ui.Node("Icon", row);
+            UIFactory.Place(node, 0.02f, 0.1f, 0.2f, 0.9f);
+            var img = node.gameObject.AddComponent<Image>();
+            img.sprite = sprite;
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+            if (!unlocked) img.color = new Color(0.35f, 0.3f, 0.45f, 1f);
         }
 
         // ---------------------------------------------------------------- Constellation

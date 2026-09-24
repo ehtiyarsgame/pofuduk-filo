@@ -72,7 +72,7 @@ namespace PofudukFilo.Weapons
 
         protected float RollDamage(float baseDamage)
         {
-            float damage = baseDamage * Stats.DamageMultiplier;
+            float damage = baseDamage * Stats.DamageMultiplier * WeaponMastery.Multiplier(Definition);
             return Random.value < Stats.CritChance ? damage * 2f : damage;
         }
 

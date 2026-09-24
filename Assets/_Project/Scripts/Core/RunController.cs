@@ -187,8 +187,16 @@ namespace PofudukFilo.Core
             Meta.ApplyConstellation(stats, constellation);
 
             CurrentCharacter = ResolveCharacter();
+            WeaponMastery.Configure(labWeapons, Meta.GetMastery);
             if (CurrentCharacter != null)
             {
+                // Pilot level: +3 % damage and max HP per level above 1 (meta-economy.md §3.6).
+                float pilotBonus = Formulas.PilotBonusPerLevel * (Meta.GetPilotLevel(CurrentCharacter.id) - 1);
+                if (pilotBonus > 0f)
+                {
+                    stats.AddRunBonus(StatType.Damage, pilotBonus);
+                    stats.AddRunBonus(StatType.MaxHp, pilotBonus);
+                }
                 foreach (StatModifier m in CurrentCharacter.modifiers) stats.AddRunBonus(m.stat, m.value);
                 if (CurrentCharacter.startingWeapon != null) inventory.StartingWeapon = CurrentCharacter.startingWeapon;
                 Sprite ship = CurrentCharacter.shipSprite != null ? CurrentCharacter.shipSprite : CurrentCharacter.sprite;
