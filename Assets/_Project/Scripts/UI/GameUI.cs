@@ -163,7 +163,7 @@ namespace PofudukFilo.UI
             UIFactory.Place(pause, 0.84f, 0.925f, 0.97f, 0.97f);
 
             _bossBar = _ui.Node("BossBar", _hud.transform).gameObject;
-            UIFactory.Place(_bossBar.GetComponent<RectTransform>(), 0.1f, 0.87f, 0.9f, 0.895f);
+            UIFactory.Place(_bossBar.GetComponent<RectTransform>(), 0.1f, 0.85f, 0.9f, 0.872f); // below the rush meter
             _bossFill = _ui.Bar(_bossBar.transform, Palette.Outline, Palette.Coral);
             _bossBar.SetActive(false);
 
