@@ -16,6 +16,8 @@ namespace PofudukFilo.Feel
         [SerializeField] private float numberLifetime = 0.65f;
         [SerializeField] private float mergeWindow = 0.3f;
         [SerializeField] private int sortingOrder = 70;
+        [Tooltip("Optional; falls back to the built-in font.")]
+        [SerializeField] private Font font;
 
         private sealed class Number
         {
@@ -40,7 +42,7 @@ namespace PofudukFilo.Feel
 
         private void Start()
         {
-            _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _font = font != null ? font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (EnemyManager.Instance != null)
             {
                 EnemyManager.Instance.EnemyDamaged += OnDamaged;

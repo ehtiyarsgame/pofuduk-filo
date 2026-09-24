@@ -63,7 +63,7 @@ namespace PofudukFilo.UI
             bool show = combo >= 5;
             _comboText.gameObject.SetActive(show);
             if (!show) return;
-            _comboText.text = $"{combo} KOMBO";
+            _comboText.text = Loc.T($"{combo} KOMBO");
             _comboPunch = 1f;
         }
 
@@ -87,12 +87,12 @@ namespace PofudukFilo.UI
                 _rushFill.color = c;
                 c.a = 0.35f + 0.2f * Mathf.Sin(Time.unscaledTime * 8f);
                 _edgeGlow.color = c;
-                _rushLabel.text = "HÜCUM!";
+                _rushLabel.text = Loc.T("HÜCUM!");
             }
             else
             {
                 _rushFill.color = _rushFill.fillAmount > 0.85f ? Color.Lerp(Palette.Pink, Palette.White, Mathf.PingPong(Time.unscaledTime * 3f, 1f)) : Palette.Pink;
-                _rushLabel.text = "ŞEKER";
+                _rushLabel.text = Loc.T("ŞEKER");
             }
 
             if (_comboText.gameObject.activeSelf)

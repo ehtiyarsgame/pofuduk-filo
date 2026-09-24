@@ -25,6 +25,7 @@ namespace PofudukFilo.UI
         [SerializeField] private PickupSystem pickups;
         [SerializeField] private Font font;
         [SerializeField] private Sprite roundedSprite;
+        [SerializeField] private Sprite buttonSprite;
 
         private UIFactory _ui;
         private readonly Dictionary<GameState, GameObject> _screens = new();
@@ -73,7 +74,7 @@ namespace PofudukFilo.UI
         private void Start()
         {
             UIFactory.EnsureEventSystem();
-            _ui = new UIFactory(font, roundedSprite);
+            _ui = new UIFactory(font, roundedSprite, buttonSprite);
 
             Canvas canvas = _ui.Canvas("GameUI", 10);
             RectTransform safe = _ui.SafeArea(canvas.transform);
@@ -95,7 +96,7 @@ namespace PofudukFilo.UI
             run.Meta.WalletChanged += RefreshWallet;
             xpSystem.XpChanged += OnXpChanged;
             player.HealthChanged += OnHealthChanged;
-            pickups.RunGoldChanged += g => _goldText.text = $"{g}";
+            pickups.RunGoldChanged += g => _goldText.text = Loc.T($"{g}");
             waveDirector.BossSpawned += OnBossSpawned;
             waveDirector.FormationCleared += _ => Toast("Formasyon Temizlendi!");
             waveDirector.PhaseStarted += p => { if (p.kind != PhaseKind.Waves) Toast(p.label); };
@@ -121,7 +122,7 @@ namespace PofudukFilo.UI
             if (_endGold != null && _goldShown < _goldTarget)
             {
                 _goldShown = Mathf.MoveTowards(_goldShown, _goldTarget, Mathf.Max(60f, _goldTarget) * Time.unscaledDeltaTime);
-                _endGold.text = $"+{Mathf.RoundToInt(_goldShown)} altın";
+                _endGold.text = Loc.T($"+{Mathf.RoundToInt(_goldShown)} altın");
             }
         }
 
@@ -176,7 +177,7 @@ namespace PofudukFilo.UI
         private void OnXpChanged(int current, int required)
         {
             _xpFill.fillAmount = required > 0 ? current / (float)required : 0f;
-            _levelText.text = $"Sv. {xpSystem.Level}";
+            _levelText.text = Loc.T($"Sv. {xpSystem.Level}");
         }
 
         private void OnHealthChanged(float current, float max) => _hpFill.fillAmount = max > 0f ? current / max : 0f;
@@ -195,7 +196,7 @@ namespace PofudukFilo.UI
 
         private void Toast(string text, float seconds = 1.6f)
         {
-            _toast.text = text;
+            _toast.text = Loc.T(text);
             _toast.gameObject.SetActive(true);
             _toastUntil = Time.unscaledTime + seconds;
             Feel.Juice.PopIn(_toast.transform);
@@ -226,7 +227,7 @@ namespace PofudukFilo.UI
         private void OnLevelUpOffered(IReadOnlyList<UpgradeOption> offer, int rerolls, int banishes)
         {
             _banishMode = false;
-            _levelUpTitle.text = $"Seviye {xpSystem.Level}!";
+            _levelUpTitle.text = Loc.T($"Seviye {xpSystem.Level}!");
             foreach (GameObject c in _cards)
             {
                 c.SetActive(false); // leave the layout now; Destroy is deferred to end of frame
@@ -430,17 +431,17 @@ namespace PofudukFilo.UI
 
         private void OnRunEnded(RunSummary s)
         {
-            _endTitle.text = s.Endless ? "Sonsuz Mod bitti!" : s.Victory ? "Zafer!" : "Az kaldı!";
+            _endTitle.text = Loc.T(s.Endless ? "Sonsuz Mod bitti!" : s.Victory ? "Zafer!" : "Az kaldı!");
             _endlessButton.gameObject.SetActive(run.CanContinueEndless);
             int minutes = Mathf.FloorToInt(s.Minutes);
             int seconds = Mathf.FloorToInt((s.Minutes - minutes) * 60f);
-            _endStats.text = $"Seviye {s.Level}   ·   {s.Kills} düşman   ·   {minutes}:{seconds:00}";
-            if (s.Stardust > 0) _endStats.text += $"\n+{s.Stardust} Yıldız Tozu";
+            _endStats.text = Loc.T($"Seviye {s.Level}   ·   {s.Kills} düşman   ·   {minutes}:{seconds:00}");
+            if (s.Stardust > 0) _endStats.text += Loc.T($"\n+{s.Stardust} Yıldız Tozu");
 
             _goldShown = 0f;
             _goldTarget = s.Gold;
-            _endGold.text = "+0 altın";
-            _endGoal.text = NextGoalText();
+            _endGold.text = Loc.T("+0 altın");
+            _endGoal.text = Loc.T(NextGoalText());
 
             bool affordable = run.Meta.AnyAffordable(run.Workshop);
             UIFactory.SetText(_upgradeButton, affordable ? "Geliştir  !" : "Geliştir");
@@ -552,7 +553,7 @@ namespace PofudukFilo.UI
 
         private void RefreshWallet()
         {
-            if (_walletText != null) _walletText.text = $"{run.Meta.Gold} altın   ·   {run.Meta.Stardust} Yıldız Tozu";
+            if (_walletText != null) _walletText.text = Loc.T($"{run.Meta.Gold} altın   ·   {run.Meta.Stardust} Yıldız Tozu");
             if (_workshop != null && _workshop.activeSelf) RefreshWorkshop();
             RefreshOpenMetaScreen();
         }
@@ -563,7 +564,7 @@ namespace PofudukFilo.UI
             if (count == 0) return;
             _selectedChapter = Mathf.Clamp(_selectedChapter + delta, 0, count - 1);
             bool unlocked = run.IsChapterUnlocked(_selectedChapter);
-            _chapterText.text = unlocked ? $"Bölüm {_selectedChapter + 1}" : $"Bölüm {_selectedChapter + 1}  (kilitli)";
+            _chapterText.text = Loc.T(unlocked ? $"Bölüm {_selectedChapter + 1}" : $"Bölüm {_selectedChapter + 1}  (kilitli)");
             _playButton.interactable = unlocked;
         }
 
@@ -633,7 +634,7 @@ namespace PofudukFilo.UI
                 UIFactory.Place(buy, 0.64f, 0.14f, 0.97f, 0.86f);
                 buy.interactable = meta.CanAfford(u);
             }
-            if (_walletText != null) _walletText.text = $"{meta.Gold} altın   ·   {meta.Stardust} Yıldız Tozu";
+            if (_walletText != null) _walletText.text = Loc.T($"{meta.Gold} altın   ·   {meta.Stardust} Yıldız Tozu");
         }
 
         // ---------------------------------------------------------------- Helpers

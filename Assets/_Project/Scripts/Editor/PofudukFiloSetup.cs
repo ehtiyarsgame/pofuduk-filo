@@ -20,6 +20,7 @@ namespace PofudukFilo.EditorTools
     public static class PofudukFiloSetup
     {
         public const string ScenePath = "Assets/_Project/Scenes/Main.unity";
+        public const string UiFontPath = "Assets/_Project/Fonts/Fredoka.ttf";
 
         [MenuItem("Pofuduk Filo/Oynanabilir Sahneyi Kur", priority = 0)]
         public static void BuildEverything()
@@ -57,7 +58,7 @@ namespace PofudukFilo.EditorTools
         private static void ConfigureProject()
         {
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
-            PlayerSettings.productName = "Pofuduk Filo";
+            PlayerSettings.productName = "Fluffy Fleet"; // global name; Turkish UI says "Pofuduk Filo"
 
             var scenes = EditorBuildSettings.scenes;
             foreach (EditorBuildSettingsScene s in scenes)
@@ -198,6 +199,15 @@ namespace PofudukFilo.EditorTools
             Set(ui, "pickups", pickups);
             Set(ui, "roundedSprite", c.Sprites["ui_rounded"]);
             Set(ui, "edgeGlowSprite", c.Sprites["ui_edge_glow"]);
+            Set(ui, "buttonSprite", c.Sprites["ui_button"]);
+            // Rounded display font, fetched by CI (tools/ci, OFL licence); built-in font otherwise.
+            Font uiFont = AssetDatabase.LoadAssetAtPath<Font>(UiFontPath);
+            if (uiFont != null)
+            {
+                Set(ui, "font", uiFont);
+                Set(systems.GetComponent<CombatFx>(), "font", uiFont);
+            }
+            else Debug.LogWarning($"[Setup] {UiFontPath} not found; using the built-in font.");
 
             // Signature loop: Şeker Hücumu combo/fever and the rescued-wingmen fleet.
             flow.AddComponent<SugarRush>();

@@ -21,6 +21,9 @@
     <Compile Include="../../../Assets/_Project/Scripts/Meta/ConstellationRules.cs" />
     <Compile Include="../../../Assets/_Project/Tests/EditMode/ConstellationRulesTests.cs" />
     <Compile Include="../../../Assets/_Project/Scripts/Audio/SfxSynth.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Core/Loc.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Core/LocTableEn.cs" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/LocTests.cs" />
     <Compile Include="../../../Assets/_Project/Tests/EditMode/SfxSynthTests.cs" />
   </ItemGroup>
   <ItemGroup>

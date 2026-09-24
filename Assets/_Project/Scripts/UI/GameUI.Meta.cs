@@ -54,7 +54,7 @@ namespace PofudukFilo.UI
             foreach (MetaScreen m in _metaScreens)
             {
                 if (!m.Root.activeSelf) continue;
-                m.Wallet.text = WalletLine();
+                m.Wallet.text = Loc.T(WalletLine());
                 m.Refresh();
             }
         }
@@ -70,7 +70,7 @@ namespace PofudukFilo.UI
             _menu.SetActive(false);
             screen.Root.SetActive(true);
             screen.Root.transform.SetAsLastSibling();
-            screen.Wallet.text = WalletLine();
+            screen.Wallet.text = Loc.T(WalletLine());
             screen.Refresh();
         }
 
@@ -131,7 +131,7 @@ namespace PofudukFilo.UI
             CharacterDefinition pilot = run.Characters.Count > 0 ? run.Characters[0] : null;
             foreach (CharacterDefinition c in run.Characters)
                 if (c.id == id && run.Meta.IsUnlocked(c)) pilot = c;
-            _pilotText.text = pilot != null ? $"Pilot: {pilot.displayName}" : "";
+            _pilotText.text = Loc.T(pilot != null ? $"Pilot: {pilot.displayName}" : "");
             if (_heroShip != null && pilot != null)
             {
                 _heroShip.sprite = pilot.shipSprite != null ? pilot.shipSprite : pilot.sprite;
@@ -303,7 +303,7 @@ namespace PofudukFilo.UI
         {
             _selectedNode = node;
             string state = run.Meta.HasNode(node) ? "  (açık)" : "";
-            _nodeDetail.text = $"{node.displayName}{state}\n{node.description}";
+            _nodeDetail.text = Loc.T($"{node.displayName}{state}\n{node.description}");
             _buyNodeButton.interactable = run.Meta.CanBuy(node);
         }
 
@@ -315,7 +315,7 @@ namespace PofudukFilo.UI
 
         private void Respec()
         {
-            if (run.Meta.Respec(run.Constellation, DateTime.UtcNow.Ticks)) _nodeDetail.text = "Tüm yıldız tozu iade edildi.";
+            if (run.Meta.Respec(run.Constellation, DateTime.UtcNow.Ticks)) _nodeDetail.text = Loc.T("Tüm yıldız tozu iade edildi.");
             RefreshOpenMetaScreen();
         }
 
@@ -326,14 +326,24 @@ namespace PofudukFilo.UI
             _settings = _ui.Node("Settings", root).gameObject;
             _ui.Dimmer(_settings.transform);
             Image card = _ui.Panel(_settings.transform, Palette.Lavender, "Card");
-            UIFactory.Place(card, 0.08f, 0.24f, 0.92f, 0.78f);
+            UIFactory.Place(card, 0.08f, 0.2f, 0.92f, 0.82f);
 
-            UIFactory.Place(_ui.Label(card.transform, "Ayarlar", 80, Palette.Cream), 0.05f, 0.86f, 0.95f, 0.98f);
-            Toggle(card.transform, 0.71f, "Ses efektleri", () => GameSettings.Sfx, v => GameSettings.Sfx = v);
-            Toggle(card.transform, 0.575f, "Müzik", () => GameSettings.Music, v => GameSettings.Music = v);
-            Toggle(card.transform, 0.44f, "Titreşim", () => GameSettings.Vibration, v => GameSettings.Vibration = v);
-            Toggle(card.transform, 0.305f, "Ekran sarsıntısı", () => GameSettings.ScreenShake, v => GameSettings.ScreenShake = v);
-            Toggle(card.transform, 0.17f, "Hasar sayıları", () => GameSettings.DamageNumbers, v => GameSettings.DamageNumbers = v);
+            UIFactory.Place(_ui.Label(card.transform, "Ayarlar", 80, Palette.Cream), 0.05f, 0.88f, 0.95f, 0.98f);
+            Toggle(card.transform, 0.745f, "Ses efektleri", () => GameSettings.Sfx, v => GameSettings.Sfx = v);
+            Toggle(card.transform, 0.625f, "Müzik", () => GameSettings.Music, v => GameSettings.Music = v);
+            Toggle(card.transform, 0.505f, "Titreşim", () => GameSettings.Vibration, v => GameSettings.Vibration = v);
+            Toggle(card.transform, 0.385f, "Ekran sarsıntısı", () => GameSettings.ScreenShake, v => GameSettings.ScreenShake = v);
+            Toggle(card.transform, 0.265f, "Hasar sayıları", () => GameSettings.DamageNumbers, v => GameSettings.DamageNumbers = v);
+
+            // Language: every screen is built once from code, so switching reloads the scene.
+            UIFactory.Place(_ui.Label(card.transform, "Dil", 48, Palette.White, TextAnchor.MiddleLeft), 0.06f, 0.145f, 0.6f, 0.255f);
+            UIFactory.Place(_ui.Button(card.transform, Loc.Current == Language.Turkish ? "Türkçe" : "English", Palette.Sky, () =>
+            {
+                Loc.Current = Loc.Current == Language.Turkish ? Language.English : Language.Turkish;
+                TimeScaleController.SetPaused(false);
+                TimeScaleController.SetFingerLifted(false);
+                UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+            }, 44), 0.62f, 0.15f, 0.94f, 0.25f);
 
             UIFactory.Place(_ui.Button(card.transform, "Kapat", Palette.HotPink, () => _settings.SetActive(false), 52), 0.3f, 0.02f, 0.7f, 0.13f);
             _settings.SetActive(false);

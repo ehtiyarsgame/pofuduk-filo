@@ -37,11 +37,13 @@ namespace PofudukFilo.UI
     {
         private readonly Font _font;
         private readonly Sprite _rounded;
+        private readonly Sprite _buttonFace;
 
-        public UIFactory(Font font, Sprite rounded)
+        public UIFactory(Font font, Sprite rounded, Sprite buttonFace = null)
         {
             _font = font != null ? font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             _rounded = rounded;
+            _buttonFace = buttonFace;
         }
 
         public static void EnsureEventSystem()
@@ -112,7 +114,7 @@ namespace PofudukFilo.UI
             RectTransform rt = Node("Label", parent);
             var t = rt.gameObject.AddComponent<Text>();
             t.font = _font;
-            t.text = text;
+            t.text = Core.Loc.T(text);
             t.fontSize = size;
             t.fontStyle = FontStyle.Bold;
             t.color = color;
@@ -141,6 +143,11 @@ namespace PofudukFilo.UI
             shadow.raycastTarget = false;
 
             Image faceImg = Panel(root, face, "Face");
+            if (_buttonFace != null)
+            {
+                faceImg.sprite = _buttonFace; // glossy candy face, tinted by the colour
+                faceImg.type = Image.Type.Sliced;
+            }
             var button = root.gameObject.AddComponent<Button>();
             button.targetGraphic = faceImg;
             ColorBlock colors = button.colors;
@@ -161,7 +168,7 @@ namespace PofudukFilo.UI
         public static void SetText(Button button, string text)
         {
             Text t = button.GetComponentInChildren<Text>();
-            if (t != null) t.text = text;
+            if (t != null) t.text = Core.Loc.T(text);
         }
 
         // ---------------------------------------------------------------- Layout helpers

@@ -49,6 +49,15 @@ jobs:
           key: Library-Android-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library-Android-
 
+      - name: Fetch UI font (Fredoka, SIL OFL 1.1)
+        continue-on-error: true
+        run: |
+          mkdir -p Assets/_Project/Fonts
+          base="https://raw.githubusercontent.com/google/fonts/main/ofl/fredoka"
+          curl -fsSL -o Assets/_Project/Fonts/Fredoka.ttf "$base/Fredoka%5Bwdth%2Cwght%5D.ttf" \
+            && curl -fsSL -o Assets/_Project/Fonts/Fredoka-OFL.txt "$base/OFL.txt" \
+            && ls -l Assets/_Project/Fonts
+
       - name: Pull Unity image
         run: docker pull "$UNITY_IMAGE"
 

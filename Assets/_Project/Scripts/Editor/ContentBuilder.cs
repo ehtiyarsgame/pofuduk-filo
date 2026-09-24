@@ -114,6 +114,7 @@ namespace PofudukFilo.EditorTools
             Add("confetti", ArtRecipes.SoftCircle(Color.white, 16), 16);
             Add("ui_rounded", ArtRecipes.RoundedPanel(), 100, new Vector4(32, 32, 32, 32));
 
+            Add("ui_button", ArtRecipes.ButtonFace(), 100, new Vector4(44, 44, 44, 44));
             Add("ui_edge_glow", ArtRecipes.EdgeGlow(), 100, new Vector4(60, 60, 60, 60));
             Add("bg_sky", ArtRecipes.SkyGradient(), 100);
             Add("bg_nebula", ArtRecipes.Nebula(), 100);

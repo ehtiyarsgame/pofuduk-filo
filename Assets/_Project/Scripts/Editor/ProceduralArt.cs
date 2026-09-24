@@ -1043,6 +1043,30 @@ namespace PofudukFilo.EditorTools
             return p;
         }
 
+        /// <summary>
+        /// 9-slice button face: grey-scale so Image.color tints it — top-lit vertical gradient, a
+        /// glossy upper band, a soft inner rim and a darker bottom lip. Reads as a pressable candy.
+        /// </summary>
+        public static Painter ButtonFace()
+        {
+            var p = new Painter(128, 128);
+            Painter.Sdf body = (x, y) => Painter.RoundRectSdf(x, y, 2, 2, 126, 126, 40);
+            p.Fill((x, y) => body(x, y), (x, y) =>
+            {
+                float t = y / 128f;
+                float v = Mathf.Lerp(0.8f, 1f, Mathf.SmoothStep(0f, 1f, t));
+                return new Color(v, v, v, 1f);
+            });
+            // Glossy band across the top half.
+            p.Fill((x, y) => Mathf.Max(Painter.RoundRectSdf(x, y, 12, 70, 116, 118, 30), -body(x, y) - 8f),
+                (x, y) => new Color(1f, 1f, 1f, Mathf.Lerp(0.05f, 0.35f, (y - 70f) / 48f)), 3f);
+            // Inner rim: thin light line just inside the edge.
+            p.Fill((x, y) => Mathf.Abs(body(x, y) + 5f) - 1.5f, new Color(1f, 1f, 1f, 0.35f), 1.2f);
+            // Darker bottom lip.
+            p.Fill((x, y) => Mathf.Max(body(x, y), y - 22f), new Color(0.55f, 0.5f, 0.62f, 0.35f), 6f);
+            return p;
+        }
+
         /// <summary>9-slice base for every UI panel and button.</summary>
         public static Painter RoundedPanel()
         {

@@ -33,3 +33,5 @@ MAP
 echo "== tests"
 dotnet build tests/TestRun.csproj -nologo -v q 2>&1 | grep -E "error CS" | sort -u
 dotnet tests/bin/Debug/net8.0/TestRun.dll --noresult 2>&1 | grep -E "Test Count|^[0-9]+\) |Expected|But was"
+echo "== localization"
+python3 loc_extract.py > /tmp/pf_loc_strings.txt && dotnet tests/bin/Debug/net8.0/TestRun.dll --loc-check /tmp/pf_loc_strings.txt
