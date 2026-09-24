@@ -43,7 +43,7 @@ Device feedback on 2026-09-24: *"sonuna doğru çok basitleşiyor"* (it gets too
 
 | Name | Formula | Variables | Range | Example |
 |---|---|---|---|---|
-| Power step | `s' = clamp(s · e^(r · clamp(ln(T/ā), −1, 1) · dt), 1, S)` | s = scale, ā = average TTK, T = baseline × `TargetRatio` (0.8), r = `Rate` (0.05/s), S = `MaxScale` (6) | 1 – 6 | Killing in half the target time: ln 2 = 0.69, so +3.5 %/s. ≈ 20 s to double HP |
+| Power step | `s' = clamp(s · e^(r · clamp(ln(T/ā), −1, 1) · dt), 1, S)` | s = scale, ā = average TTK, T = baseline × `TargetRatio` (0.8), r = `Rate` (0.05/s), S = `MaxScale` (10) | 1 – 10 | Killing in half the target time: ln 2 = 0.69, so +3.5 %/s. ≈ 20 s to double HP |
 | Enemy HP | `hp = EnemyHp(base, t, c) · s` | see game-concept.md §5 | — | Minute 5, chapter 1, s = 2.5: a 10-HP chick has 10 · (1 + 1.25 + 0.875) · 2.5 ≈ 78 HP |
 | Forge cost | `40 · 1.14^L`, rounded to 5 | L = current level | 40 → ∞ | L 0: 40, L 1: 45, L 10: 150, L 20: 550, L 30: 2 040 |
 | Ateş Gücü | `1 + 0.05 · L` | — | ×1 → ∞ | L 20: ×2 damage |
@@ -79,7 +79,7 @@ Rationale for the cost curve: a chapter-1 run pays about 250 gold (`ExpectedRunG
 | `CalibrationSeconds` | 75 | 45–120 | How much of the run defines "the feel". The user rated the opening as good, so it is the reference |
 | `TargetRatio` | 0.8 | 0.6–1.0 | How much faster than the opening the player may kill. Lower means more felt growth but an easier late game |
 | `Rate` | 0.05 /s | 0.02–0.1 | How quickly HP catches up with a power spike. Too high and it feels like rubber-banding |
-| `MaxScale` | 6 | 3–10 | Ceiling on the adaptive HP |
+| `MaxScale` | 10 | 4–15 | Ceiling on the adaptive HP. QA run 28 hit 6 at 340 s, with kills still faster than the target |
 | `AverageWeight` | 0.04 | 0.02–0.1 | Memory of the average, about 25 kills |
 | `endlessBossEverySeconds` | 120 | 90–180 | Boss rhythm in Sonsuz Mod |
 | Forge base / growth | 40 / 1.14 | 30–60 / 1.10–1.20 | Purchase rhythm between runs |

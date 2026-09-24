@@ -16,7 +16,7 @@ namespace PofudukFilo.Enemies
         public float TargetRatio = 0.8f;
         /// <summary>Max log-change of the scale per second (at full error).</summary>
         public float Rate = 0.05f;
-        public float MaxScale = 6f;
+        public float MaxScale = 10f; // QA run 28: pinned at 6 from 340 s with TTK still 2.3 s vs a 2.95 s target
         /// <summary>Per-kill weight of the running average (≈ memory of 1/weight kills).</summary>
         public float AverageWeight = 0.04f;
         /// <summary>A floor so one-frame kills (bombs, overlaps) cannot drive the average to zero.</summary>
