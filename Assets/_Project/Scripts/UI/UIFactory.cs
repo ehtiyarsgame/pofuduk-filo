@@ -149,6 +149,7 @@ namespace PofudukFilo.UI
             button.onClick.AddListener(() =>
             {
                 Juice.PunchUI(root);
+                if (Audio.AudioManager.Instance != null) Audio.AudioManager.Instance.Play(Audio.SfxId.Click, 0.03f);
                 onClick?.Invoke();
             });
             return button;

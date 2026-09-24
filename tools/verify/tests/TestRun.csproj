@@ -20,6 +20,8 @@
     <Compile Include="../../../Assets/_Project/Tests/EditMode/PickupRulesTests.cs" />
     <Compile Include="../../../Assets/_Project/Scripts/Meta/ConstellationRules.cs" />
     <Compile Include="../../../Assets/_Project/Tests/EditMode/ConstellationRulesTests.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Audio/SfxSynth.cs" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/SfxSynthTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="../.cache/modules/lib/net45/UnityEngine.CoreModule.dll" />

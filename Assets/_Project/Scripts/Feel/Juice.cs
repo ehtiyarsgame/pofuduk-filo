@@ -42,7 +42,7 @@ namespace PofudukFilo.Feel
         /// <summary>Big events only (evolution, boss phase, bomb). Strength 0..1.</summary>
         public void Shake(float strength01, float duration = 0.25f)
         {
-            if (!shakeEnabled || cameraRig == null) return;
+            if (!shakeEnabled || !Core.GameSettings.ScreenShake || cameraRig == null) return;
 #if DOTWEEN
             cameraRig.DOKill(complete: true);
             cameraRig.DOShakePosition(duration, maxShakeStrength * Mathf.Clamp01(strength01), vibrato: 12,
@@ -53,7 +53,7 @@ namespace PofudukFilo.Feel
         public void Haptic()
         {
 #if UNITY_ANDROID || UNITY_IOS
-            if (hapticsEnabled) Handheld.Vibrate();
+            if (hapticsEnabled && Core.GameSettings.Vibration) Handheld.Vibrate();
 #endif
         }
 
