@@ -54,8 +54,8 @@ namespace PofudukFilo.Core
             }
         }
 
-        /// <summary>Game title in the current language (the store/global name is "Fluffy Fleet").</summary>
-        public static string GameTitle => Current == Language.Turkish ? "Pofuduk Filo" : "Fluffy Fleet";
+        /// <summary>Game title — "Galaxy Paws" in every language (renamed 2026-09-24 from Pofuduk Filo / Fluffy Fleet).</summary>
+        public static string GameTitle => "Galaxy Paws";
 
         public static string T(string text)
         {

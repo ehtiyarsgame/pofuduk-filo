@@ -113,6 +113,18 @@ namespace PofudukFilo.EditorTools
 
         // ---------------------------------------------------------------- Icons
 
+        /// <summary>Paw print (Galaxy Paws logo accents): a heart-ish pad and four toe beans.</summary>
+        public static Painter PawPrint()
+        {
+            var p = new Painter(128, 128);
+            Color c = Hex(0xFFB3D9);
+            p.Volume((x, y) => Painter.EllipseSdf(x, y, 64, 46, 30, 25), 64, 46, 30, 25, c, 5f, shadow: false, gloss: 0.5f);
+            Vector2[] toes = { new(28, 78), new(50, 98), new(78, 98), new(100, 78) };
+            foreach (Vector2 t in toes)
+                p.Volume((x, y) => Painter.EllipseSdf(x, y, t.x, t.y, 13, 16), t.x, t.y, 13, 16, c, 5f, shadow: false, gloss: 0.5f);
+            return p;
+        }
+
         public static Painter IconGear()
         {
             var p = new Painter(128, 128);

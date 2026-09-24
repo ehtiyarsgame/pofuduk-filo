@@ -134,6 +134,7 @@ namespace PofudukFilo.EditorTools
             Add("icon_pause", ArtRecipes.IconPause(), 128);
             Add("icon_trophy", ArtRecipes.IconTrophy(), 128);
             Add("icon_weapons", ArtRecipes.IconWeapons(), 256);
+            Add("icon_paw", ArtRecipes.PawPrint(), 128);
             Add("ui_bar_fill", ArtRecipes.BarFill(), 100, new Vector4(21, 21, 21, 21));
             Add("app_icon", ArtRecipes.AppIcon(), 512);
             Add("bg_sky", ArtRecipes.SkyGradient(), 100);

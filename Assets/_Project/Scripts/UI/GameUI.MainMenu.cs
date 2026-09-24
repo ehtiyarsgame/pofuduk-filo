@@ -29,6 +29,7 @@ namespace PofudukFilo.UI
         [SerializeField] private Sprite capsuleSprite;
         [SerializeField] private Sprite navBarSprite;
         [SerializeField] private Sprite ribbonSprite;
+        [SerializeField] private Sprite pawSprite;
         [SerializeField] private Sprite shineSprite;
         [SerializeField] private Sprite vignetteSprite;
 
@@ -77,13 +78,14 @@ namespace PofudukFilo.UI
             // --- Logo: ribbon behind line 2, gradient + wave letters, twinkles.
             Image ribbon = Img(m, ribbonSprite, "Ribbon");
             UIFactory.Place(ribbon, 0.08f, 0.745f, 0.92f, 0.815f);
-            _titleTop = LogoLine(m, "POFUDUK", 140, Palette.Hex(0xFFD1E6), Palette.HotPink, 0.815f, 0.9f);
-            _titleBottom = LogoLine(m, "FİLO", 124, Palette.Hex(0xFFF6C8), Palette.Honey, 0.742f, 0.822f);
+            _titleTop = LogoLine(m, "GALAXY", 140, Palette.Hex(0xE6D9FF), Palette.Hex(0x9C7BFF), 0.815f, 0.9f);
+            _titleBottom = LogoLine(m, "PAWS", 124, Palette.Hex(0xFFF6C8), Palette.Honey, 0.742f, 0.822f);
             _twinkles = new Image[5];
             Vector2[] spots = { new(0.1f, 0.9f), new(0.9f, 0.88f), new(0.16f, 0.76f), new(0.86f, 0.74f), new(0.5f, 0.915f) };
             for (int i = 0; i < _twinkles.Length; i++)
             {
-                _twinkles[i] = Img(m, stardustIcon, "Twinkle");
+                // Two of the accents are paw prints — the new name, Galaxy Paws.
+                _twinkles[i] = Img(m, i == 2 || i == 3 ? pawSprite ?? stardustIcon : stardustIcon, "Twinkle");
                 Vector2 c = spots[i];
                 UIFactory.Place(_twinkles[i], c.x - 0.035f, c.y - 0.017f, c.x + 0.035f, c.y + 0.017f);
             }

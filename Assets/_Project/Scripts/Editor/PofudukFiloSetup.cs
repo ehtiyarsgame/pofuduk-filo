@@ -72,7 +72,7 @@ namespace PofudukFilo.EditorTools
         private static void ConfigureProject()
         {
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
-            PlayerSettings.productName = "Fluffy Fleet"; // global name; Turkish UI says "Pofuduk Filo"
+            PlayerSettings.productName = "Galaxy Paws"; // one global name (renamed from Pofuduk Filo / Fluffy Fleet)
 
             var scenes = EditorBuildSettings.scenes;
             foreach (EditorBuildSettingsScene s in scenes)
@@ -230,7 +230,7 @@ namespace PofudukFilo.EditorTools
                          ("weaponsIcon", "icon_weapons"), ("gearIcon", "icon_gear"), ("playIcon", "icon_play"),
                          ("pauseIcon", "icon_pause"), ("trophyIcon", "icon_trophy"), ("pedestalSprite", "menu_pedestal"),
                          ("raysSprite", "menu_rays"), ("capsuleSprite", "ui_capsule"), ("navBarSprite", "ui_navbar"),
-                         ("ribbonSprite", "menu_ribbon"), ("shineSprite", "ui_shine"), ("vignetteSprite", "ui_vignette")
+                         ("ribbonSprite", "menu_ribbon"), ("pawSprite", "icon_paw"), ("shineSprite", "ui_shine"), ("vignetteSprite", "ui_vignette")
                      })
                 Set(ui, field, c.Sprites[key]);
             // Rounded display font, fetched by CI (tools/ci, OFL licence); built-in font otherwise.

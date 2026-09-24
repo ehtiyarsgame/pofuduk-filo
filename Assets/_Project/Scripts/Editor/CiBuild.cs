@@ -93,7 +93,7 @@ namespace PofudukFilo.EditorTools
 #endif
             PlayerSettings.SetApplicationIdentifier(android, PackageName);
             PlayerSettings.companyName = "Ehtiyars Game";
-            PlayerSettings.productName = "Fluffy Fleet"; // global store name
+            PlayerSettings.productName = "Galaxy Paws"; // global store name; package id kept so installs and saves carry over
             PlayerSettings.bundleVersion = "0.1.0";
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
 
