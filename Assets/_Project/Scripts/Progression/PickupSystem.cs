@@ -158,7 +158,8 @@ namespace PofudukFilo.Progression
 
             if (enemy.IsElite)
             {
-                for (int i = 0; i < 5; i++) Spawn(PickupKind.Gold, pos, enemy.GoldValue * goldPerCoinValue);
+                int eliteCoin = Mathf.RoundToInt(enemy.GoldValue * goldPerCoinValue * (1f + Bonus(StatType.EliteGold)));
+                for (int i = 0; i < 5; i++) Spawn(PickupKind.Gold, pos, eliteCoin);
                 return;
             }
 
@@ -180,7 +181,7 @@ namespace PofudukFilo.Progression
 
         private void OnGrazed(Vector2 position)
         {
-            if (xpSystem != null) xpSystem.AddXp(grazeXp);
+            if (xpSystem != null) xpSystem.AddXp(Mathf.RoundToInt(grazeXp * (1f + Bonus(StatType.GrazeXp))));
         }
 
         // ---------------------------------------------------------------- Frame flow
@@ -278,6 +279,8 @@ namespace PofudukFilo.Progression
             return true;
         }
 
+        private float Bonus(StatType stat) => inventory != null ? inventory.Stats.GetBonus(stat) : 0f;
+
         private void Apply(in PickupCollected c)
         {
             switch (c.Kind)
@@ -288,7 +291,7 @@ namespace PofudukFilo.Progression
                     if (xpSystem != null) xpSystem.AddXp(c.Value);
                     break;
                 case PickupKind.Gold:
-                    RunGold += c.Value;
+                    RunGold += Mathf.RoundToInt(c.Value * (1f + Bonus(StatType.GoldGain)));
                     RunGoldChanged?.Invoke(RunGold);
                     break;
                 case PickupKind.Magnet:

@@ -18,6 +18,8 @@
     <Compile Include="../../../Assets/_Project/Tests/EditMode/DifficultyDirectorTests.cs" />
     <Compile Include="../../../Assets/_Project/Scripts/Progression/PickupRules.cs" />
     <Compile Include="../../../Assets/_Project/Tests/EditMode/PickupRulesTests.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Meta/ConstellationRules.cs" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/ConstellationRulesTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="../.cache/modules/lib/net45/UnityEngine.CoreModule.dll" />

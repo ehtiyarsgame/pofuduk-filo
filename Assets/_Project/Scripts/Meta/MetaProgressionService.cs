@@ -24,6 +24,7 @@ namespace PofudukFilo.Meta
         public long Gold => _data.gold;
         public int Stardust => _data.stardust;
         public int HighestChapterCleared => _data.highestChapterCleared;
+        public string SelectedCharacterId => _data.selectedCharacter;
 
         public int GetLevel(MetaUpgradeDefinition upgrade)
         {
@@ -78,6 +79,115 @@ namespace PofudukFilo.Meta
             {
                 MetaUpgradeDefinition u = upgrades[i];
                 stats.AddMetaBonus(u.stat, u.effectPerLevel * GetLevel(u));
+            }
+        }
+
+        // ---------------------------------------------------------------- Spending
+
+        private bool TrySpend(int gold, int stardust)
+        {
+            if (_data.gold < gold || _data.stardust < stardust) return false;
+            _data.gold -= gold;
+            _data.stardust -= stardust;
+            return true;
+        }
+
+        private void Commit()
+        {
+            _persist(_data);
+            WalletChanged?.Invoke();
+        }
+
+        // ---------------------------------------------------------------- Hangar (meta-economy.md §3.3 B)
+
+        public bool IsUnlocked(CharacterDefinition c) =>
+            c.IsFree
+            || _data.unlockedCharacters.Contains(c.id)
+            || (c.requiresChapterCleared >= 0 && _data.highestChapterCleared >= c.requiresChapterCleared
+                && c.goldCost == 0 && c.stardustCost == 0);
+
+        public bool CanUnlock(CharacterDefinition c) =>
+            !IsUnlocked(c) && c.requiresChapterCleared < 0 && _data.gold >= c.goldCost && _data.stardust >= c.stardustCost;
+
+        public bool TryUnlock(CharacterDefinition c)
+        {
+            if (!CanUnlock(c) || !TrySpend(c.goldCost, c.stardustCost)) return false;
+            _data.unlockedCharacters.Add(c.id);
+            Commit();
+            return true;
+        }
+
+        public bool SelectCharacter(CharacterDefinition c)
+        {
+            if (!IsUnlocked(c)) return false;
+            _data.selectedCharacter = c.id;
+            Commit();
+            return true;
+        }
+
+        // ---------------------------------------------------------------- Weapon Lab (meta-economy.md §3.3 C)
+
+        public bool IsUnlocked(WeaponDefinition w) => w.labCost <= 0 || _data.unlockedWeapons.Contains(w.id);
+
+        public bool IsUnlocked(PassiveDefinition p) => p.labCost <= 0 || _data.unlockedPassives.Contains(p.id);
+
+        public bool TryUnlock(WeaponDefinition w)
+        {
+            if (IsUnlocked(w) || !TrySpend(w.labCost, 0)) return false;
+            _data.unlockedWeapons.Add(w.id);
+            Commit();
+            return true;
+        }
+
+        public bool TryUnlock(PassiveDefinition p)
+        {
+            if (IsUnlocked(p) || !TrySpend(p.labCost, 0)) return false;
+            _data.unlockedPassives.Add(p.id);
+            Commit();
+            return true;
+        }
+
+        // ---------------------------------------------------------------- Constellation (meta-economy.md §3.3 D)
+
+        public bool HasNode(ConstellationNode node) => _data.constellationNodes.Contains(node.id);
+
+        public bool CanBuy(ConstellationNode node) =>
+            ConstellationRules.CanBuy(node.id, node.stardustCost, node.requires, _data.constellationNodes, _data.stardust);
+
+        public bool TryBuy(ConstellationNode node)
+        {
+            if (!CanBuy(node) || !TrySpend(0, node.stardustCost)) return false;
+            _data.constellationNodes.Add(node.id);
+            Commit();
+            return true;
+        }
+
+        public bool CanRespec(long nowUtcTicks) =>
+            _data.constellationNodes.Count > 0 && ConstellationRules.CanRespec(_data.lastRespecUtcTicks, nowUtcTicks);
+
+        /// <summary>Refunds every owned node in full (free once per 24 h).</summary>
+        public bool Respec(ConstellationDefinition board, long nowUtcTicks)
+        {
+            if (!CanRespec(nowUtcTicks)) return false;
+            foreach (string id in _data.constellationNodes)
+            {
+                ConstellationNode node = board.Find(id);
+                if (node != null) _data.stardust += node.stardustCost;
+            }
+            _data.constellationNodes.Clear();
+            _data.lastRespecUtcTicks = nowUtcTicks;
+            Commit();
+            return true;
+        }
+
+        /// <summary>Adds owned constellation nodes to the run's stats (after <see cref="ApplyTo"/>).</summary>
+        public void ApplyConstellation(PlayerStats stats, ConstellationDefinition board)
+        {
+            if (board == null) return;
+            foreach (ConstellationNode node in board.nodes)
+            {
+                if (!HasNode(node)) continue;
+                foreach (StatModifier m in node.modifiers) stats.AddRunBonus(m.stat, m.value);
             }
         }
 

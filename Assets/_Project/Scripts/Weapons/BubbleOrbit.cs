@@ -154,6 +154,11 @@ namespace PofudukFilo.Weapons
             Bubble b = _bubbles[index];
             _absorbed++;
 
+            // Balonbaş: every swallowed bullet heals a little.
+            float heal = Stats.GetBonus(StatType.AbsorbHeal);
+            if (heal > 0f && PofudukFilo.Player.PlayerHealth.Instance != null)
+                PofudukFilo.Player.PlayerHealth.Instance.Heal(heal);
+
             if (isEvolved)
             {
                 if (meteorEvery > 0 && _absorbed % meteorEvery == 0) FireMeteors(b.Position);

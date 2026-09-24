@@ -61,10 +61,16 @@ namespace PofudukFilo.Core
         [SerializeField] private PickupSystem pickups;
         [SerializeField] private PlayerHealth player;
         [SerializeField] private Juice juice;
+        [SerializeField] private SpriteRenderer playerSprite;
 
         [Header("Content")]
         [SerializeField] private RunDefinition[] chapters = Array.Empty<RunDefinition>();
         [SerializeField] private MetaUpgradeDefinition[] workshop = Array.Empty<MetaUpgradeDefinition>();
+        [SerializeField] private CharacterDefinition[] characters = Array.Empty<CharacterDefinition>();
+        [SerializeField] private ConstellationDefinition constellation;
+        [Tooltip("Weapons and passives shown in the Weapon Lab (the draft pool).")]
+        [SerializeField] private WeaponDefinition[] labWeapons = Array.Empty<WeaponDefinition>();
+        [SerializeField] private PassiveDefinition[] labPassives = Array.Empty<PassiveDefinition>();
         [SerializeField] private Vector2 playerStartPosition = new(0f, -6f);
 
         [Header("Rules")]
@@ -97,6 +103,11 @@ namespace PofudukFilo.Core
         public MetaProgressionService Meta { get; private set; }
         public IReadOnlyList<MetaUpgradeDefinition> Workshop => workshop;
         public IReadOnlyList<RunDefinition> Chapters => chapters;
+        public IReadOnlyList<CharacterDefinition> Characters => characters;
+        public ConstellationDefinition Constellation => constellation;
+        public IReadOnlyList<WeaponDefinition> LabWeapons => labWeapons;
+        public IReadOnlyList<PassiveDefinition> LabPassives => labPassives;
+        public CharacterDefinition CurrentCharacter { get; private set; }
         public IReadOnlyList<UpgradeOption> CurrentOffer => _offer;
         public int RerollsLeft => _rerollsLeft;
         public int BanishesLeft => _banishesLeft;
@@ -123,6 +134,10 @@ namespace PofudukFilo.Core
             waveDirector.RunCompleted += OnRunCompleted;
             EnemyManager.Instance.EnemyKilled += OnEnemyKilled;
             inventory.PassivesChanged += OnPassivesChanged;
+            inventory.WeaponEvolved += OnWeaponEvolved;
+            // Owned weapons stay offered even if locked in the Lab (a character's starting weapon).
+            draft.WeaponFilter = w => Meta.IsUnlocked(w) || inventory.Find(w) != null;
+            draft.PassiveFilter = p => Meta.IsUnlocked(p);
             EnterMenu();
         }
 
@@ -153,10 +168,21 @@ namespace PofudukFilo.Core
             _chapterIndex = Mathf.Clamp(chapterIndex, 0, chapters.Length - 1);
             ClearWorld();
 
-            // Meta bonuses first so passives stack on top of them.
+            // Layers: Workshop (meta) → Constellation + character (run) → passives (in-run).
             PlayerStats stats = inventory.Stats;
             Meta.ApplyTo(stats, workshop);
+            stats.ClearRunBonuses();
+            Meta.ApplyConstellation(stats, constellation);
+
+            CurrentCharacter = ResolveCharacter();
+            if (CurrentCharacter != null)
+            {
+                foreach (StatModifier m in CurrentCharacter.modifiers) stats.AddRunBonus(m.stat, m.value);
+                if (CurrentCharacter.startingWeapon != null) inventory.StartingWeapon = CurrentCharacter.startingWeapon;
+                if (playerSprite != null && CurrentCharacter.sprite != null) playerSprite.sprite = CurrentCharacter.sprite;
+            }
             inventory.ResetLoadout();
+            if (CurrentCharacter != null && CurrentCharacter.perk == CharacterPerk.RandomPassive) GrantRandomPassive();
 
             player.transform.position = playerStartPosition;
             player.SetMaxHp(baseMaxHp * (1f + stats.GetBonus(StatType.MaxHp)));
@@ -204,6 +230,11 @@ namespace PofudukFilo.Core
 
         private void OfferNextDraft()
         {
+            // 3 cards + Constellation bonus; Pıtır gets one more every 10 levels (meta-economy.md §3.3 B).
+            int extra = Mathf.RoundToInt(inventory.Stats.GetBonus(StatType.DraftChoices));
+            if (CurrentCharacter != null && CurrentCharacter.perk == CharacterPerk.CardEvery10Levels)
+                extra += xpSystem.Level / 10;
+            draft.Choices = 3 + extra;
             draft.Roll(_offer);
             SetState(GameState.LevelUp);
             LevelUpOffered?.Invoke(_offer, _rerollsLeft, _banishesLeft);
@@ -283,11 +314,47 @@ namespace PofudukFilo.Core
         private void OpenChest()
         {
             int evolved = inventory.EvolveAllEligible();
+            if (evolved > 0)
+            {
+                // Constellation: evolution chests also level up passives.
+                int bonusLevels = Mathf.RoundToInt(inventory.Stats.GetBonus(StatType.EvolutionChestLevels));
+                for (int i = 0; i < bonusLevels; i++) LevelRandomOwnedPassive();
+            }
             if (evolved > 0 && juice != null) juice.Shake(0.8f, 0.4f);
             ChestOpened?.Invoke(evolved);
         }
 
         private void OnRunCompleted() => EndRun(true);
+
+        /// <summary>Yıldızpati: every evolution adds permanent damage for the rest of the run.</summary>
+        private void OnWeaponEvolved(WeaponDefinition from, WeaponDefinition to)
+        {
+            float perEvolution = inventory.Stats.GetBonus(StatType.EvolutionDamage);
+            if (perEvolution > 0f) inventory.Stats.AddRunBonus(StatType.Damage, perEvolution);
+        }
+
+        private CharacterDefinition ResolveCharacter()
+        {
+            foreach (CharacterDefinition c in characters)
+                if (c.id == Meta.SelectedCharacterId && Meta.IsUnlocked(c)) return c;
+            return characters.Length > 0 ? characters[0] : null;
+        }
+
+        private void GrantRandomPassive()
+        {
+            var candidates = new List<PassiveDefinition>();
+            foreach (PassiveDefinition p in draft.PassivePool)
+                if (Meta.IsUnlocked(p)) candidates.Add(p);
+            if (candidates.Count > 0) inventory.AddOrLevelPassive(candidates[UnityEngine.Random.Range(0, candidates.Count)]);
+        }
+
+        private void LevelRandomOwnedPassive()
+        {
+            var candidates = new List<PassiveDefinition>();
+            foreach (KeyValuePair<PassiveDefinition, int> pair in inventory.Passives)
+                if (pair.Value < pair.Key.maxLevel) candidates.Add(pair.Key);
+            if (candidates.Count > 0) inventory.AddOrLevelPassive(candidates[UnityEngine.Random.Range(0, candidates.Count)]);
+        }
 
         // ---------------------------------------------------------------- Death & revive
 

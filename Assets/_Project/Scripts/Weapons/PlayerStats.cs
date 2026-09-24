@@ -12,6 +12,7 @@ namespace PofudukFilo.Weapons
     {
         private readonly Dictionary<StatType, float> _meta = new();
         private readonly Dictionary<StatType, float> _passive = new();
+        private readonly Dictionary<StatType, float> _run = new();
 
         public void ClearMetaBonuses() => _meta.Clear();
 
@@ -19,6 +20,15 @@ namespace PofudukFilo.Weapons
         {
             _meta.TryGetValue(stat, out float current);
             _meta[stat] = current + value;
+        }
+
+        /// <summary>Character perks, constellation nodes and per-run gains (evolution damage).</summary>
+        public void ClearRunBonuses() => _run.Clear();
+
+        public void AddRunBonus(StatType stat, float value)
+        {
+            _run.TryGetValue(stat, out float current);
+            _run[stat] = current + value;
         }
 
         public void ClearPassiveBonuses() => _passive.Clear();
@@ -33,7 +43,8 @@ namespace PofudukFilo.Weapons
         {
             _meta.TryGetValue(stat, out float m);
             _passive.TryGetValue(stat, out float p);
-            return m + p;
+            _run.TryGetValue(stat, out float r);
+            return m + p + r;
         }
 
         public float DamageMultiplier => 1f + GetBonus(StatType.Damage);

@@ -18,7 +18,30 @@ namespace PofudukFilo.Weapons
         Experience,
         Rerolls,
         Banishes,
-        Revives
+        Revives,
+        // Hangar / Constellation rule modifiers (counts or fractions, see each consumer).
+        StunDuration,           // +1 = stun lasts twice as long (Mırnav)
+        AbsorbHeal,             // HP healed per enemy bullet absorbed (Balonbaş)
+        EvolutionDamage,        // damage bonus gained per evolution this run (Yıldızpati)
+        DraftChoices,           // extra level-up cards
+        EliteGold,              // +% gold from elites
+        GoldGain,               // +% gold from every pickup
+        EvolutionChestLevels,   // extra passive levels granted by an evolution chest
+        GrazeXp                 // +1 = graze XP doubled
+    }
+
+    /// <summary>A flat stat change from a character or constellation node.</summary>
+    [System.Serializable]
+    public struct StatModifier
+    {
+        public StatType stat;
+        public float value;
+
+        public StatModifier(StatType stat, float value)
+        {
+            this.stat = stat;
+            this.value = value;
+        }
     }
 
     [CreateAssetMenu(menuName = "Pofuduk Filo/Passive", fileName = "Passive")]
@@ -32,5 +55,7 @@ namespace PofudukFilo.Weapons
         [Tooltip("Bonus per level as a fraction (0.1 = +10 %).")]
         public float valuePerLevel = 0.1f;
         public int maxLevel = 5;
+        [Tooltip("Weapon Lab price in gold; 0 = in the card pool from the start (meta-economy.md §3.3 C).")]
+        public int labCost;
     }
 }

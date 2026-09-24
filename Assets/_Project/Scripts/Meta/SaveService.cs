@@ -22,8 +22,13 @@ namespace PofudukFilo.Meta
         public long gold;
         public int stardust;
         public List<UpgradeLevelEntry> upgrades = new();
-        public List<string> unlockedCharacters = new() { "pitir" };
-        public List<string> unlockedWeapons = new() { "feather_blaster", "egg_mortar", "spark_cat" };
+        // Purchased unlocks only; free items (cost 0) are always available.
+        public List<string> unlockedCharacters = new();
+        public List<string> unlockedWeapons = new();
+        public List<string> unlockedPassives = new();
+        public List<string> constellationNodes = new();
+        public string selectedCharacter = "pitir";
+        public long lastRespecUtcTicks;
         public int highestChapterCleared = -1;
     }
 

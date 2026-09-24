@@ -58,6 +58,7 @@ namespace PofudukFilo.Progression
         [SerializeField] private List<WeaponDefinition> weaponPool = new();
         [SerializeField] private List<PassiveDefinition> passivePool = new();
         [SerializeField] private int choices = 3;
+        [SerializeField] private int maxChoices = 5;
         [SerializeField] private float ownedMultiplier = 1.6f;
         [SerializeField] private float evolutionPathMultiplier = 1.4f;
         [SerializeField] private uint seed;
@@ -66,6 +67,19 @@ namespace PofudukFilo.Progression
         private readonly List<float> _weights = new(32);
         private readonly HashSet<ScriptableObject> _banished = new();
         private Random _random;
+
+        /// <summary>Only cards passing these are offered (Weapon Lab unlocks, meta-economy.md §3.3 C).</summary>
+        public Predicate<WeaponDefinition> WeaponFilter { get; set; }
+        public Predicate<PassiveDefinition> PassiveFilter { get; set; }
+
+        /// <summary>Cards per offer: 3 plus Constellation/character bonuses, capped for readability.</summary>
+        public int Choices
+        {
+            get => choices;
+            set => choices = Mathf.Clamp(value, 1, maxChoices);
+        }
+
+        public IReadOnlyList<PassiveDefinition> PassivePool => passivePool;
 
         /// <summary>Luck bonus shifts weight from Common to rarer cards (meta "Luck" upgrade).</summary>
         public float Luck { get; set; }
@@ -87,6 +101,7 @@ namespace PofudukFilo.Progression
 
             foreach (WeaponDefinition w in weaponPool)
             {
+                if (WeaponFilter != null && !WeaponFilter(w)) continue;
                 if (_banished.Contains(w) || !inventory.CanTake(w)) continue;
                 WeaponBehaviour owned = inventory.Find(w);
                 bool onPath = w.evolutionPassive != null && inventory.GetPassiveLevel(w.evolutionPassive) > 0;
@@ -95,6 +110,7 @@ namespace PofudukFilo.Progression
 
             foreach (PassiveDefinition p in passivePool)
             {
+                if (PassiveFilter != null && !PassiveFilter(p)) continue;
                 if (_banished.Contains(p) || !inventory.CanTake(p)) continue;
                 bool owned = inventory.GetPassiveLevel(p) > 0;
                 bool onPath = IsEvolutionKeyForOwnedWeapon(p);

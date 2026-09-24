@@ -111,7 +111,8 @@ namespace PofudukFilo.Weapons
                 if (Vfx != null) Vfx.Segment(point, hit, boltColor, 0.1f, 0.12f);
 
                 _chain.Add(target);
-                if (Level >= stunFromLevel || isEvolved) target.Stun(stunSeconds);
+                if (Level >= stunFromLevel || isEvolved)
+                    target.Stun(stunSeconds * (1f + Stats.GetBonus(StatType.StunDuration))); // Mırnav ×2
                 Enemies.DamageEnemy(target, RollDamage(dmg));
 
                 if (Level < noFalloffFromLevel && !isEvolved) dmg *= falloffPerBounce;

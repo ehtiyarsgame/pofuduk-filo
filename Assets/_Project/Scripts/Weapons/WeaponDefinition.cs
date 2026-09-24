@@ -47,6 +47,9 @@ namespace PofudukFilo.Weapons
         [Tooltip("Level 1..5 stats, index 0 = level 1.")]
         public WeaponLevelStats[] levels = new WeaponLevelStats[5];
 
+        [Tooltip("Weapon Lab price in gold; 0 = in the card pool from the start (meta-economy.md §3.3 C).")]
+        public int labCost;
+
         [Tooltip("Prefab carrying the WeaponBehaviour that fires this weapon.")]
         public WeaponBehaviour behaviourPrefab;
 
