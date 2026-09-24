@@ -9,8 +9,9 @@ Tasarım: `design/gdd/` · Sanat: `design/art-bible.md` · Mimari: `docs/archite
 2. Package Manager: **Burst**, **Collections**, **Mathematics**, **Input System**
    (Unity 6 2D şablonunda UGUI ve Test Framework hazır gelir). Input System "Both / New" sorusuna **Yes**.
 3. Menü: **Pofuduk Filo ▸ Oynanabilir Sahneyi Kur**. Araç şunları üretir (`Assets/_Project/Generated/`):
-   sevimli yer tutucu sprite'lar, instanced materyaller, 8 mermi tipi, 8 pasif, 5 silah + 5 evrim,
-   6 düşman + 3 boss, 3 bölüm (Run), 10 Atölye yükseltmesi ve `Assets/_Project/Scenes/Main.unity`.
+   sevimli yer tutucu sprite'lar, instanced materyaller, 8 mermi tipi, 8 pasif, 5 silah + 5 evrim +
+   3 füzyon, 6 düşman + 3 boss, 3 bölüm (Run), 10 Atölye yükseltmesi, 6 Hangar karakteri,
+   30 düğümlü Takımyıldız ve `Assets/_Project/Scenes/Main.unity`.
    Tekrar çalıştırmak güvenlidir; varlıkları yerinde günceller.
 4. Game görünümünü **9:19.5 portre** (ör. 1080×2340) yapıp **Play**. Fare sürükleme = parmak.
 5. İsteğe bağlı: DOTween (Utility Panel → Create ASMDEF → `PofudukFilo.Runtime`'a `DOTween.Modules`
@@ -21,7 +22,7 @@ Tasarım: `design/gdd/` · Sanat: `design/art-bible.md` · Mimari: `docs/archite
 
 Buluttan (Unity'siz) derleme + saf mantık testleri: `tools/verify/run.sh`.
 
-Yer tutucu sanat önizlemesi: `design/placeholder-art-preview.png`. Gerçek çizimler geldiğinde
+Yer tutucu sanat önizlemesi: `design/placeholder-art-preview.png`, `design/placeholder-pilots-preview.png`. Gerçek çizimler geldiğinde
 `Generated/Art/*.png` dosyalarını değiştirmeniz yeterli.
 
 ## Sistem haritası
@@ -61,5 +62,14 @@ XP taşları / altın / mıknatıs / kalp / bomba → seviye atlama kartları (y
 boss/elit sandığı ile evrim → ölüm (diriliş / isteğe bağlı reklam) → koşu sonu (sayılan altın,
 "sonraki yükseltme" hedefi) → Atölye.
 
-Kapsam dışı / sonraki adımlar: füzyon silahları, karakter Hangar'ı ve Takımyıldız tahtası
-(meta-economy.md §3.3 B–E), ses, gerçek reklam SDK'sı, bulut kayıt, yerelleştirme, gerçek sanat.
+Ana menüden ayrıca: **Hangar** (6 pilot, her biri kendi başlangıç silahı ve yeteneğiyle),
+**Laboratuvar** (kart havuzuna yeni silah/pasif), **Takımyıldız** (3 dal × 10 düğüm, yıldız tozu,
+24 saatte bir ücretsiz sıfırlama), **Ayarlar** (ses, müzik, titreşim, sarsıntı). Final boss'tan sonra
+**Sonsuz Mod** (+%50 altın); sandıklar iki evrimi **füzyona** birleştirir. Tüm sesler koddan
+sentezlenir (ses dosyası yok).
+
+Reklam: `RewardedAds.Provider`'a bir `IRewardedAdProvider` (ör. LevelPlay/AdMob adaptörü) atayın;
+atanmadıkça yer tutucu anında ödül verir.
+
+Kapsam dışı / sonraki adımlar: evrim kitapları, silah ustalığı ve kozmetikler (meta-economy.md
+§3.3 E), Elmas/IAP, bulut kayıt, günlük görevler, yerelleştirme, gerçek sanat ve müzik.

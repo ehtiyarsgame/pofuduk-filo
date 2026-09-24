@@ -15,7 +15,7 @@ namespace PofudukFilo.UI
     /// main menu, workshop, HUD, level-up cards, pause, death, run end (game-concept.md §4.5,
     /// meta-economy.md §3.4, art-bible.md §4). Screens only call RunController's public API.
     /// </summary>
-    public sealed class GameUI : MonoBehaviour
+    public sealed partial class GameUI : MonoBehaviour
     {
         [SerializeField] private RunController run;
         [SerializeField] private XpSystem xpSystem;
@@ -57,6 +57,7 @@ namespace PofudukFilo.UI
         private Text _endGold;
         private Text _endGoal;
         private Button _upgradeButton;
+        private Button _endlessButton;
         private float _goldShown;
         private int _goldTarget;
 
@@ -84,6 +85,8 @@ namespace PofudukFilo.UI
             BuildRunEnd(safe);
             BuildMenu(safe);
             BuildWorkshop(safe);
+            BuildMetaScreens(safe);
+            BuildSettings(safe);
 
             run.StateChanged += OnStateChanged;
             run.LevelUpOffered += OnLevelUpOffered;
@@ -129,6 +132,7 @@ namespace PofudukFilo.UI
 
             _hud.SetActive(state is GameState.Playing or GameState.LevelUp or GameState.Paused or GameState.Dead);
             _workshop.SetActive(false);
+            HideMetaScreens();
 
             if (state == GameState.MainMenu) RefreshMenu();
             if (state == GameState.Dead) RefreshDeath();
@@ -324,6 +328,7 @@ namespace PofudukFilo.UI
             UIFactory.Place(title, 0.1f, 0.62f, 0.9f, 0.72f);
             UIFactory.Place(_ui.Button(screen.transform, "Devam Et", Palette.HotPink, run.Resume), 0.15f, 0.46f, 0.85f, 0.54f);
             UIFactory.Place(_ui.Button(screen.transform, "Koşuyu Bitir", Palette.Lavender, run.Abandon, 52), 0.25f, 0.34f, 0.75f, 0.4f);
+            UIFactory.Place(_ui.Button(screen.transform, "Ayarlar", Palette.Mint, OpenSettings, 52), 0.25f, 0.25f, 0.75f, 0.31f);
         }
 
         private void BuildDeath(Transform root)
@@ -335,7 +340,7 @@ namespace PofudukFilo.UI
             _reviveButton = _ui.Button(screen.transform, "Diril", Palette.Mint, () => run.Revive());
             UIFactory.Place(_reviveButton, 0.15f, 0.5f, 0.85f, 0.58f);
             // Optional rewarded-ad continue; never mandatory (game-concept.md §3.5). Hook an ad SDK here.
-            _adReviveButton = _ui.Button(screen.transform, "Reklam İzle, Devam Et", Palette.Honey, () => run.Revive(free: true), 50);
+            _adReviveButton = _ui.Button(screen.transform, "Reklam İzle, Devam Et", Palette.Honey, () => RewardedAds.Show(earned => { if (earned) run.Revive(free: true); }), 50);
             UIFactory.Place(_adReviveButton, 0.15f, 0.39f, 0.85f, 0.46f);
             UIFactory.Place(_ui.Button(screen.transform, "Bitir", Palette.Lavender, run.GiveUp, 52), 0.3f, 0.28f, 0.7f, 0.34f);
         }
@@ -344,7 +349,7 @@ namespace PofudukFilo.UI
         {
             UIFactory.SetText(_reviveButton, $"Diril ({run.RevivesLeft})");
             _reviveButton.gameObject.SetActive(run.RevivesLeft > 0);
-            _adReviveButton.gameObject.SetActive(run.FreeReviveAvailable);
+            _adReviveButton.gameObject.SetActive(run.FreeReviveAvailable && RewardedAds.IsReady);
         }
 
         // ---------------------------------------------------------------- Run end
@@ -366,11 +371,14 @@ namespace PofudukFilo.UI
             UIFactory.Place(again, 0.1f, 0.22f, 0.9f, 0.33f);
             _upgradeButton = _ui.Button(screen.transform, "Geliştir", Palette.Lavender, OpenWorkshopFromEnd, 52);
             UIFactory.Place(_upgradeButton, 0.3f, 0.12f, 0.7f, 0.19f);
+            _endlessButton = _ui.Button(screen.transform, "Sonsuz Mod'a Devam (+%50 altın)", Palette.Honey, run.ContinueEndless, 46);
+            UIFactory.Place(_endlessButton, 0.12f, 0.345f, 0.88f, 0.395f);
         }
 
         private void OnRunEnded(RunSummary s)
         {
-            _endTitle.text = s.Victory ? "Zafer!" : "Az kaldı!";
+            _endTitle.text = s.Endless ? "Sonsuz Mod bitti!" : s.Victory ? "Zafer!" : "Az kaldı!";
+            _endlessButton.gameObject.SetActive(run.CanContinueEndless);
             int minutes = Mathf.FloorToInt(s.Minutes);
             int seconds = Mathf.FloorToInt((s.Minutes - minutes) * 60f);
             _endStats.text = $"Seviye {s.Level}   ·   {s.Kills} düşman   ·   {minutes}:{seconds:00}";
@@ -434,6 +442,15 @@ namespace PofudukFilo.UI
             _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, () => run.StartRun(_selectedChapter), 110);
             UIFactory.Place(_playButton, 0.12f, 0.33f, 0.88f, 0.46f);
             UIFactory.Place(_ui.Button(_menu.transform, "Atölye", Palette.Mint, OpenWorkshop, 64), 0.25f, 0.2f, 0.75f, 0.28f);
+
+            // Meta hub row (meta-economy.md §3.3 B–D) and settings.
+            UIFactory.Place(_ui.Button(_menu.transform, "Hangar", Palette.Lavender, OpenHangar, 48), 0.04f, 0.1f, 0.34f, 0.17f);
+            UIFactory.Place(_ui.Button(_menu.transform, "Laboratuvar", Palette.Lavender, OpenLab, 44), 0.35f, 0.1f, 0.65f, 0.17f);
+            UIFactory.Place(_ui.Button(_menu.transform, "Takımyıldız", Palette.Lavender, OpenConstellation, 44), 0.66f, 0.1f, 0.96f, 0.17f);
+            UIFactory.Place(_ui.Button(_menu.transform, "Ayarlar", Palette.Outline, OpenSettings, 40), 0.7f, 0.92f, 0.97f, 0.97f);
+
+            _pilotText = _ui.Label(_menu.transform, "", 46, Palette.Pink);
+            UIFactory.Place(_pilotText, 0.1f, 0.58f, 0.9f, 0.63f);
         }
 
         private void RefreshMenu()
@@ -441,12 +458,14 @@ namespace PofudukFilo.UI
             _selectedChapter = Mathf.Clamp(_selectedChapter, 0, Mathf.Max(0, run.Chapters.Count - 1));
             RefreshWallet();
             SelectChapter(0);
+            RefreshPilot();
         }
 
         private void RefreshWallet()
         {
             if (_walletText != null) _walletText.text = $"{run.Meta.Gold} altın   ·   {run.Meta.Stardust} Yıldız Tozu";
             if (_workshop != null && _workshop.activeSelf) RefreshWorkshop();
+            RefreshOpenMetaScreen();
         }
 
         private void SelectChapter(int delta)

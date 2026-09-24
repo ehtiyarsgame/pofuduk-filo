@@ -86,7 +86,40 @@ namespace PofudukFilo.EditorTools
                 return v <= 0f ? -1f : 1f;
             }, c, 1f);
 
+        /// <summary>Convex triangle (signed edge distances), optionally grown by <paramref name="grow"/> px.</summary>
+        public void Triangle(Vector2 a, Vector2 b, Vector2 c, Color color, float grow = 0f)
+        {
+            Vector2[] pts = { a, b, c };
+            float area = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+            float sign = area > 0f ? 1f : -1f;
+            Fill((x, y) =>
+            {
+                float d = float.MinValue;
+                for (int i = 0; i < 3; i++)
+                {
+                    Vector2 p0 = pts[i], p1 = pts[(i + 1) % 3];
+                    Vector2 e = p1 - p0;
+                    float edge = sign * ((x - p0.x) * e.y - (y - p0.y) * e.x) / e.magnitude;
+                    d = Mathf.Max(d, edge);
+                }
+                return d - grow;
+            }, color);
+        }
+
         // ---------------------------------------------------------------- Chibi helpers
+
+        /// <summary>Pointed outlined ear (cat, fox) with an optional inner colour.</summary>
+        public void Ear(float cx, float baseY, float halfWidth, float height, float tilt, Color fill, Color? inner = null)
+        {
+            var a = new Vector2(cx - halfWidth, baseY);
+            var b = new Vector2(cx + halfWidth, baseY);
+            var tip = new Vector2(cx + tilt, baseY + height);
+            Triangle(a, b, tip, Outline, 7f);
+            Triangle(a, b, tip, fill);
+            if (inner.HasValue)
+                Triangle(new Vector2(cx - halfWidth * 0.5f, baseY + 4f), new Vector2(cx + halfWidth * 0.5f, baseY + 4f),
+                    new Vector2(cx + tilt * 0.6f, baseY + height * 0.6f), inner.Value);
+        }
 
         /// <summary>Outlined round body with a soft highlight.</summary>
         public void Blob(float cx, float cy, float r, Color fill, float outline = 7f)
@@ -213,6 +246,67 @@ namespace PofudukFilo.EditorTools
             return p;
         }
 
+        // Hangar pilots (friendly faces — only enemies get the determined brows).
+
+        public static Painter ChickPilot()
+        {
+            var p = new Painter(256, 256);
+            p.Circle(128, 222, 14, Painter.Outline);
+            p.Circle(128, 222, 9, Honey);
+            p.Blob(128, 118, 88, Chick);
+            p.RoundedRect(64, 150, 192, 178, 12, Painter.Outline); // pilot goggles strap
+            p.Circle(100, 164, 20, Painter.Outline);
+            p.Circle(156, 164, 20, Painter.Outline);
+            p.Circle(100, 164, 14, WithAlpha(Sky, 0.8f));
+            p.Circle(156, 164, 14, WithAlpha(Sky, 0.8f));
+            p.Face(128, 112, 80);
+            p.OutlinedEllipse(128, 78, 16, 10, Hex(0xFF9F43), 4f);
+            return p;
+        }
+
+        public static Painter CatPilot()
+        {
+            var p = new Painter(256, 256);
+            p.Ear(78, 160, 34, 78, -14, Hex(0xFFD8A8), Pink);
+            p.Ear(178, 160, 34, 78, 14, Hex(0xFFD8A8), Pink);
+            p.Blob(128, 112, 86, Hex(0xFFD8A8));
+            p.Face(128, 112, 86);
+            return p;
+        }
+
+        public static Painter Hamster()
+        {
+            var p = new Painter(256, 256);
+            p.Blob(64, 196, 28, Hex(0xF2C38B));
+            p.Blob(192, 196, 28, Hex(0xF2C38B));
+            p.Circle(64, 196, 14, Pink);
+            p.Circle(192, 196, 14, Pink);
+            p.Blob(128, 114, 92, Hex(0xF2C38B));
+            p.Ellipse(128, 82, 62, 44, Hex(0xFFF3E0)); // cheek pouch
+            p.Face(128, 116, 90);
+            return p;
+        }
+
+        public static Painter Fox()
+        {
+            var p = new Painter(256, 256);
+            p.Ear(76, 160, 36, 88, -18, Hex(0xFF9F5A), Hex(0xFFF6EC));
+            p.Ear(180, 160, 36, 88, 18, Hex(0xFF9F5A), Hex(0xFFF6EC));
+            p.Blob(128, 112, 88, Hex(0xFF9F5A));
+            p.Ellipse(128, 80, 58, 40, Hex(0xFFF6EC));
+            p.Face(128, 114, 88);
+            p.Star(128, 30, 18, 8, Honey);
+            return p;
+        }
+
+        public static Painter MysteryBunny()
+        {
+            Painter p = Bunny();
+            p.Star(200, 214, 26, 11, Painter.Outline);
+            p.Star(200, 214, 20, 8, Honey);
+            return p;
+        }
+
         public static Painter ChickEnemy(bool crown)
         {
             var p = new Painter(256, 256);
@@ -314,8 +408,8 @@ namespace PofudukFilo.EditorTools
         public static Painter Cat()
         {
             var p = new Painter(128, 128);
-            p.Star(40, 96, 22, 10, Painter.Outline, 3);
-            p.Star(88, 96, 22, 10, Painter.Outline, 3);
+            p.Ear(38, 80, 17, 40, -7, Hex(0xFFD8A8), Pink);
+            p.Ear(90, 80, 17, 40, 7, Hex(0xFFD8A8), Pink);
             p.Blob(64, 60, 42, Hex(0xFFD8A8), 5f);
             p.Face(64, 62, 42);
             return p;

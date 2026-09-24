@@ -72,6 +72,7 @@ namespace PofudukFilo.EditorTools
             cam.backgroundColor = ArtRecipes.Hex(0x3E335C);
             cam.transform.position = new Vector3(0f, 0f, -10f);
             cam.transparencySortMode = TransparencySortMode.Orthographic;
+            camGo.AddComponent<AudioListener>(); // without it the synthesized audio is silent
 
             var bg = new GameObject("Background").AddComponent<BackgroundScroller>();
             bg.transform.position = new Vector3(0f, 0f, 5f);
@@ -151,6 +152,18 @@ namespace PofudukFilo.EditorTools
             Set(run, "playerStartPosition", new Vector2(0f, -7f));
             SetArray(run, "chapters", c.Runs.ToArray());
             SetArray(run, "workshop", c.Workshop.ToArray());
+            SetArray(run, "characters", c.Characters.ToArray());
+            SetArray(run, "fusions", c.Fusions.ToArray());
+            SetArray(run, "labWeapons", c.BaseWeapons.ToArray());
+            SetArray(run, "labPassives", c.Passives.ToArray());
+            Set(run, "constellation", c.Constellation);
+            Set(run, "playerSprite", sr);
+
+            var audio = systems.AddComponent<PofudukFilo.Audio.AudioManager>();
+            Set(audio, "run", run);
+            Set(audio, "inventory", inventory);
+            Set(audio, "pickups", pickups);
+            Set(audio, "waveDirector", waves);
 
             var ui = flow.AddComponent<GameUI>();
             Set(ui, "run", run);

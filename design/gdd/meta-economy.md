@@ -75,7 +75,7 @@ Her karakter farklı başlangıç silahı + benzersiz pasif = yeni oyun tarzı (
 | Mırnav (kedi) | Kıvılcım Kedi | Sersemletme süresi ×2 | 1.500 🪙 + 12 ✨ |
 | Balonbaş (hamster) | Sakız Balonu | Yuttuğu her mermi 1 can | 3.000 🪙 + 20 ✨ |
 | Yıldızpati (tilki) | Yıldız Bumerang | Her evrim +%15 hasar | 5.000 🪙 + 35 ✨ |
-| ??? (gizli) | Rastgele | Her koşu rastgele pasif | Tüm bölümleri "Zor"da bitir |
+| ??? (gizli) — Gökkuşağı Pıtır | Tüy Blaster | Her koşu rastgele pasif | Son bölümü (3) bitir *(Zor mod gelene kadar)* |
 
 #### C) 🧪 Silah Laboratuvarı — kart havuzunu genişlet (Altın)
 
@@ -110,6 +110,16 @@ oyuncu kendi yolunu seçer (tam doldurma ≈ 150 ✨ ≈ 30 boss zaferi).
    (Takımyıldız tahtası + gizli karakter). Her an üçü de görünür.
 5. **"Bir tane daha" fiyatlaması:** Kilitler, koşu gelirinin 1.2–1.8 katına yerleştirilir →
    genelde "bir koşu daha" ile ulaşılır.
+
+### 3.5 Uygulama notları (v1)
+
+- Laboratuvar fiyatları: Yıldız Bumerang 400, Sakız Balonu 700; Ay Tozu 300, Esnek Sakız 300,
+  Mıknatıs Kulak 250, Şans Yoncası 500. Diğerleri baştan açık. Karakterin başlangıç silahı kilitli
+  olsa bile o koşuda seviye kartları çıkar.
+- Takımyıldız: 3 dal (Saldırı / Koruma / Şans) × 10 düğüm, dal içinde sıralı; maliyetler
+  2,2,3,3,4,5,6,7,8,10 → dal başı 50, toplam 150 ✨. Dal sonları: "Evrim sandığı +1 pasif seviyesi",
+  "Alınan hasar −2", "Seviye atlamada 4 kart".
+- **Ertelendi:** Evrim Kitapları (evrim şu an kitapsız çalışır), silah ustalığı ve kozmetikler (§3.3 E).
 
 ## 4. Formulas
 

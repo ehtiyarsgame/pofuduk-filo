@@ -36,6 +36,10 @@ namespace PofudukFilo.EditorTools
         public readonly Dictionary<string, Enemy> Enemies = new();
         public readonly List<RunDefinition> Runs = new();
         public readonly List<MetaUpgradeDefinition> Workshop = new();
+        public readonly List<CharacterDefinition> Characters = new();
+        public readonly List<FusionRecipe> Fusions = new();
+        public ConstellationDefinition Constellation;
+        private readonly Dictionary<string, WeaponDefinition> _evolved = new();
 
         public void BuildAll()
         {
@@ -47,6 +51,10 @@ namespace PofudukFilo.EditorTools
             BuildEnemies();
             BuildRuns();
             BuildWorkshop();
+            ApplyLabCosts();
+            BuildFusions();
+            BuildCharacters();
+            BuildConstellation();
             AssetDatabase.SaveAssets();
         }
 
@@ -68,6 +76,11 @@ namespace PofudukFilo.EditorTools
             Add("gum_balloon", ArtRecipes.GumBalloon(), 256);
             Add("queen_hen", ArtRecipes.QueenHen(), 256);
             Add("cat", ArtRecipes.Cat(), 128);
+            Add("pilot_chick", ArtRecipes.ChickPilot(), 256);
+            Add("pilot_cat", ArtRecipes.CatPilot(), 256);
+            Add("pilot_hamster", ArtRecipes.Hamster(), 256);
+            Add("pilot_fox", ArtRecipes.Fox(), 256);
+            Add("pilot_mystery", ArtRecipes.MysteryBunny(), 256);
 
             Add("b_feather", ArtRecipes.Feather(false), 64);
             Add("b_feather_giant", ArtRecipes.Feather(true), 64);
@@ -322,6 +335,167 @@ namespace PofudukFilo.EditorTools
             }, battery, catEvoDef));
 
             BaseWeapons.Insert(0, StartingWeapon);
+            _evolved["prism_beam"] = prismDef;
+            _evolved["supernova_omelette"] = eggEvoDef;
+            _evolved["galaxy_vortex"] = starEvoDef;
+            _evolved["gum_rings"] = bubbleEvoDef;
+            _evolved["storm_cat"] = catEvoDef;
+        }
+
+        // ---------------------------------------------------------------- Lab, fusions, Hangar, Constellation
+
+        /// <summary>meta-economy.md §3.3 C: 3 weapons + 4 passives free, the rest bought in the Lab.</summary>
+        private void ApplyLabCosts()
+        {
+            var costs = new Dictionary<string, int>
+            {
+                ["star_boomerang"] = 400, ["bubble_orbit"] = 700,
+                ["moon_dust"] = 300, ["stretchy_gum"] = 300, ["magnet_ears"] = 250, ["lucky_clover"] = 500
+            };
+            foreach (WeaponDefinition w in BaseWeapons)
+            {
+                w.labCost = costs.TryGetValue(w.id, out int c) ? c : 0;
+                EditorUtility.SetDirty(w);
+            }
+            foreach (PassiveDefinition p in Passives)
+            {
+                p.labCost = costs.TryGetValue(p.id, out int c) ? c : 0;
+                EditorUtility.SetDirty(p);
+            }
+        }
+
+        /// <summary>weapon-system.md §3.4 fusions: both evolutions run together in one slot.</summary>
+        private void BuildFusions()
+        {
+            void Fusion(string id, string name, string a, string b)
+            {
+                WeaponDefinition partA = _evolved[a], partB = _evolved[b];
+                FusionWeapon prefab = WeaponPrefab<FusionWeapon>("Fusion_" + id, f => SetArray(f, "parts", new Object[] { partA, partB }));
+                WeaponDefinition result = Weapon(id, name, Rarity.Legendary, BStar, prefab,
+                    new[] { L(0f, 999f, 0, 0, 0, 0, 0, 0, $"{partA.displayName} + {partB.displayName}") });
+
+                var recipe = ScriptableObject.CreateInstance<FusionRecipe>();
+                recipe.a = partA;
+                recipe.b = partB;
+                recipe.result = result;
+                recipe.damageBonus = 0.25f;
+                Fusions.Add(SaveAsset(recipe, "Data/Fusions", id));
+            }
+
+            Fusion("rainbow_storm", "Gökkuşağı Fırtınası", "prism_beam", "storm_cat");
+            Fusion("cosmic_breakfast", "Kozmik Kahvaltı", "supernova_omelette", "galaxy_vortex");
+            Fusion("candy_shield_galaxy", "Şeker Kalkanı Galaksisi", "gum_rings", "galaxy_vortex");
+        }
+
+        /// <summary>meta-economy.md §3.3 B.</summary>
+        private void BuildCharacters()
+        {
+            WeaponDefinition W(string id)
+            {
+                foreach (WeaponDefinition w in BaseWeapons) if (w.id == id) return w;
+                return StartingWeapon;
+            }
+
+            void C(string id, string name, string perk, string sprite, string weapon, int gold, int dust,
+                CharacterPerk special = CharacterPerk.None, int chapterGate = -1, params StatModifier[] mods)
+            {
+                var c = ScriptableObject.CreateInstance<CharacterDefinition>();
+                c.id = id;
+                c.displayName = name;
+                c.perkText = perk;
+                c.sprite = Sprites[sprite];
+                c.startingWeapon = W(weapon);
+                c.goldCost = gold;
+                c.stardustCost = dust;
+                c.perk = special;
+                c.requiresChapterCleared = chapterGate;
+                c.modifiers = mods;
+                Characters.Add(SaveAsset(c, "Data/Characters", id));
+            }
+
+            C("pitir", "Pıtır", "Tavşan. Her 10 seviyede +1 kart seçeneği.", "bunny", "feather_blaster", 0, 0,
+                CharacterPerk.CardEvery10Levels);
+            C("civik", "Cıvık", "Civciv. Patlamalar %20 büyük, can -%10.", "pilot_chick", "egg_mortar", 600, 5,
+                mods: new[] { new StatModifier(StatType.Area, 0.2f), new StatModifier(StatType.MaxHp, -0.1f) });
+            C("mirnav", "Mırnav", "Kedi. Sersemletme süresi 2 kat.", "pilot_cat", "spark_cat", 1500, 12,
+                mods: new StatModifier(StatType.StunDuration, 1f));
+            C("balonbas", "Balonbaş", "Hamster. Yuttuğu her mermi 1 can.", "pilot_hamster", "bubble_orbit", 3000, 20,
+                mods: new StatModifier(StatType.AbsorbHeal, 1f));
+            C("yildizpati", "Yıldızpati", "Tilki. Her evrim +%15 hasar.", "pilot_fox", "star_boomerang", 5000, 35,
+                mods: new StatModifier(StatType.EvolutionDamage, 0.15f));
+            C("gizli", "Gökkuşağı Pıtır", "Gizli. Her koşu rastgele bir pasifle başlar.", "pilot_mystery", "feather_blaster", 0, 0,
+                CharacterPerk.RandomPassive, chapterGate: 2);
+        }
+
+        /// <summary>
+        /// meta-economy.md §3.3 D: 30 nodes in three 10-node branches; costs 2→10 per branch
+        /// (50 each, 150 total ≈ 30 boss wins). Each node requires the previous one in its branch.
+        /// </summary>
+        private void BuildConstellation()
+        {
+            int[] costs = { 2, 2, 3, 3, 4, 5, 6, 7, 8, 10 };
+            var nodes = new List<ConstellationNode>();
+
+            void Branch(int branch, string prefix, (string name, string desc, StatType stat, float value)[] steps)
+            {
+                for (int i = 0; i < steps.Length; i++)
+                {
+                    nodes.Add(new ConstellationNode
+                    {
+                        id = $"{prefix}_{i + 1}",
+                        displayName = steps[i].name,
+                        description = steps[i].desc,
+                        branch = branch,
+                        stardustCost = costs[i],
+                        requires = i == 0 ? System.Array.Empty<string>() : new[] { $"{prefix}_{i}" },
+                        modifiers = new[] { new StatModifier(steps[i].stat, steps[i].value) }
+                    });
+                }
+            }
+
+            Branch(0, "atk", new[]
+            {
+                ("Kıvılcım", "+%3 hasar", StatType.Damage, 0.03f),
+                ("Keskin Göz", "+%2 kritik şansı", StatType.CritChance, 0.02f),
+                ("Alev", "+%3 hasar", StatType.Damage, 0.03f),
+                ("Çevik Pati", "+%2 atış hızı", StatType.CooldownReduction, 0.02f),
+                ("Geniş Kanat", "+%5 alan", StatType.Area, 0.05f),
+                ("Yıldız Ateşi", "+%4 hasar", StatType.Damage, 0.04f),
+                ("Rüzgâr", "+%8 mermi hızı", StatType.ProjectileSpeed, 0.08f),
+                ("Uzun Kuyruk", "+%8 süre", StatType.Duration, 0.08f),
+                ("Süpernova", "+%5 hasar", StatType.Damage, 0.05f),
+                ("Evrim Yıldızı", "Evrim sandığı +1 pasif seviyesi verir", StatType.EvolutionChestLevels, 1f)
+            });
+            Branch(1, "def", new[]
+            {
+                ("Pamuk", "+%5 maks. can", StatType.MaxHp, 0.05f),
+                ("Kabuk", "Alınan hasar -1", StatType.Armor, 1f),
+                ("Çekim", "+%10 mıknatıs", StatType.MagnetRadius, 0.10f),
+                ("Yastık", "+%5 maks. can", StatType.MaxHp, 0.05f),
+                ("Kıl Payı", "Kıl payı XP'si 2 kat", StatType.GrazeXp, 1f),
+                ("Zırh", "Alınan hasar -1", StatType.Armor, 1f),
+                ("Kalp", "+%8 maks. can", StatType.MaxHp, 0.08f),
+                ("Anka", "+1 diriliş", StatType.Revives, 1f),
+                ("Büyük Çekim", "+%15 mıknatıs", StatType.MagnetRadius, 0.15f),
+                ("Kale", "Alınan hasar -2", StatType.Armor, 2f)
+            });
+            Branch(2, "luck", new[]
+            {
+                ("Kese", "+%5 altın", StatType.GoldGain, 0.05f),
+                ("Yonca", "+%3 şans", StatType.Luck, 0.03f),
+                ("Bilge", "+%3 XP", StatType.Experience, 0.03f),
+                ("Taç Avcısı", "Elitlerden +%25 altın", StatType.EliteGold, 0.25f),
+                ("Hazine", "+%5 altın", StatType.GoldGain, 0.05f),
+                ("İkinci Şans", "+1 yeniden çek", StatType.Rerolls, 1f),
+                ("Âlim", "+%4 XP", StatType.Experience, 0.04f),
+                ("Seçici", "+1 yasakla", StatType.Banishes, 1f),
+                ("Define", "+%10 altın", StatType.GoldGain, 0.10f),
+                ("Dördüncü Kart", "Seviye atlamada 4 kart", StatType.DraftChoices, 1f)
+            });
+
+            var board = ScriptableObject.CreateInstance<ConstellationDefinition>();
+            board.nodes = nodes.ToArray();
+            Constellation = SaveAsset(board, "Data", "Constellation");
         }
 
         // ---------------------------------------------------------------- Enemies
