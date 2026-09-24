@@ -227,6 +227,7 @@ namespace PofudukFilo.Core
             ["ATEŞ HIZI"] = "FIRE RATE",
             ["YENİ REKOR!"] = "NEW RECORD!",
             ["Yeni Oyun"] = "New Game",
+            ["sunar"] = "presents",
             ["DEVAM ET"] = "CONTINUE",
             ["Kaydet ve Çık"] = "Save & Quit",
             ["Güzel uçuş!"] = "Nice flight!",

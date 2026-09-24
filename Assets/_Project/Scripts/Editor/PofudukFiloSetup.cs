@@ -55,6 +55,20 @@ namespace PofudukFilo.EditorTools
             Debug.Log("[Pofuduk Filo] Kurulum tamam. Play'e basın (Game görünümünü 9:19.5 portreye alın).");
         }
 
+        /// <summary>Launcher icon, studio name, and no engine splash — our own studio intro plays instead (brand.md).</summary>
+        private static void ConfigureBrand(Texture2D icon)
+        {
+            PlayerSettings.companyName = "Ehtiyars Game";
+            PlayerSettings.SplashScreen.show = false;
+            PlayerSettings.SplashScreen.showUnityLogo = false;
+            if (icon == null) return;
+#if UNITY_6000_0_OR_NEWER
+            PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
+#else
+            PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Unknown, new[] { icon });
+#endif
+        }
+
         private static void ConfigureProject()
         {
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
@@ -211,6 +225,12 @@ namespace PofudukFilo.EditorTools
                 Set(systems.GetComponent<CombatFx>(), "font", uiFont);
             }
             else Debug.LogWarning($"[Setup] {UiFontPath} not found; using the built-in font.");
+
+            // Studio intro ("Ehtiyars Game") before the menu, once per launch (brand.md).
+            var intro = flow.AddComponent<StudioIntro>();
+            Set(intro, "emblem", c.Sprites["studio_emblem"]);
+            if (uiFont != null) Set(intro, "font", uiFont);
+            ConfigureBrand(c.Sprites["app_icon"].texture);
 
             // Signature loop: Şeker Hücumu combo/fever and the rescued-wingmen fleet.
             flow.AddComponent<SugarRush>();

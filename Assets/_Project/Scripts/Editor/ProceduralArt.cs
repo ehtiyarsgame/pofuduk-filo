@@ -450,6 +450,80 @@ namespace PofudukFilo.EditorTools
         /// <summary>The player: Pıtır the bunny pilot riding the candy starfighter (reads as "ship" at a glance).</summary>
         public static Painter Bunny() => Ship(BunnyPilot());
 
+        // ---------------------------------------------------------------- Brand (studio intro, app icon)
+
+        /// <summary>
+        /// Ehtiyars Game studio emblem: a round badge with a cheerful chibi "ehtiyar" (old man) —
+        /// flat cap, round glasses, a big white moustache and beard. Shown by the studio intro.
+        /// </summary>
+        public static Painter StudioEmblem()
+        {
+            var p = new Painter(512, 512);
+            Color skin = Hex(0xFFD7B5), cap = Hex(0x6B4FA8), beard = Hex(0xFBF7FF);
+            // Badge: honey rim, deep plum field, soft inner glow.
+            p.Glow(256, 256, 250, WithAlpha(Honey, 0.35f), 2.5f);
+            p.Circle(256, 256, 232, Painter.Outline);
+            p.Circle(256, 256, 222, Honey);
+            p.Circle(256, 256, 204, Painter.Outline);
+            p.Circle(256, 256, 198, Hex(0x3B2A5E));
+            p.Glow(256, 300, 190, WithAlpha(Lilac, 0.35f), 1.6f);
+            for (int i = 0; i < 12; i++)
+            {
+                float a = i * Mathf.PI * 2f / 12f;
+                p.Star(256 + Mathf.Cos(a) * 213, 256 + Mathf.Sin(a) * 213, 7f, 3f, Hex(0xFFF1C2));
+            }
+            // Ears and head.
+            p.Blob(150, 250, 26, skin, 6f);
+            p.Blob(362, 250, 26, skin, 6f);
+            p.Blob(256, 250, 112, skin, 7f);
+            // Beard: fluffy cloud under the chin.
+            p.Volume((x, y) => Mathf.Min(Mathf.Min(Painter.CircleSdf(x, y, 256, 150, 70), Painter.CircleSdf(x, y, 200, 172, 46)),
+                    Mathf.Min(Painter.CircleSdf(x, y, 312, 172, 46), Painter.CircleSdf(x, y, 256, 118, 48))),
+                256, 150, 110, 80, beard, 6f, shadow: false, gloss: 0.3f);
+            // Flat cap (kasket) with a brim.
+            p.Volume((x, y) => Mathf.Max(Painter.EllipseSdf(x, y, 250, 322, 108, 58), 292 - y), 250, 330, 108, 50, cap, 7f, shadow: false, gloss: 0.6f);
+            p.Volume((x, y) => Painter.EllipseSdf(x, y, 272, 294, 84, 15), 272, 294, 84, 15, Painter.Deep(cap, 0.2f), 6f, shadow: false, gloss: 0f);
+            p.Circle(250, 376, 11, Painter.Outline);
+            p.Circle(250, 376, 7, Honey);
+            // Eyes behind round glasses.
+            for (int s = -1; s <= 1; s += 2)
+            {
+                float ex = 256 + s * 46;
+                p.Fill((x, y) => Mathf.Abs(Painter.CircleSdf(x, y, ex, 232, 30)) - 5f, Painter.Outline);
+                p.Circle(ex, 232, 25, WithAlpha(Sky, 0.35f));
+                p.Fill((x, y) => Mathf.Max(Painter.EllipseSdf(x, y, ex, 226, 14, 10), 226 - y), Painter.Outline); // happy closed eye
+                p.Fill((x, y) => Painter.EllipseSdf(x, y, ex + s * 30, 196, 18, 10), new Color(1f, 0.45f, 0.55f, 0.45f), 6f);
+                p.Circle(ex - 10, 244, 5f, new Color(1f, 1f, 1f, 0.8f));
+            }
+            p.RoundedRect(236, 228, 276, 236, 4, Painter.Outline); // glasses bridge
+            // Nose and the big moustache.
+            p.Blob(256, 196, 20, Hex(0xFFB897), 5f);
+            for (int s = -1; s <= 1; s += 2)
+                p.Volume((x, y) => Painter.RotEllipseSdf(x, y, 256 + s * 40, 170, 46, 20, s * 0.32f), 256 + s * 40, 170, 46, 20, beard, 6f, shadow: false, gloss: 0.2f);
+            return p;
+        }
+
+        /// <summary>Launcher icon: the bunny starfighter on a candy-sky tile with sparkles.</summary>
+        public static Painter AppIcon()
+        {
+            var p = new Painter(512, 512);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 0, 0, 512, 512, 96), (x, y) =>
+            {
+                float t = y / 512f;
+                return Color.Lerp(Hex(0x5B3C99), Hex(0xFF8FC2), t * t * 0.9f + 0.1f * t);
+            }, 1.5f);
+            p.Glow(256, 230, 230, WithAlpha(Hex(0xFFF1C2), 0.55f), 1.8f);
+            var rng = new System.Random(7);
+            for (int i = 0; i < 18; i++)
+            {
+                float x = 40 + (float)rng.NextDouble() * 432, y = 40 + (float)rng.NextDouble() * 432;
+                if (Mathf.Abs(x - 256) < 150 && Mathf.Abs(y - 240) < 150) continue;
+                p.Star(x, y, 6f + (float)rng.NextDouble() * 8f, 2.5f, new Color(1f, 0.96f, 0.85f, 0.9f), 4);
+            }
+            p.Blit(Ship(BunnyPilot()), 256, 246, 1.38f);
+            return p;
+        }
+
         /// <summary>
         /// The shared candy starfighter with a pilot portrait composited into the cockpit. Every
         /// Hangar character flies the same hull, so the silhouette stays learnable. The heart emblem

@@ -552,6 +552,10 @@ namespace PofudukFilo.UI
             UIFactory.Place(_ui.Button(_menu.transform, "Hangar", Palette.Lavender, OpenHangar, 38), 0.26f, 0.1f, 0.49f, 0.195f);
             UIFactory.Place(_ui.Button(_menu.transform, "Laboratuvar", Palette.Lavender, OpenLab, 32), 0.5f, 0.1f, 0.73f, 0.195f);
             UIFactory.Place(_ui.Button(_menu.transform, "Takımyıldız", Palette.Lavender, OpenConstellation, 32), 0.74f, 0.1f, 0.98f, 0.195f);
+
+            // Studio credit (brand.md).
+            Text credit = _ui.Label(_menu.transform, $"© {StudioIntro.StudioName}", 30, new Color(0.78f, 0.71f, 1f, 0.7f));
+            UIFactory.Place(credit, 0.1f, 0.035f, 0.9f, 0.07f);
         }
 
         private Text _recordText;

@@ -54,7 +54,7 @@ namespace Unity.Collections
 namespace UnityEngine.InputSystem
 {
     public class InputDevice { }
-    public class Pointer : InputDevice { public Controls.Vector2Control delta => null; public Controls.Vector2Control position => null; }
+    public class Pointer : InputDevice { public static Pointer current => null; public Controls.ButtonControl press => null; public Controls.Vector2Control delta => null; public Controls.Vector2Control position => null; }
     public class Mouse : Pointer { public static Mouse current => null; public Controls.ButtonControl leftButton => null; }
     public class Keyboard : InputDevice { public static Keyboard current => null; public Controls.KeyControl escapeKey => null; }
     namespace Controls

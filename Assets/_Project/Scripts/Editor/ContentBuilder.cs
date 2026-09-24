@@ -116,6 +116,9 @@ namespace PofudukFilo.EditorTools
 
             Add("ui_button", ArtRecipes.ButtonFace(), 100, new Vector4(44, 44, 44, 44));
             Add("ui_edge_glow", ArtRecipes.EdgeGlow(), 100, new Vector4(60, 60, 60, 60));
+            // Brand: studio intro emblem and the launcher icon (brand.md).
+            Add("studio_emblem", ArtRecipes.StudioEmblem(), 256);
+            Add("app_icon", ArtRecipes.AppIcon(), 512);
             Add("bg_sky", ArtRecipes.SkyGradient(), 100);
             Add("bg_nebula", ArtRecipes.Nebula(), 100);
             Add("bg_stars_far", ArtRecipes.StarField(false), 100);

@@ -92,7 +92,7 @@ namespace PofudukFilo.EditorTools
             const BuildTargetGroup android = BuildTargetGroup.Android; // older editors / offline compile check
 #endif
             PlayerSettings.SetApplicationIdentifier(android, PackageName);
-            PlayerSettings.companyName = "ehtiyarsgame";
+            PlayerSettings.companyName = "Ehtiyars Game";
             PlayerSettings.productName = "Fluffy Fleet"; // global store name
             PlayerSettings.bundleVersion = "0.1.0";
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;

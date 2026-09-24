@@ -62,7 +62,15 @@ namespace PofudukFilo.Core
 
         private IEnumerator Drive()
         {
-            yield return new WaitForSecondsRealtime(2f);
+            yield return new WaitForSecondsRealtime(1.1f);
+            yield return Shot("00_intro"); // Ehtiyars Game studio intro (brand.md)
+            float waited = 0f;
+            while (UI.StudioIntro.Playing && waited < 8f)
+            {
+                waited += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            yield return new WaitForSecondsRealtime(0.5f);
             yield return Shot("00_menu");
 
             RunController run = RunController.Instance;
