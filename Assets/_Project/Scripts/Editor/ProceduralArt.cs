@@ -290,6 +290,32 @@ namespace PofudukFilo.EditorTools
             }
         }
 
+        /// <summary>Composites another painter, scaled and centred on (cx, cy), with bilinear sampling.</summary>
+        public void Blit(Painter src, float cx, float cy, float scale)
+        {
+            float halfW = src._w * scale * 0.5f, halfH = src._h * scale * 0.5f;
+            int x0 = Mathf.Max(0, Mathf.FloorToInt(cx - halfW)), x1 = Mathf.Min(_w - 1, Mathf.CeilToInt(cx + halfW));
+            int y0 = Mathf.Max(0, Mathf.FloorToInt(cy - halfH)), y1 = Mathf.Min(_h - 1, Mathf.CeilToInt(cy + halfH));
+            for (int y = y0; y <= y1; y++)
+            for (int x = x0; x <= x1; x++)
+            {
+                float sx = (x + 0.5f - (cx - halfW)) / scale - 0.5f, sy = (y + 0.5f - (cy - halfH)) / scale - 0.5f;
+                int ix = Mathf.FloorToInt(sx), iy = Mathf.FloorToInt(sy);
+                float fx = sx - ix, fy = sy - iy;
+                float r = 0f, g = 0f, b = 0f, a = 0f;
+                for (int k = 0; k < 4; k++)
+                {
+                    int tx = ix + (k & 1), ty = iy + (k >> 1);
+                    if (tx < 0 || ty < 0 || tx >= src._w || ty >= src._h) continue;
+                    float w = ((k & 1) == 1 ? fx : 1f - fx) * ((k >> 1) == 1 ? fy : 1f - fy);
+                    Color c = src._px[ty * src._w + tx];
+                    r += c.r * c.a * w; g += c.g * c.a * w; b += c.b * c.a * w; a += c.a * w;
+                }
+                if (a <= 0.001f) continue;
+                Blend(x, y, new Color(r / a, g / a, b / a, 1f), a);
+            }
+        }
+
         // ---------------------------------------------------------------- Fast dots and tileable noise
 
         /// <summary>Bounded-box soft dot with optional halo; wraps across edges so tiles stay seamless.</summary>
@@ -421,11 +447,18 @@ namespace PofudukFilo.EditorTools
             return c;
         }
 
-        /// <summary>The player: a bunny pilot riding a round candy starfighter (reads as "ship" at a glance).</summary>
-        public static Painter Bunny()
+        /// <summary>The player: Pıtır the bunny pilot riding the candy starfighter (reads as "ship" at a glance).</summary>
+        public static Painter Bunny() => Ship(BunnyPilot());
+
+        /// <summary>
+        /// The shared candy starfighter with a pilot portrait composited into the cockpit. Every
+        /// Hangar character flies the same hull, so the silhouette stays learnable. The heart emblem
+        /// sits on the hitbox (the root pivot is moved onto it in the scene).
+        /// </summary>
+        public static Painter Ship(Painter pilot, Color? wingColor = null)
         {
             var p = new Painter(256, 256);
-            Color hull = Hex(0xFFF1F7), wing = Mint, trim = HotPink;
+            Color hull = Hex(0xFFF1F7), wing = wingColor ?? Mint, trim = HotPink;
             p.Fill((x, y) => Painter.EllipseSdf(x, y, 128, 84, 112, 60), new Color(0.08f, 0.03f, 0.14f, 0.25f), 20f);
             // Wings, swept back.
             p.Volume((x, y) => Painter.RotEllipseSdf(x, y, 62, 74, 58, 26, 0.38f), 62, 74, 58, 26, wing, 6f, shadow: false);
@@ -443,20 +476,27 @@ namespace PofudukFilo.EditorTools
             p.Volume((x, y) => Painter.EllipseSdf(x, y, 128, 84, 50, 62), 128, 84, 50, 62, hull, 7f, shadow: false);
             p.Heart(128, 66, 16, Painter.Outline);
             p.Heart(128, 67, 12, trim);
-            // Pilot: ears, head, goggles.
-            p.Volume((x, y) => Painter.RotEllipseSdf(x, y, 100, 200, 18, 40, 0.18f), 100, 200, 18, 40, Color.white, 6f, shadow: false, gloss: 0.4f);
-            p.Volume((x, y) => Painter.RotEllipseSdf(x, y, 156, 200, 18, 40, -0.18f), 156, 200, 18, 40, Color.white, 6f, shadow: false, gloss: 0.4f);
-            p.Fill((x, y) => Painter.RotEllipseSdf(x, y, 101, 200, 8, 28, 0.18f), Pink);
-            p.Fill((x, y) => Painter.RotEllipseSdf(x, y, 155, 200, 8, 28, -0.18f), Pink);
-            p.Blob(128, 146, 54, Hex(0xFFF8FC));
-            p.RoundedRect(78, 172, 178, 184, 6, Painter.Outline);
-            p.Circle(106, 180, 13, Painter.Outline);
-            p.Circle(150, 180, 13, Painter.Outline);
-            p.Circle(106, 180, 9, WithAlpha(Sky, 0.9f));
-            p.Circle(150, 180, 9, WithAlpha(Sky, 0.9f));
-            p.Circle(103, 183, 3, Color.white);
-            p.Circle(147, 183, 3, Color.white);
-            p.Face(128, 138, 50);
+            p.Blit(pilot, 128, 152, 0.64f);
+            return p;
+        }
+
+        /// <summary>Pıtır's portrait: bunny with flight goggles (Hangar icon and cockpit).</summary>
+        public static Painter BunnyPilot()
+        {
+            var p = new Painter(256, 256);
+            p.Volume((x, y) => Painter.RotEllipseSdf(x, y, 92, 186, 26, 56, 0.18f), 92, 186, 26, 56, Color.white, 7f, shadow: false, gloss: 0.4f);
+            p.Volume((x, y) => Painter.RotEllipseSdf(x, y, 164, 186, 26, 56, -0.18f), 164, 186, 26, 56, Color.white, 7f, shadow: false, gloss: 0.4f);
+            p.Fill((x, y) => Painter.RotEllipseSdf(x, y, 93, 186, 12, 40, 0.18f), Pink);
+            p.Fill((x, y) => Painter.RotEllipseSdf(x, y, 163, 186, 12, 40, -0.18f), Pink);
+            p.Blob(128, 104, 80, Hex(0xFFF8FC));
+            p.RoundedRect(52, 140, 204, 158, 9, Painter.Outline);
+            p.Circle(96, 150, 20, Painter.Outline);
+            p.Circle(160, 150, 20, Painter.Outline);
+            p.Circle(96, 150, 14, WithAlpha(Sky, 0.9f));
+            p.Circle(160, 150, 14, WithAlpha(Sky, 0.9f));
+            p.Circle(91, 155, 4.5f, Color.white);
+            p.Circle(155, 155, 4.5f, Color.white);
+            p.Face(128, 94, 74);
             return p;
         }
 
@@ -515,10 +555,10 @@ namespace PofudukFilo.EditorTools
 
         public static Painter MysteryBunny()
         {
-            Painter p = Bunny();
-            p.Star(200, 214, 26, 11, Painter.Outline);
-            p.Star(200, 214, 20, 8, Honey);
-            return p;
+            Painter pilot = BunnyPilot();
+            pilot.Star(206, 222, 30, 13, Painter.Outline);
+            pilot.Star(206, 222, 23, 10, Honey);
+            return pilot;
         }
 
         public static Painter ChickEnemy(bool crown)

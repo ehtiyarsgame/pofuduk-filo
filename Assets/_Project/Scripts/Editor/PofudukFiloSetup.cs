@@ -123,11 +123,20 @@ namespace PofudukFilo.EditorTools
             // ---- Player
             var playerGo = new GameObject("Player");
             playerGo.transform.position = new Vector3(0f, -7f, 0f);
-            var sr = playerGo.AddComponent<SpriteRenderer>();
+            // The ship art hangs off a child so the heart emblem sits exactly on the hitbox (root pivot).
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(playerGo.transform, false);
+            visual.transform.localPosition = new Vector3(0f, 0.24f, 0f);
+            var sr = visual.AddComponent<SpriteRenderer>();
             sr.sprite = c.Sprites["bunny"];
             sr.sharedMaterial = c.SpriteMaterial;
             sr.sortingOrder = 10;
             playerGo.transform.localScale = new Vector3(1.1f, 1.1f, 1f);
+            var shipVisual = playerGo.AddComponent<ShipVisual>();
+            Set(shipVisual, "visual", visual.transform);
+            Set(shipVisual, "shipRenderer", sr);
+            Set(shipVisual, "flameSprite", c.Sprites["circle"]);
+            Set(shipVisual, "material", c.SpriteMaterial);
 
             var heart = new GameObject("Hitbox Heart");
             heart.transform.SetParent(playerGo.transform, false);

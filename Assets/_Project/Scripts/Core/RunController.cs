@@ -190,7 +190,8 @@ namespace PofudukFilo.Core
             {
                 foreach (StatModifier m in CurrentCharacter.modifiers) stats.AddRunBonus(m.stat, m.value);
                 if (CurrentCharacter.startingWeapon != null) inventory.StartingWeapon = CurrentCharacter.startingWeapon;
-                if (playerSprite != null && CurrentCharacter.sprite != null) playerSprite.sprite = CurrentCharacter.sprite;
+                Sprite ship = CurrentCharacter.shipSprite != null ? CurrentCharacter.shipSprite : CurrentCharacter.sprite;
+                if (playerSprite != null && ship != null) playerSprite.sprite = ship;
             }
             inventory.ResetLoadout();
             if (CurrentCharacter != null && CurrentCharacter.perk == CharacterPerk.RandomPassive) GrantRandomPassive();

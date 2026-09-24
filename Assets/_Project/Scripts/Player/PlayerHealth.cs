@@ -23,6 +23,8 @@ namespace PofudukFilo.Player
         public float CurrentHp { get; private set; }
         public float HitRadius => hitRadius;
         public bool IsAlive => CurrentHp > 0f;
+        /// <summary>True during the post-hit grace period (the ship blinks).</summary>
+        public bool IsInvulnerable => Time.time < _invulnerableUntil;
         /// <summary>Flat damage reduction per hit from the meta "Armour" upgrade.</summary>
         public float Armor { get; set; }
 

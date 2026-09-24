@@ -23,6 +23,8 @@ namespace PofudukFilo.Meta
         public string displayName;
         [TextArea] public string perkText;
         public Sprite sprite;
+        [Tooltip("In-run ship (the shared hull with this pilot in the cockpit). Falls back to the portrait.")]
+        public Sprite shipSprite;
         public WeaponDefinition startingWeapon;
         public StatModifier[] modifiers = System.Array.Empty<StatModifier>();
         public CharacterPerk perk;

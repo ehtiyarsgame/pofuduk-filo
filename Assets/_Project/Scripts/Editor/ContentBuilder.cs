@@ -64,6 +64,7 @@ namespace PofudukFilo.EditorTools
         {
             void Add(string name, Painter p, float ppu, Vector4 border = default) =>
                 Sprites[name] = p.SaveSprite(PathFor("Art", name + ".png"), ppu, border);
+            void AddShip(string name, Painter pilot, Color wing) => Add(name, ArtRecipes.Ship(pilot, wing), 256);
 
             Add("bunny", ArtRecipes.Bunny(), 256);
             Add("chick", ArtRecipes.ChickEnemy(false), 256);
@@ -81,6 +82,13 @@ namespace PofudukFilo.EditorTools
             Add("pilot_hamster", ArtRecipes.Hamster(), 256);
             Add("pilot_fox", ArtRecipes.Fox(), 256);
             Add("pilot_mystery", ArtRecipes.MysteryBunny(), 256);
+            Add("pilot_bunny", ArtRecipes.BunnyPilot(), 256);
+            // In-run ships: the shared hull with each pilot in the cockpit.
+            AddShip("ship_chick", ArtRecipes.ChickPilot(), ArtRecipes.Honey);
+            AddShip("ship_cat", ArtRecipes.CatPilot(), ArtRecipes.Coral);
+            AddShip("ship_hamster", ArtRecipes.Hamster(), ArtRecipes.Sky);
+            AddShip("ship_fox", ArtRecipes.Fox(), ArtRecipes.Lilac);
+            AddShip("ship_mystery", ArtRecipes.MysteryBunny(), ArtRecipes.HotPink);
 
             Add("b_feather", ArtRecipes.Feather(false), 64);
             Add("b_feather_giant", ArtRecipes.Feather(true), 64);
@@ -413,7 +421,16 @@ namespace PofudukFilo.EditorTools
                 c.id = id;
                 c.displayName = name;
                 c.perkText = perk;
-                c.sprite = Sprites[sprite];
+                c.sprite = Sprites[sprite == "bunny" ? "pilot_bunny" : sprite];
+                c.shipSprite = Sprites[sprite switch
+                {
+                    "bunny" => "bunny",
+                    "pilot_chick" => "ship_chick",
+                    "pilot_cat" => "ship_cat",
+                    "pilot_hamster" => "ship_hamster",
+                    "pilot_fox" => "ship_fox",
+                    _ => "ship_mystery"
+                }];
                 c.startingWeapon = W(weapon);
                 c.goldCost = gold;
                 c.stardustCost = dust;
