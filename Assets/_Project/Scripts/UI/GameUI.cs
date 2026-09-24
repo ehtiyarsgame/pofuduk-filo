@@ -559,10 +559,10 @@ namespace PofudukFilo.UI
             _heroShip = _ui.Node("HeroShip", _menu.transform).gameObject.AddComponent<Image>();
             _heroShip.preserveAspect = true;
             _heroShip.raycastTarget = false;
-            UIFactory.Place(_heroShip, 0.25f, 0.53f, 0.75f, 0.71f);
+            UIFactory.Place(_heroShip, 0.27f, 0.5f, 0.73f, 0.7f);
 
-            _pilotText = _ui.Label(_menu.transform, "", 46, Palette.Pink);
-            UIFactory.Place(_pilotText, 0.1f, 0.5f, 0.9f, 0.535f);
+            _pilotText = _ui.Label(_menu.transform, "", 44, Palette.Pink);
+            UIFactory.Place(_pilotText, 0.1f, 0.465f, 0.9f, 0.5f);
 
             // One way in, Ball Blast-style: OYNA starts the endless climb through every stage (power-match.md §3.3).
             // With a saved run the big button continues it (run-resume.md); "Yeni Oyun" starts over.
@@ -571,23 +571,16 @@ namespace PofudukFilo.UI
                 if (run.HasSavedRun) run.ResumeRun();
                 else run.StartEndless();
             }, 120);
-            UIFactory.Place(_playButton, 0.12f, 0.37f, 0.88f, 0.48f);
+            UIFactory.Place(_playButton, 0.12f, 0.335f, 0.88f, 0.445f);
             _restartButton = _ui.Button(_menu.transform, "Yeni Oyun", Palette.Lavender, run.StartEndless, 32);
-            UIFactory.Place(_restartButton, 0.7f, 0.33f, 0.9f, 0.365f);
-            _recordText = _ui.Label(_menu.transform, "", 44, Palette.Honey);
-            UIFactory.Place(_recordText, 0.1f, 0.33f, 0.9f, 0.365f);
+            UIFactory.Place(_restartButton, 0.7f, 0.288f, 0.9f, 0.325f);
+            _recordText = _ui.Label(_menu.transform, "", 42, Palette.Honey);
+            UIFactory.Place(_recordText, 0.1f, 0.288f, 0.9f, 0.325f);
 
-            // The Forge: always something to buy between runs (power-match.md §3.4).
-            _forgePowerButton = _ui.Button(_menu.transform, "", Palette.Mint, () => BuyForge(ForgeTrack.Power), 40);
-            UIFactory.Place(_forgePowerButton, 0.04f, 0.215f, 0.49f, 0.32f);
-            _forgeSpeedButton = _ui.Button(_menu.transform, "", Palette.Mint, () => BuyForge(ForgeTrack.Speed), 40);
-            UIFactory.Place(_forgeSpeedButton, 0.51f, 0.215f, 0.96f, 0.32f);
-
-            // Meta hub row (meta-economy.md §3.3 B–D).
-            UIFactory.Place(_ui.Button(_menu.transform, "Atölye", Palette.Lavender, OpenWorkshop, 38), 0.02f, 0.1f, 0.25f, 0.195f);
-            UIFactory.Place(_ui.Button(_menu.transform, "Hangar", Palette.Lavender, OpenHangar, 38), 0.26f, 0.1f, 0.49f, 0.195f);
-            UIFactory.Place(_ui.Button(_menu.transform, "Laboratuvar", Palette.Lavender, OpenLab, 32), 0.5f, 0.1f, 0.73f, 0.195f);
-            UIFactory.Place(_ui.Button(_menu.transform, "Takımyıldız", Palette.Lavender, OpenConstellation, 32), 0.74f, 0.1f, 0.98f, 0.195f);
+            // Three clear doors out of the menu (device feedback 2026-09-24: five meta buttons read as clutter).
+            _researchTile = MenuTile("AR-GE", researchIcon, 0.03f, OpenResearch);
+            _armoryTile = MenuTile("SİLAHLAR", null, 0.355f, OpenLab);
+            _pilotsTile = MenuTile("PİLOTLAR", null, 0.68f, OpenHangar);
 
             // Studio credit (brand.md).
             Text credit = _ui.Label(_menu.transform, $"© {StudioIntro.StudioName}", 30, new Color(0.78f, 0.71f, 1f, 0.7f));
@@ -596,20 +589,54 @@ namespace PofudukFilo.UI
 
         private Text _recordText;
         private Button _restartButton;
-        private Button _forgePowerButton;
-        private Button _forgeSpeedButton;
+        [SerializeField] private Sprite researchIcon;
 
-        private void BuyForge(ForgeTrack track)
+        private sealed class Tile
         {
-            if (run.Meta.TryUpgradeForge(track)) RefreshWallet();
+            public Button Button;
+            public Image Icon;
+            public GameObject Badge;
+        }
+
+        private Tile _researchTile;
+        private Tile _armoryTile;
+        private Tile _pilotsTile;
+
+        /// <summary>A big square menu tile: icon on top, label below, a "!" badge when something there is affordable.</summary>
+        private Tile MenuTile(string label, Sprite icon, float x0, System.Action open)
+        {
+            var tile = new Tile();
+            tile.Button = _ui.Button(_menu.transform, "", Palette.Lavender, open, 38);
+            UIFactory.Place(tile.Button, x0, 0.095f, x0 + 0.29f, 0.255f);
+            Transform face = tile.Button.transform.Find("Face");
+
+            tile.Icon = _ui.Node("Icon", face).gameObject.AddComponent<Image>();
+            tile.Icon.sprite = icon;
+            tile.Icon.preserveAspect = true;
+            tile.Icon.raycastTarget = false;
+            UIFactory.Place(tile.Icon, 0.18f, 0.34f, 0.82f, 0.92f);
+
+            Text text = _ui.Label(face, label, 40, Palette.White);
+            UIFactory.Place(text, 0.02f, 0.04f, 0.98f, 0.32f);
+
+            Image badge = _ui.Panel(face, Palette.Honey, "Badge");
+            UIFactory.Place(badge, 0.74f, 0.76f, 0.98f, 0.98f);
+            badge.raycastTarget = false;
+            Text bang = _ui.Label(badge.transform, "!", 40, Palette.Outline);
+            bang.GetComponent<Outline>().enabled = false;
+            tile.Badge = badge.gameObject;
+            return tile;
         }
 
         private void RefreshForge()
         {
-            if (_forgePowerButton == null) return;
+            if (_researchTile == null) return;
             MetaProgressionService meta = run.Meta;
-            SetForge(_forgePowerButton, "ATEŞ GÜCÜ", ForgeTrack.Power, meta);
-            SetForge(_forgeSpeedButton, "ATEŞ HIZI", ForgeTrack.Speed, meta);
+            _researchTile.Badge.SetActive(ResearchAffordable());
+            _armoryTile.Badge.SetActive(ArmoryAffordable());
+            _pilotsTile.Badge.SetActive(false);
+            if (_armoryTile.Icon.sprite == null && run.LabWeapons.Count > 0 && run.LabWeapons[0] != null)
+                _armoryTile.Icon.sprite = run.LabWeapons[0].icon;
 
             float best = meta.BestEndlessSeconds;
             bool saved = run.HasSavedRun;
@@ -624,16 +651,15 @@ namespace PofudukFilo.UI
             _recordText.text = line;
             UIFactory.SetText(_playButton, saved ? "DEVAM ET" : "OYNA");
             _restartButton.gameObject.SetActive(saved);
-            UIFactory.Place(_recordText, 0.04f, 0.33f, saved ? 0.69f : 0.96f, 0.365f);
+            UIFactory.Place(_recordText, 0.04f, 0.288f, saved ? 0.69f : 0.96f, 0.325f);
         }
 
-        private static void SetForge(Button b, string title, ForgeTrack track, MetaProgressionService meta)
+        private bool ArmoryAffordable()
         {
-            int level = meta.GetForgeLevel(track);
-            UIFactory.SetText(b, meta.IsForgeMaxed(track)
-                ? $"{title}\nSv.{level}  ·  MAKS"
-                : $"{title}\nSv.{level}  ·  {meta.ForgeCost(track)} altın");
-            b.interactable = meta.CanUpgradeForge(track);
+            MetaProgressionService meta = run.Meta;
+            foreach (WeaponDefinition w in run.LabWeapons)
+                if (w != null && (meta.IsUnlocked(w) ? meta.CanUpgradeMastery(w) : meta.Gold >= w.labCost)) return true;
+            return false;
         }
 
         private void UpdateMenuAnim()
@@ -684,7 +710,9 @@ namespace PofudukFilo.UI
             _workshop.SetActive(false);
         }
 
-        private void OpenWorkshop()
+        private void OpenWorkshop() => OpenResearch(); // the old Atölye lives inside Ar-Ge now
+
+        private void OpenWorkshopLegacy()
         {
             _workshop.SetActive(true);
             _menu.SetActive(false);

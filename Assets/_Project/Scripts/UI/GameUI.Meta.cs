@@ -26,6 +26,7 @@ namespace PofudukFilo.UI
         private MetaScreen _hangar;
         private MetaScreen _lab;
         private MetaScreen _constellation;
+        private MetaScreen _research;
         private GameObject _settings;
         private Text _pilotText;
 
@@ -38,8 +39,9 @@ namespace PofudukFilo.UI
 
         private void BuildMetaScreens(Transform root)
         {
-            _hangar = ListScreen(root, "Hangar", RefreshHangar);
-            _lab = ListScreen(root, "Silah Laboratuvarı", RefreshLab);
+            _hangar = ListScreen(root, "Pilotlar", RefreshHangar);
+            _lab = ListScreen(root, "Silahlar", RefreshLab);
+            _research = ListScreen(root, "Ar-Ge", RefreshResearch);
             _constellation = BuildConstellationScreen(root);
         }
 
@@ -91,18 +93,43 @@ namespace PofudukFilo.UI
             screen.Wallet = _ui.Label(screen.Root.transform, "", 46, Palette.Honey);
             UIFactory.Place(screen.Wallet, 0.05f, 0.86f, 0.95f, 0.9f);
 
-            screen.List = _ui.Node("List", screen.Root.transform);
-            UIFactory.Place(screen.List, 0.04f, 0.13f, 0.96f, 0.85f);
-            var layout = screen.List.gameObject.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 18f;
-            layout.childControlHeight = true;
-            layout.childControlWidth = true;
-            layout.childForceExpandHeight = false;
+            screen.List = ScrollList(screen.Root.transform, 0.04f, 0.13f, 0.96f, 0.85f);
 
             UIFactory.Place(_ui.Button(screen.Root.transform, "Geri", Palette.HotPink, () => CloseMeta(screen), 64), 0.25f, 0.03f, 0.75f, 0.1f);
             screen.Root.SetActive(false);
             _metaScreens.Add(screen);
             return screen;
+        }
+
+        /// <summary>A vertically scrolling list (drag to scroll); returns the content node rows go into.</summary>
+        private Transform ScrollList(Transform parent, float x0, float y0, float x1, float y1)
+        {
+            RectTransform viewport = _ui.Node("Viewport", parent);
+            UIFactory.Place(viewport, x0, y0, x1, y1);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            Image hit = viewport.gameObject.AddComponent<Image>();
+            hit.color = new Color(0f, 0f, 0f, 0f); // catches drags between rows
+
+            RectTransform content = _ui.Node("List", viewport);
+            content.anchorMin = new Vector2(0f, 1f);
+            content.anchorMax = new Vector2(1f, 1f);
+            content.pivot = new Vector2(0.5f, 1f);
+            content.offsetMin = content.offsetMax = Vector2.zero;
+            var layout = content.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 18f;
+            layout.padding = new RectOffset(0, 0, 4, 24);
+            layout.childControlHeight = true;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = false;
+            content.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.content = content;
+            scroll.viewport = viewport;
+            scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Elastic;
+            scroll.scrollSensitivity = 30f;
+            return content;
         }
 
         private static void ClearChildren(Transform parent)
@@ -132,6 +159,7 @@ namespace PofudukFilo.UI
             foreach (CharacterDefinition c in run.Characters)
                 if (c.id == id && run.Meta.IsUnlocked(c)) pilot = c;
             _pilotText.text = Loc.T(pilot != null ? $"Pilot: {pilot.displayName}" : "");
+            if (_pilotsTile != null && pilot != null) _pilotsTile.Icon.sprite = pilot.sprite;
             if (_heroShip != null && pilot != null)
             {
                 _heroShip.sprite = pilot.shipSprite != null ? pilot.shipSprite : pilot.sprite;
@@ -190,8 +218,15 @@ namespace PofudukFilo.UI
                 }
                 else if (c.requiresChapterCleared >= 0)
                 {
-                    action = _ui.Button(row.transform, $"Bölüm {c.requiresChapterCleared + 1}'i bitir", Palette.Lavender, null, 34);
-                    action.interactable = false;
+                    // Reach the stage for free, or buy early access now.
+                    int early = MetaProgressionService.EarlyAccessCost(c) + c.goldCost;
+                    action = _ui.Button(row.transform, $"Hemen aç\n{early} altın", Palette.Honey, () =>
+                    {
+                        if (meta.TryUnlockEarly(captured)) RefreshOpenMetaScreen();
+                    }, 34);
+                    action.interactable = meta.CanUnlockEarly(c);
+                    Text gate = _ui.Label(row.transform, $"veya Bölüm {c.requiresChapterCleared + 1} geçilince", 26, Palette.Lavender);
+                    UIFactory.Place(gate, 0.64f, 0.0f, 1f, 0.14f);
                 }
                 else
                 {
@@ -220,14 +255,21 @@ namespace PofudukFilo.UI
                 int mastery = meta.GetMastery(w.id);
                 bool maxed = mastery >= Formulas.MaxWeaponMastery;
 
-                Image row = Row(_lab.List, w.id, 210f);
+                Image row = Row(_lab.List, w.id, 250f);
                 AddIcon(row.transform, w.icon, unlocked);
-                string info = unlocked
-                    ? $"{w.displayName}\n<size=34>Ustalık {mastery}/{Formulas.MaxWeaponMastery}</size>\n<size=34>+%{Mathf.RoundToInt(Formulas.MasteryDamagePerLevel * mastery * 100f)} hasar</size>"
-                    : $"{w.displayName}\n<size=34>Kilitli — açınca kart havuzuna girer</size>";
-                Text text = _ui.Label(row.transform, info, 46, Palette.White, TextAnchor.MiddleLeft);
-                text.supportRichText = true;
-                UIFactory.Place(text, 0.22f, 0.04f, 0.64f, 0.96f);
+                Text name = _ui.Label(row.transform, w.displayName, 42, Palette.Cream, TextAnchor.MiddleLeft);
+                UIFactory.Place(name, 0.22f, 0.7f, 0.65f, 0.96f);
+                Text desc = _ui.Label(row.transform, w.description ?? "", 28, Palette.White, TextAnchor.UpperLeft);
+                desc.horizontalOverflow = HorizontalWrapMode.Wrap;
+                desc.resizeTextForBestFit = true;
+                desc.resizeTextMinSize = 20;
+                desc.resizeTextMaxSize = 28;
+                UIFactory.Place(desc, 0.22f, 0.3f, 0.65f, 0.7f);
+                string state = unlocked
+                    ? Loc.T($"Ustalık {mastery}/{Formulas.MaxWeaponMastery}: +%{Mathf.RoundToInt(Formulas.MasteryDamagePerLevel * mastery * 100f)} hasar")
+                    : Loc.T("Kilitli: açınca oyunda kartı çıkmaya başlar");
+                Text stateText = _ui.Label(row.transform, state, 28, unlocked ? Palette.Mint : Palette.Honey, TextAnchor.MiddleLeft);
+                UIFactory.Place(stateText, 0.22f, 0.04f, 0.65f, 0.3f);
 
                 Button b;
                 if (!unlocked)
@@ -259,9 +301,12 @@ namespace PofudukFilo.UI
                 if (p.labCost <= 0) continue;
                 PassiveDefinition captured = p;
                 bool unlocked = meta.IsUnlocked(p);
-                Image row = Row(_lab.List, p.id, 170f);
+                Image row = Row(_lab.List, p.id, 210f);
                 AddIcon(row.transform, p.icon, unlocked);
-                UIFactory.Place(_ui.Label(row.transform, $"{p.displayName}  (pasif)", 44, Palette.White, TextAnchor.MiddleLeft), 0.22f, 0.1f, 0.64f, 0.9f);
+                UIFactory.Place(_ui.Label(row.transform, $"{p.displayName}  (pasif)", 40, Palette.Cream, TextAnchor.MiddleLeft), 0.22f, 0.62f, 0.65f, 0.95f);
+                Text pdesc = _ui.Label(row.transform, p.description ?? "", 28, Palette.White, TextAnchor.UpperLeft);
+                pdesc.horizontalOverflow = HorizontalWrapMode.Wrap;
+                UIFactory.Place(pdesc, 0.22f, 0.08f, 0.65f, 0.6f);
                 Button b = unlocked
                     ? _ui.Button(row.transform, "Havuzda", Palette.Mint, null, 44)
                     : _ui.Button(row.transform, $"Aç\n{p.labCost} altın", Palette.Honey, () =>
@@ -391,18 +436,33 @@ namespace PofudukFilo.UI
             Toggle(card.transform, 0.385f, "Ekran sarsıntısı", () => GameSettings.ScreenShake, v => GameSettings.ScreenShake = v);
             Toggle(card.transform, 0.265f, "Hasar sayıları", () => GameSettings.DamageNumbers, v => GameSettings.DamageNumbers = v);
 
-            // Language: every screen is built once from code, so switching reloads the scene.
-            UIFactory.Place(_ui.Label(card.transform, "Dil", 48, Palette.White, TextAnchor.MiddleLeft), 0.06f, 0.145f, 0.6f, 0.255f);
-            UIFactory.Place(_ui.Button(card.transform, Loc.Current == Language.Turkish ? "Türkçe" : "English", Palette.Sky, () =>
-            {
-                Loc.Current = Loc.Current == Language.Turkish ? Language.English : Language.Turkish;
-                TimeScaleController.SetPaused(false);
-                TimeScaleController.SetFingerLifted(false);
-                UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
-            }, 44), 0.62f, 0.15f, 0.94f, 0.25f);
+            // Language: two explicit choices, the active one lit (device feedback: a single toggle flipped
+            // the language on the first tap without saying what it would do). Screens are built once from
+            // code, so a change reloads the scene.
+            UIFactory.Place(_ui.Label(card.transform, "Dil / Language", 44, Palette.White, TextAnchor.MiddleLeft), 0.06f, 0.145f, 0.5f, 0.255f);
+            LanguageButton(card.transform, "Türkçe", Language.Turkish, 0.5f, 0.71f);
+            LanguageButton(card.transform, "English", Language.English, 0.73f, 0.94f);
 
             UIFactory.Place(_ui.Button(card.transform, "Kapat", Palette.HotPink, () => _settings.SetActive(false), 52), 0.3f, 0.02f, 0.7f, 0.13f);
             _settings.SetActive(false);
+        }
+
+        private void LanguageButton(Transform parent, string label, Language language, float x0, float x1)
+        {
+            bool active = Loc.Current == language;
+            Button b = _ui.Button(parent, "", active ? Palette.Mint : Palette.Outline, () =>
+            {
+                if (Loc.Current == language) return;
+                Loc.Current = language;
+                TimeScaleController.SetPaused(false);
+                TimeScaleController.SetFingerLifted(false);
+                UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+            }, 36);
+            // Language names are shown as themselves, never translated.
+            Text t = b.GetComponentInChildren<Text>();
+            t.text = active ? $"• {label}" : label;
+            t.color = active ? Palette.Outline : Palette.White;
+            UIFactory.Place(b, x0, 0.15f, x1, 0.25f);
         }
 
         private void Toggle(Transform parent, float y, string label, Func<bool> get, Action<bool> set)

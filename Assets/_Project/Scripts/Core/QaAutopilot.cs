@@ -72,6 +72,18 @@ namespace PofudukFilo.Core
             }
             yield return new WaitForSecondsRealtime(0.5f);
             yield return Shot("00_menu");
+            var ui = FindAnyObjectByType<UI.GameUI>();
+            if (ui != null)
+            {
+                string[] screens = { "research", "armory", "pilots", "settings" };
+                for (int i = 0; i < screens.Length; i++)
+                {
+                    ui.QaShow(screens[i]);
+                    yield return new WaitForSecondsRealtime(0.4f);
+                    yield return Shot($"0{i + 1}_{screens[i]}");
+                }
+                ui.QaShow("menu");
+            }
 
             RunController run = RunController.Instance;
             if (run == null)

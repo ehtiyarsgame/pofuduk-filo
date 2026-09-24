@@ -1146,6 +1146,29 @@ namespace PofudukFilo.EditorTools
         }
 
         /// <summary>9-slice base for every UI panel and button.</summary>
+        /// <summary>Ar-Ge menu tile icon: a honey gear with a mint "up" arrow — permanent upgrades.</summary>
+        public static Painter ResearchIcon()
+        {
+            var p = new Painter(256, 256);
+            Color gear = Honey;
+            for (int i = 0; i < 8; i++)
+            {
+                float a = i * Mathf.PI / 4f;
+                float cx = 118 + Mathf.Cos(a) * 88, cy = 118 + Mathf.Sin(a) * 88;
+                p.Fill((x, y) => Painter.RotEllipseSdf(x, y, cx, cy, 26, 20, a) - 5f, Painter.Outline);
+                p.Fill((x, y) => Painter.RotEllipseSdf(x, y, cx, cy, 26, 20, a), Painter.Deep(gear, 0.15f));
+            }
+            p.Blob(118, 118, 72, gear, 7f);
+            p.Circle(118, 118, 30, Painter.Outline);
+            p.Circle(118, 118, 22, Hex(0x3B2A5E));
+            // Up arrow badge, bottom-right.
+            p.Circle(192, 70, 50, Painter.Outline);
+            p.Circle(192, 70, 43, Mint);
+            p.Triangle(new Vector2(192, 104), new Vector2(166, 74), new Vector2(218, 74), Color.white);
+            p.RoundedRect(182, 40, 202, 78, 4, Color.white);
+            return p;
+        }
+
         /// <summary>HUD bar track: a dark plum pill with an outline and an inner shadow (sliced 26 px ends).</summary>
         public static Painter BarTrack()
         {

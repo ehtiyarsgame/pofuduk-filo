@@ -210,6 +210,24 @@ namespace PofudukFilo.Meta
             return true;
         }
 
+        /// <summary>
+        /// Early access (device feedback 2026-09-24: "features that open later should be buyable"): a pilot gated
+        /// behind clearing a stage can be bought before that for 1500 gold per stage of the gate.
+        /// </summary>
+        public static int EarlyAccessCost(CharacterDefinition c) => 1500 * (c.requiresChapterCleared + 1);
+
+        public bool CanUnlockEarly(CharacterDefinition c) =>
+            !IsUnlocked(c) && c.requiresChapterCleared >= 0 && _data.gold >= EarlyAccessCost(c) + c.goldCost
+            && _data.stardust >= c.stardustCost;
+
+        public bool TryUnlockEarly(CharacterDefinition c)
+        {
+            if (!CanUnlockEarly(c) || !TrySpend(EarlyAccessCost(c) + c.goldCost, c.stardustCost)) return false;
+            _data.unlockedCharacters.Add(c.id);
+            Commit();
+            return true;
+        }
+
         public bool SelectCharacter(CharacterDefinition c)
         {
             if (!IsUnlocked(c)) return false;
