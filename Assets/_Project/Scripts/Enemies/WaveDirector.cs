@@ -27,9 +27,11 @@ namespace PofudukFilo.Enemies
         [Tooltip("Budget can bank up to this many seconds' worth, so a quiet moment cannot store a flood.")]
         [SerializeField] private float maxBankedBudgetSeconds = 3f;
         [SerializeField] private float spawnAboveScreen = 1f;
-        [SerializeField] private float formationTopPadding = 2.5f;
+        [Tooltip("Top of a formation's highest slot below the screen top. Must stay below EnemyManager's hittable line " +
+                 "(top − 24 % of the half-height ≈ 2.6 u at size 10.8) or members would hover untouchable under the HUD.")]
+        [SerializeField] private float formationTopPadding = 3.4f;
         [SerializeField] private float firstFormationDelay = 4f;
-        [SerializeField] private float bossSlotBelowTop = 3f;
+        [SerializeField] private float bossSlotBelowTop = 3.8f;
 
         [Header("Endless (power-match.md §3.3)")]
         [Tooltip("In Endless, a boss from the chapter's roster returns this long after the previous one dies.")]
@@ -375,9 +377,11 @@ namespace PofudukFilo.Enemies
             FormationLayout.Build(entry.shape, entry.rows, entry.columns, entry.spacing, _formationOffsets);
 
             float wiggle = (right - left) * 0.15f;
+            float highest = 0f;
+            for (int i = 0; i < _formationOffsets.Count; i++) highest = Mathf.Max(highest, _formationOffsets[i].y);
             var center = new Vector2(
                 (left + right) * 0.5f + UnityEngine.Random.Range(-wiggle, wiggle),
-                top - formationTopPadding);
+                top - formationTopPadding - highest);
 
             var group = new FormationGroup(center);
             for (int i = 0; i < _formationOffsets.Count; i++)

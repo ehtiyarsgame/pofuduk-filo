@@ -36,7 +36,9 @@ namespace PofudukFilo.UI
             _comboText.rectTransform.pivot = new Vector2(1f, 0.5f); // punch grows leftwards, never off-screen
             _comboText.gameObject.SetActive(false);
 
-            var glowNode = _ui.Node("RushGlow", hud);
+            // Full-screen (outside the safe area) so the glow frames the whole display, not an inset box.
+            Transform canvasRoot = hud.GetComponentInParent<Canvas>().transform;
+            var glowNode = _ui.Node("RushGlow", canvasRoot);
             glowNode.SetAsFirstSibling();
             _edgeGlow = glowNode.gameObject.AddComponent<Image>();
             _edgeGlow.sprite = edgeGlowSprite;
@@ -57,9 +59,8 @@ namespace PofudukFilo.UI
             {
                 _rush.RushReady += () =>
                 {
-                    _rushButton.gameObject.SetActive(true);
                     Feel.Juice.PopIn(_rushButton.transform);
-                    Toast("ŞEKER HAZIR! Dokun!", 1.3f);
+                    Toast("ŞEKER HAZIR! Bırak ve tekrar bas!", 1.6f);
                     if (Audio.AudioManager.Instance != null) Audio.AudioManager.Instance.Play(Audio.SfxId.LevelUp, 0.02f);
                 };
                 _rush.MeterChanged += v => _rushBar.Set(v);
@@ -116,11 +117,20 @@ namespace PofudukFilo.UI
         private void UpdateRushHud()
         {
             if (_rush == null || _rushBar == null) return;
+            // The glow lives outside the HUD now, so hide it with the HUD (menu, run end).
+            if (!_hud.activeSelf)
+            {
+                if (_edgeGlow.gameObject.activeSelf) _edgeGlow.gameObject.SetActive(false);
+                return;
+            }
             float dt = Time.unscaledDeltaTime;
 
             if (_bossBanner != null && _bossBanner.activeSelf && Time.unscaledTime > _bossBannerUntil) _bossBanner.SetActive(false);
 
-            if (_rushButton != null && _rushButton.gameObject.activeSelf)
+            // Visible only while a bomb is actually banked (it used to linger into the next run).
+            bool ready = _rush.Ready && !_rush.Active && run.State == GameState.Playing;
+            if (_rushButton != null && _rushButton.gameObject.activeSelf != ready) _rushButton.gameObject.SetActive(ready);
+            if (_rushButton != null && ready)
             {
                 float pulse = 1f + Mathf.Sin(Time.unscaledTime * 9f) * 0.06f;
                 _rushButton.transform.localScale = new Vector3(pulse, pulse, 1f);

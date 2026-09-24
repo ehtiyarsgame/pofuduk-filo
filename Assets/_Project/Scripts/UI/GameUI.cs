@@ -319,11 +319,16 @@ namespace PofudukFilo.UI
             titleText.resizeTextMaxSize = 48;
             titleText.verticalOverflow = VerticalWrapMode.Truncate;
 
-            Image chip = _ui.Panel(inner.transform, tag == "YENİ!" ? Palette.Mint : tag.Length > 0 ? Palette.Honey : frame, "Chip");
-            UIFactory.Place(chip, 0.74f, 0.72f, 0.98f, 0.95f);
+            // Chip: what KIND of card this is (device feedback: "ana silah mı, güçlendirme mi belli değil"),
+            // with the level tag (YENİ! / Sv.3) under it.
+            string kind = CardKind(option);
+            Image chip = _ui.Panel(inner.transform, kind == "ANA SİLAH" ? Palette.HotPink : option.Kind == UpgradeKind.Weapon ? Palette.Sky : Palette.Mint, "Chip");
+            UIFactory.Place(chip, 0.72f, 0.64f, 0.98f, 0.95f);
             chip.raycastTarget = false;
-            Text chipText = _ui.Label(chip.transform, tag.Length > 0 ? tag : RarityName(rarity), 30, Palette.Outline);
-            chipText.GetComponent<Outline>().enabled = false;
+            Text chipText = _ui.Label(chip.transform, kind, 26, Color.white);
+            UIFactory.Place(chipText, 0.04f, 0.48f, 0.96f, 0.96f);
+            Text tagLine = _ui.Label(chip.transform, tag.Length > 0 ? tag : RarityName(rarity), 24, tag == "YENİ!" ? Palette.Cream : Color.white);
+            UIFactory.Place(tagLine, 0.04f, 0.06f, 0.96f, 0.5f);
 
             // Body: what it does, then what this level adds — never just a name (device feedback 2026-09-24).
             Text bodyText = _ui.Label(inner.transform, body, 34, Palette.White, TextAnchor.UpperLeft);
@@ -334,6 +339,22 @@ namespace PofudukFilo.UI
             bodyText.resizeTextMaxSize = 34;
             bodyText.verticalOverflow = VerticalWrapMode.Truncate;
             return button.gameObject;
+        }
+
+        /// <summary>ANA SİLAH (the pilot's main gun and its evolutions), SİLAH, GÜÇLENDİRME (passive) or BONUS.</summary>
+        private string CardKind(in UpgradeOption option)
+        {
+            switch (option.Kind)
+            {
+                case UpgradeKind.Weapon:
+                    for (WeaponDefinition w = inventory.StartingWeapon; w != null; w = w.evolvesInto)
+                        if (w == option.Weapon) return "ANA SİLAH";
+                    return "SİLAH";
+                case UpgradeKind.Passive:
+                    return "GÜÇLENDİRME";
+                default:
+                    return "BONUS";
+            }
         }
 
         private static string RarityName(Rarity r) => r switch

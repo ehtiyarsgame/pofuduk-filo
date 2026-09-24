@@ -45,6 +45,9 @@ namespace PofudukFilo.Progression
         [SerializeField] private float collectRadius = 0.35f;
         [SerializeField] private float driftSpeed = 1.6f; // gems rain toward the ship's zone
         [SerializeField] private float attractAcceleration = 30f;
+        [Tooltip("Pickups fly to the ship by themselves after this long (device feedback 2026-09-24: uncollected gems " +
+                 "carpeted the screen and were mistaken for shots). 0 = only the magnet radius.")]
+        [SerializeField] private float autoCollectAfter = 1.2f;
         [SerializeField] private float popSpeed = 2.5f;
         [SerializeField] private float bottomMargin = 1f;
 
@@ -212,6 +215,7 @@ namespace PofudukFilo.Progression
                 MagnetRadius = baseMagnetRadius * magnetMultiplier,
                 CollectRadius = collectRadius,
                 GlobalMagnet = Time.time < _globalMagnetUntil,
+                AutoCollectAfter = autoCollectAfter,
                 DriftSpeed = driftSpeed,
                 AttractAcceleration = attractAcceleration,
                 BottomY = bottom,

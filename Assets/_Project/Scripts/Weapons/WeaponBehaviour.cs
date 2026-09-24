@@ -30,6 +30,9 @@ namespace PofudukFilo.Weapons
             OnLevelChanged();
         }
 
+        /// <summary>Any weapon fired this frame (ShipVisual: gun recoil and muzzle flash).</summary>
+        public static event System.Action<WeaponBehaviour> AnyFired;
+
         public void LevelUp()
         {
             if (IsMaxLevel) return;
@@ -50,6 +53,7 @@ namespace PofudukFilo.Weapons
             _cooldownTimer = Stats.FinalCooldown(s.cooldown);
             ShotCounter++;
             Fire(s);
+            AnyFired?.Invoke(this);
         }
 
         /// <summary>Scratch list for enemy queries; weapons run on the main thread one at a time.</summary>

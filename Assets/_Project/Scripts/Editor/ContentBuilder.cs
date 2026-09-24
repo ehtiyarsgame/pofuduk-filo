@@ -232,12 +232,12 @@ namespace PofudukFilo.EditorTools
             ["star_boomerang"] = "Gidip geri dönen yıldız; iki yönde de vurur.",
             ["bubble_orbit"] = "Geminin etrafında dönen balonlar yakındaki düşmanları ezer.",
             ["spark_cat"] = "Düşmandan düşmana seken zincir şimşek atar.",
-            ["prism_beam"] = "EVRİM: Önündeki her şeyi delen gökkuşağı lazeri (ekrandaki ışık sütunu).",
+            ["feather_storm"] = "EVRİM: 7 tüylük geniş yelpaze; tüyler 2 düşmanı deler, sık sık dev tüy atar.",
             ["supernova_omelette"] = "EVRİM: Dev yumurtalar ve ekranı kaplayan omlet dalgası.",
             ["galaxy_vortex"] = "EVRİM: Düşmanları içine çekip ezen galaksi girdabı.",
             ["gum_rings"] = "EVRİM: Mermileri emen, düşmanları biçen sakız halkaları.",
             ["storm_cat"] = "EVRİM: Gökten yıldırım yağdıran kedi tanrıça.",
-            ["rainbow_storm"] = "FÜZYON: Prizma ışını ile fırtına kedisi tek silahta.",
+            ["rainbow_storm"] = "FÜZYON: Tüy fırtınası ile fırtına kedisi tek silahta.",
             ["cosmic_breakfast"] = "FÜZYON: Omlet dalgası ile galaksi girdabı tek silahta.",
             ["candy_shield_galaxy"] = "FÜZYON: Sakız halkaları ile galaksi girdabı tek silahta.",
             ["crystal_glasses"] = "Kritik vuruş şansı: kritik vuruş 2 kat hasar verir.",
@@ -319,10 +319,12 @@ namespace PofudukFilo.EditorTools
             Passive("magnet_ears", "Mıknatıs Kulak", StatType.MagnetRadius, 0.25f, Rarity.Common);
             Passive("lucky_clover", "Şans Yoncası", StatType.Luck, 0.10f, Rarity.Epic);
 
-            // 1) Feather Blaster → Rainbow Prism Beam
-            var prism = WeaponPrefab<PrismBeam>("PrismBeam", null);
-            WeaponDefinition prismDef = Weapon("prism_beam", "Gökkuşağı Prizma Işını", Rarity.Legendary, BFeather, prism,
-                new[] { L(9f, 0.1f, 2, 0, 0, 0, 0.22f, 0, "Kırılan gökkuşağı lazeri") });
+            // 1) Feather Blaster → Feather Storm. The Rainbow Prism Beam evolution was removed on device feedback
+            // (2026-09-24): a screen-long piercing laser erased every fight ("çekişme yok, oyun zevki kalmıyor").
+            var storm = WeaponPrefab<FeatherBlaster>("FeatherStorm", b => Set(b, "giantBulletTypeIndex", BGiantFeather));
+            WeaponDefinition prismDef = Weapon("feather_storm", "Tüy Fırtınası", Rarity.Legendary, BFeather, storm,
+                // ≈1.7× the DPS of a max-level blaster — a real step up, not a screen wipe.
+                new[] { L(16f, 0.22f, 7, 50f, 16f, 2, 0, 1.6f, "7 tüylük yelpaze, 2 düşman deler; her 4. atış dev tüy (3×)", 4, 3f) });
             var feather = WeaponPrefab<FeatherBlaster>("FeatherBlaster", b => Set(b, "giantBulletTypeIndex", BGiantFeather));
             StartingWeapon = Weapon("feather_blaster", "Tüy Blaster", Rarity.Common, BFeather, feather, new[]
             {
@@ -413,7 +415,7 @@ namespace PofudukFilo.EditorTools
             }, battery, catEvoDef));
 
             BaseWeapons.Insert(0, StartingWeapon);
-            _evolved["prism_beam"] = prismDef;
+            _evolved["feather_storm"] = prismDef;
             _evolved["supernova_omelette"] = eggEvoDef;
             _evolved["galaxy_vortex"] = starEvoDef;
             _evolved["gum_rings"] = bubbleEvoDef;
@@ -460,7 +462,7 @@ namespace PofudukFilo.EditorTools
                 Fusions.Add(SaveAsset(recipe, "Data/Fusions", id));
             }
 
-            Fusion("rainbow_storm", "Gökkuşağı Fırtınası", "prism_beam", "storm_cat");
+            Fusion("rainbow_storm", "Gökkuşağı Fırtınası", "feather_storm", "storm_cat");
             Fusion("cosmic_breakfast", "Kozmik Kahvaltı", "supernova_omelette", "galaxy_vortex");
             Fusion("candy_shield_galaxy", "Şeker Kalkanı Galaksisi", "gum_rings", "galaxy_vortex");
         }

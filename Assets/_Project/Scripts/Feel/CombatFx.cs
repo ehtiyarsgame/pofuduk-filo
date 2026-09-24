@@ -66,10 +66,12 @@ namespace PofudukFilo.Feel
             Color c = e.FxColor;
             Color light = Color.Lerp(c, Color.white, 0.55f);
 
-            Vfx.Pop(p, size * 0.55f, new Color(1f, 1f, 1f, 0.9f), 0.12f);
-            Vfx.Pop(p, size * (big ? 2.2f : 1.1f), new Color(c.r, c.g, c.b, 0.55f), big ? 0.45f : 0.28f);
-            Vfx.Sparks(p, light, big ? 22 : 7, big ? 10f : 6.5f, big ? 0.45f : 0.3f);
-            Vfx.Confetti(p, c, big ? 28 : 5);
+            // Normal kills stay small and quick (device feedback 2026-09-24: waves of big yellow pops at the top of
+            // the screen after the 2nd boss "oyun zevkini düşürüyor"); elites and bosses keep the big burst.
+            Vfx.Pop(p, size * (big ? 0.55f : 0.35f), new Color(1f, 1f, 1f, big ? 0.9f : 0.6f), 0.1f);
+            Vfx.Pop(p, size * (big ? 2.2f : 0.7f), new Color(c.r, c.g, c.b, big ? 0.55f : 0.3f), big ? 0.45f : 0.2f);
+            Vfx.Sparks(p, light, big ? 22 : 4, big ? 10f : 5.5f, big ? 0.45f : 0.25f);
+            Vfx.Confetti(p, c, big ? 28 : 3);
             if (big && Juice.Instance != null)
             {
                 Juice.Instance.Shake(e is BossEnemy ? 1f : 0.35f, e is BossEnemy ? 0.5f : 0.2f);

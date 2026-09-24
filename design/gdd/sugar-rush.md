@@ -31,6 +31,7 @@ bullets is what keeps the sugar flowing.
 - Each kill adds `killValue × (1 + min(combo, 40) × comboBonus)` to the meter. `killValue` is 1 for normal enemies, `eliteKillValue` for elites and `bossKillValue` for bosses. Combo above 40 still shows and counts for Best Combo but adds no more meter.
 - From minute `meterGrowthStartMinutes` on, the meter needed grows: `meterMax × (1 + meterGrowthPerMinute × max(0, minutes − meterGrowthStartMinutes))`. *(2026-09-24, QA run 24: late-run kill rate and combos of 150+ produced a rush every ~15 s from minute 4, each bomb wiping enemy bullets — the late game went easy again.)*
 - Getting hit multiplies the meter by `meterKeptOnHit` (the rest is spilled).
+- *(2026-09-24, device feedback)* While banked, **lifting the finger and pressing again anywhere on the playfield** fires the bomb (the button still works). The button is shown only while a bomb is actually banked; it used to linger into the next run.
 - When the meter reaches `meterMax` it is **banked** (Ready): a pulsing **ŞEKER!** button appears bottom-left
   with a countdown strip. Tapping it fires the **Sugar Bomb** — `bombBaseDamage + bombDamagePerMinute × minutes`
   to every on-screen enemy, all enemy bullets cleared, big candy burst, shake, hitstop — and the rush starts.

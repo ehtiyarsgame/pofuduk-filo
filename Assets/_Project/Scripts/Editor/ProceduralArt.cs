@@ -1069,7 +1069,7 @@ namespace PofudukFilo.EditorTools
         /// <summary>Weapon/passive icon: shaded badge plus a symbol. Evolutions and fusions get gold.</summary>
         public static Painter Icon(string id)
         {
-            bool legendary = id is "supernova_omelette" or "galaxy_vortex" or "gum_rings" or "storm_cat" or "prism_beam"
+            bool legendary = id is "supernova_omelette" or "galaxy_vortex" or "gum_rings" or "storm_cat" or "prism_beam" or "feather_storm"
                 or "rainbow_storm" or "cosmic_breakfast" or "candy_shield_galaxy";
             (Color badge, Painter symbol, float scale) = id switch
             {
@@ -1084,6 +1084,7 @@ namespace PofudukFilo.EditorTools
                 "spark_cat" => (Sky, Cat(), 0.72f),
                 "storm_cat" => (Honey, Cat(), 0.72f),
                 "prism_beam" => (Honey, GemSprite(Sky), 1.4f),
+                "feather_storm" => (Honey, Feather(true), 1.2f),
                 "crystal_glasses" => (Lilac, GemSprite(Sky), 1.3f),
                 "hot_pan" => (Coral, Coin(), 1.3f),
                 "moon_dust" => (Hex(0x6B5B95), MiniStar(Lilac), 1.4f),

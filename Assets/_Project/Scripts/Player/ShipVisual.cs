@@ -17,6 +17,15 @@ namespace PofudukFilo.Player
         [SerializeField] private Color flameOuter = new(0.25f, 0.95f, 0.85f, 0.85f);
         [SerializeField] private Color flameCore = new(1f, 1f, 1f, 0.95f);
         [SerializeField] private float maxBankDegrees = 14f;
+        [Header("Guns (device feedback 2026-09-24: 'how does it shoot?')")]
+        [Tooltip("Blaster art pointing right; mounted pointing up on both wings.")]
+        [SerializeField] private Sprite gunSprite;
+        [SerializeField] private Vector2 gunOffset = new(0.3f, -0.1f);
+        [SerializeField] private float gunSize = 0.24f;
+        [SerializeField] private Color muzzleColor = new(0.55f, 1f, 0.9f, 0.9f);
+
+        private Transform[] _guns;
+        private float _recoil;
 
         private Transform[] _outer;
         private Transform[] _core;
@@ -35,6 +44,8 @@ namespace PofudukFilo.Player
             if (_health != null) _health.Damaged += OnHurt;
             _lastPosition = transform.position;
             if (visual != null) _visualBase = visual.localPosition;
+            BuildGuns();
+            Weapons.WeaponBehaviour.AnyFired += OnFired;
             if (flameSprite == null) return;
 
             _outer = new Transform[2];
@@ -46,6 +57,41 @@ namespace PofudukFilo.Player
                 _core[i] = Flame($"flame-core-{i}", new Vector3(x, engineOffset.y + 0.02f, 0f), flameCore, 9);
             }
             _renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        }
+
+        private void OnDestroy() => Weapons.WeaponBehaviour.AnyFired -= OnFired;
+
+        private void BuildGuns()
+        {
+            if (gunSprite == null || visual == null) return;
+            _guns = new Transform[2];
+            for (int i = 0; i < 2; i++)
+            {
+                var go = new GameObject(i == 0 ? "Gun-L" : "Gun-R");
+                go.transform.SetParent(visual, false);
+                go.transform.localPosition = new Vector3(i == 0 ? -gunOffset.x : gunOffset.x, gunOffset.y, 0f);
+                go.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+                float s = gunSize / Mathf.Max(0.01f, gunSprite.bounds.size.x);
+                go.transform.localScale = new Vector3(s, i == 0 ? s : -s, 1f); // mirror the right gun
+                var r = go.AddComponent<SpriteRenderer>();
+                r.sprite = gunSprite;
+                r.sortingOrder = 11;
+                if (material != null) r.sharedMaterial = material;
+                _guns[i] = go.transform;
+            }
+        }
+
+        /// <summary>Recoil kick and a muzzle pop on both guns, at most every 0.08 s so rapid fire stays readable.</summary>
+        private float _nextFlash;
+
+        private void OnFired(Weapons.WeaponBehaviour weapon)
+        {
+            if (_guns == null || !_shown) return;
+            _recoil = 1f;
+            if (Time.time < _nextFlash || Feel.VfxSystem.Instance == null) return;
+            _nextFlash = Time.time + 0.08f;
+            foreach (Transform g in _guns)
+                Feel.VfxSystem.Instance.Pop((Vector2)g.position + Vector2.up * gunSize * 0.55f, 0.28f, muzzleColor, 0.09f);
         }
 
         private void OnHurt(float damage)
@@ -107,6 +153,12 @@ namespace PofudukFilo.Player
                 float wobble = Mathf.Sin(Time.unscaledTime * 55f) * 18f * _hurt * _hurt;
                 Vector3 jitter = _hurt > 0f ? (Vector3)(Random.insideUnitCircle * 0.06f * _hurt) : Vector3.zero;
                 visual.localPosition = _visualBase + new Vector3(0f, hover, 0f) + jitter;
+                if (_guns != null)
+                {
+                    _recoil = Mathf.MoveTowards(_recoil, 0f, dt * 10f);
+                    for (int i = 0; i < _guns.Length; i++)
+                        _guns[i].localPosition = new Vector3(i == 0 ? -gunOffset.x : gunOffset.x, gunOffset.y - _recoil * 0.05f, 0f);
+                }
                 visual.localRotation = Quaternion.Euler(0f, 0f, _bank + wobble);
             }
 

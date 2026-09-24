@@ -13,6 +13,7 @@ namespace PofudukFilo.Progression
         public PickupKind Kind;
         public bool Attracted;
         public bool Alive;
+        public float Age;
     }
 
     public struct PickupCollected
@@ -35,6 +36,8 @@ namespace PofudukFilo.Progression
         public float MagnetRadius;
         public float CollectRadius;
         public bool GlobalMagnet;
+        /// <summary>Seconds after which any pickup flies to the ship on its own (0 = never).</summary>
+        public float AutoCollectAfter;
         public float DriftSpeed;
         public float AttractAcceleration;
         public float BottomY;
@@ -48,7 +51,9 @@ namespace PofudukFilo.Progression
             float2 toPlayer = PlayerPosition - p.Position;
             float distSq = math.lengthsq(toPlayer);
 
-            if (!p.Attracted && (GlobalMagnet || distSq <= MagnetRadius * MagnetRadius))
+            p.Age += DeltaTime;
+            if (!p.Attracted && (GlobalMagnet || distSq <= MagnetRadius * MagnetRadius
+                                 || (AutoCollectAfter > 0f && p.Age >= AutoCollectAfter)))
                 p.Attracted = true;
 
             if (p.Attracted)

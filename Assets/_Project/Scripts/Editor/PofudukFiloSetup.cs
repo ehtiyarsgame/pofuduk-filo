@@ -151,6 +151,7 @@ namespace PofudukFilo.EditorTools
             Set(shipVisual, "visual", visual.transform);
             Set(shipVisual, "shipRenderer", sr);
             Set(shipVisual, "flameSprite", c.Sprites["circle"]);
+            Set(shipVisual, "gunSprite", c.Sprites["icon_weapons"]);
             Set(shipVisual, "material", c.SpriteMaterial);
 
             var heart = new GameObject("Hitbox Heart");

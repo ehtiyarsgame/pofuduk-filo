@@ -27,6 +27,7 @@ namespace PofudukFilo.Player
 
         private Camera _camera;
         private bool _wasTouching; // no slow-down before the first touch of the run
+        private bool _prevTouch;
         private float _staggerLeft;
         private Vector2 _knock;
         private PlayerHealth _health;
@@ -65,6 +66,11 @@ namespace PofudukFilo.Player
             if (TimeScaleController.IsPaused) return;
 
             bool touching = TryGetDragDelta(out Vector2 pixelDelta);
+            // Sugar Bomb on re-press (device feedback 2026-09-24): when the meter is full, lifting the finger and
+            // pressing again anywhere on the playfield fires it — no reaching for a corner button mid-dodge.
+            if (touching && !_prevTouch && SugarRush.Instance != null && SugarRush.Instance.Ready && !PointerOverUi())
+                SugarRush.Instance.Activate();
+            _prevTouch = touching;
             if (slowTimeWhenFingerLifted && touching != _wasTouching)
             {
                 TimeScaleController.SetFingerLifted(!touching);
@@ -85,6 +91,14 @@ namespace PofudukFilo.Player
                 p += (Vector3)(pixelDelta * (worldPerPixel * sensitivity * control));
             }
             if (touching || _staggerLeft > 0f) transform.position = Clamp(p);
+        }
+
+        private static bool PointerOverUi()
+        {
+            var es = UnityEngine.EventSystems.EventSystem.current;
+            if (es == null) return false;
+            if (Touch.activeTouches.Count > 0) return es.IsPointerOverGameObject(Touch.activeTouches[0].touchId);
+            return es.IsPointerOverGameObject();
         }
 
         private static bool TryGetDragDelta(out Vector2 delta)
