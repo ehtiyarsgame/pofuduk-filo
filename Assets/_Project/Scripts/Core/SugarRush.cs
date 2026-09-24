@@ -23,8 +23,9 @@ namespace PofudukFilo.Core
 
         [SerializeField] private float comboWindow = 1.6f;
         [SerializeField] private float meterMax = 120f; // QA run 13: a rush every ~20 s at 70 — too routine
-        [Tooltip("The bar grows this fraction of meterMax per run minute: kill rate climbs all run (QA run 24: a rush every ~15 s by minute 4).")]
-        [SerializeField] private float meterGrowthPerMinute = 0.5f;
+        [Tooltip("The bar grows this fraction of meterMax per run minute: kill rate climbs all run (QA run 24: a rush every ~15 s by minute 4 " +
+                 "with no growth; run 25 at 0.5: two rushes in 5 min and the bot died twice).")]
+        [SerializeField] private float meterGrowthPerMinute = 0.35f;
         [Tooltip("Meter per kill = killValue × (1 + combo × comboBonus).")]
         [SerializeField] private float comboBonus = 0.03f;
         [SerializeField] private float eliteKillValue = 10f;

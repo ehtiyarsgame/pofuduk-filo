@@ -56,8 +56,8 @@ bullets is what keeps the sugar flowing.
 | Name | Formula | Variables | Range | Example |
 |---|---|---|---|---|
 | Meter gain | `g = v × (1 + min(c, 40) × b)` | v = kill value (1 / 10 / 35), c = combo after this kill, b = `comboBonus` (0.03) | 1.03 – 77 | Combo 20, normal kill: 1 × 1.6 = 1.6; combo 173: 1 × 2.2 = 2.2 |
-| Meter needed | `M = meterMax × (1 + k × t)` | `meterMax` = 120, k = `meterGrowthPerMinute` (0.5), t = run minutes | 120 – 420 at 5 min | t = 1: 180; t = 5: 420 |
-| Kills to rush | `≈ M / mean(g)` | — | 55–190 kills | Minute 5, capped combo: 420 / 2.2 ≈ 190 kills ≈ 25 s at 7.5 kills/s (was ~55 kills ≈ 8 s) |
+| Meter needed | `M = meterMax × (1 + k × t)` | `meterMax` = 120, k = `meterGrowthPerMinute` (0.35), t = run minutes | 120 – 330 at 5 min | t = 1: 162; t = 5: 330 |
+| Kills to rush | `≈ M / mean(g)` | — | 55–190 kills | Minute 5, capped combo, no hits: 330 / 2.2 ≈ 150 kills ≈ 20 s at 7.5 kills/s (was ~55 kills ≈ 8 s); every hit spills half, so a player who is being hit waits much longer |
 | Wingman damage | `d = baseDamage × power × DamageMultiplier` | baseDamage = 7, power = 1 + 0.25 × extra rescues | 7 – ~30 | 2 extras, +30 % damage stat: 7 × 1.5 × 1.3 = 13.7 |
 | Wingman DPS | `d × rushFireRate / fireInterval` | fireInterval = 0.6 s | 11.7 – 85 per wingman | 7 / 0.6 = 11.7; during a rush: 19.8 |
 
@@ -89,7 +89,7 @@ bullets is what keeps the sugar flowing.
 |---|---|---|---|
 | `comboWindow` | 1.6 s | 1.0–2.5 | How forgiving combos are; below 1.0 combos only last during dense waves |
 | `meterMax` | 120 | 70–160 | Rush frequency (target: about one rush per 60–90 s for a decent player) |
-| `meterGrowthPerMinute` | 0.5 | 0.25–0.8 | Keeps late-run rush frequency near the early one as kill rate climbs |
+| `meterGrowthPerMinute` | 0.35 | 0.2–0.5 | Keeps late-run rush frequency near the early one as kill rate climbs. QA run 25 at 0.5: only 2 rushes in 5 min and 2 deaths — too stingy |
 | `RushComboCap` (code constant) | 40 | 25–60 | Largest combo that still speeds the meter |
 | `comboBonus` | 0.03 | 0–0.06 | How much skill (keeping a long combo) speeds up rushes |
 | `meterKeptOnHit` | 0.5 | 0.25–0.8 | How hard getting hit is punished |
