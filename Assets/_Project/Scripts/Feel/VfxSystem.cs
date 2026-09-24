@@ -65,6 +65,9 @@ namespace PofudukFilo.Feel
         [Tooltip("Unlit sprite material, so pooled sprites never depend on 2D lights.")]
         [SerializeField] private Material spriteMaterial;
         [SerializeField] private ParticleSystem confetti;
+        [Tooltip("Small star used by Sparks (death bursts, pickups).")]
+        [SerializeField] private Sprite sparkSprite;
+        [SerializeField] private int maxSparks = 220;
         [SerializeField] private int sortingOrder = 50;
         [Tooltip("Soft cap on simultaneous pop effects (VFX budget, architecture.md §7).")]
         [SerializeField] private int maxBursts = 120;
@@ -86,6 +89,18 @@ namespace PofudukFilo.Feel
             public float Duration;
         }
 
+        private struct Spark
+        {
+            public SpriteRenderer Renderer;
+            public Vector2 Velocity;
+            public float Age;
+            public float Duration;
+            public float Size;
+            public float Spin;
+            public Color Color;
+        }
+
+        private readonly List<Spark> _sparks = new(256);
         private readonly List<Burst> _bursts = new(128);
         private readonly List<Line> _lines = new(32);
         private readonly Stack<LineRenderer> _freeLines = new();
@@ -120,6 +135,33 @@ namespace PofudukFilo.Feel
                 EndScale = radius * 2f,
                 Color = color
             });
+        }
+
+        /// <summary>
+        /// Star sparks flung outward with drag and a little gravity — the "crunch" of a kill.
+        /// Unscaled time, like every effect here, so they finish during hitstop.
+        /// </summary>
+        public void Sparks(Vector2 position, Color color, int count, float speed = 6f, float size = 0.28f, float duration = 0.45f)
+        {
+            Sprite sprite = sparkSprite != null ? sparkSprite : circleSprite;
+            if (sprite == null) return;
+            for (int i = 0; i < count; i++)
+            {
+                if (_sparks.Count >= maxSparks) RemoveSpark(0);
+                float a = Random.value * Mathf.PI * 2f;
+                float v = speed * Random.Range(0.45f, 1f);
+                float s = size * Random.Range(0.6f, 1.2f);
+                SpriteRenderer r = _sprites.Get(sprite, position, s, color);
+                _sparks.Add(new Spark
+                {
+                    Renderer = r,
+                    Velocity = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * v,
+                    Duration = duration * Random.Range(0.7f, 1.2f),
+                    Size = s,
+                    Spin = Random.Range(-720f, 720f),
+                    Color = color
+                });
+            }
         }
 
         /// <summary>Confetti (hearts, stars, candy) from the shared particle system.</summary>
@@ -187,6 +229,29 @@ namespace PofudukFilo.Feel
                 _bursts[i] = b;
             }
 
+            for (int i = _sparks.Count - 1; i >= 0; i--)
+            {
+                Spark sp = _sparks[i];
+                sp.Age += dt;
+                float t = sp.Age / sp.Duration;
+                if (t >= 1f)
+                {
+                    RemoveSpark(i);
+                    continue;
+                }
+                sp.Velocity *= Mathf.Max(0f, 1f - 5f * dt);
+                sp.Velocity.y -= 4f * dt;
+                Transform tr = sp.Renderer.transform;
+                tr.position += (Vector3)(sp.Velocity * dt);
+                tr.Rotate(0f, 0f, sp.Spin * dt);
+                float s = sp.Size * (1f - t * t);
+                tr.localScale = new Vector3(s, s, 1f);
+                Color c = sp.Color;
+                c.a *= 1f - t * t;
+                sp.Renderer.color = c;
+                _sparks[i] = sp;
+            }
+
             for (int i = _lines.Count - 1; i >= 0; i--)
             {
                 Line l = _lines[i];
@@ -204,6 +269,13 @@ namespace PofudukFilo.Feel
                 l.Renderer.startColor = l.Renderer.endColor = c;
                 _lines[i] = l;
             }
+        }
+
+        private void RemoveSpark(int index)
+        {
+            _sparks[index].Renderer.transform.rotation = Quaternion.identity;
+            _sprites.Release(_sparks[index].Renderer);
+            _sparks.RemoveAt(index);
         }
 
         private void RemoveBurst(int index)

@@ -35,6 +35,22 @@ namespace PofudukFilo.Core
             set => Set("shake", value);
         }
 
+        private static int s_damageNumbers = -1; // cached: read on every hit
+
+        public static bool DamageNumbers
+        {
+            get
+            {
+                if (s_damageNumbers < 0) s_damageNumbers = Get("dmgnum") ? 1 : 0;
+                return s_damageNumbers == 1;
+            }
+            set
+            {
+                s_damageNumbers = value ? 1 : 0;
+                Set("dmgnum", value);
+            }
+        }
+
         private static bool Get(string key) => PlayerPrefs.GetInt("pf." + key, 1) == 1;
 
         private static void Set(string key, bool value)

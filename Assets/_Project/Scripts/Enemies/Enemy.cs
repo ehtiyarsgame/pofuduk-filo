@@ -42,9 +42,16 @@ namespace PofudukFilo.Enemies
         [Tooltip("Shared white-silhouette material swapped in for the hit flash. Swapping shared materials keeps\n" +
                  "sprites batched, unlike a MaterialPropertyBlock per enemy.")]
         [SerializeField] private Material flashMaterial;
+        [Tooltip("Main colour for death bursts and hit sparks.")]
+        [SerializeField] private Color fxColor = new(1f, 0.62f, 0.8f, 1f);
+        [Tooltip("Idle squash-and-stretch amount (0 = rigid).")]
+        [SerializeField] private float wobble = 0.06f;
 
         private static int s_nextId = 1;
         private Material _normalMaterial;
+        private Vector3 _baseScale;
+        private float _punch;
+        private float _wobblePhase;
         private float _hp;
         private float _maxHp;
         private float _fireTimer;
@@ -64,6 +71,9 @@ namespace PofudukFilo.Enemies
         public int GoldValue => goldValue;
         public bool IsDead => _hp <= 0f;
         public bool IsElite => isElite;
+        public Color FxColor => fxColor;
+        /// <summary>Visual size in world units (for burst radii).</summary>
+        public float VisualScale => _baseScale.x;
 
         /// <summary>The prefab this instance came from; EnemyManager uses it to return it to the right pool.</summary>
         public Enemy SourcePrefab { get; set; }
@@ -110,9 +120,22 @@ namespace PofudukFilo.Enemies
             _slowTimer = 0f;
             _slowFactor = 1f;
             SetFlash(0f);
+            if (_baseScale == Vector3.zero) _baseScale = transform.localScale;
+            transform.localScale = _baseScale;
+            _punch = 0f;
+            _wobblePhase = Random.value * 6.28f;
         }
 
         public virtual void OnDespawned() { }
+
+        /// <summary>Idle squash-and-stretch plus the hit punch; purely visual (hit radius is separate).</summary>
+        private void AnimateScale(float dt)
+        {
+            _punch = Mathf.MoveTowards(_punch, 0f, dt * 6f);
+            float w = Mathf.Sin(_age * 7f + _wobblePhase) * wobble;
+            float sx = 1f + w + _punch * 0.35f, sy = 1f - w - _punch * 0.2f;
+            transform.localScale = new Vector3(_baseScale.x * sx, _baseScale.y * sy, _baseScale.z);
+        }
 
         public virtual void Tick(float dt, Vector2 playerPosition)
         {
@@ -127,6 +150,7 @@ namespace PofudukFilo.Enemies
             if (_hasSlot) TickFormation(moveDt);
             else TickSwarm(moveDt);
 
+            AnimateScale(dt);
             if (_flashTimer > 0f)
             {
                 _flashTimer -= dt;
@@ -199,8 +223,9 @@ namespace PofudukFilo.Enemies
         {
             if (IsDead) return false;
             _hp -= amount;
-            _flashTimer = 0.05f; // one-frame-ish white flash (art-bible §5.1)
+            _flashTimer = 0.06f; // one-frame-ish white flash (art-bible §5.1)
             SetFlash(1f);
+            _punch = 1f;
             return IsDead;
         }
 

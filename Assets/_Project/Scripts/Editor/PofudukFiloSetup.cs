@@ -85,8 +85,12 @@ namespace PofudukFilo.EditorTools
 
             var bg = new GameObject("Background").AddComponent<BackgroundScroller>();
             bg.transform.position = new Vector3(0f, 0f, 5f);
-            Set(bg, "blobSprite", c.Sprites["circle"]);
-            Set(bg, "blobMaterial", c.SpriteMaterial);
+            Set(bg, "material", c.SpriteMaterial);
+            Set(bg, "sky", c.Sprites["bg_sky"]);
+            Set(bg, "nebula", c.Sprites["bg_nebula"]);
+            Set(bg, "farStars", c.Sprites["bg_stars_far"]);
+            Set(bg, "nearStars", c.Sprites["bg_stars_near"]);
+            SetArray(bg, "props", new Object[] { c.Sprites["bg_planet_ring"], c.Sprites["bg_planet_donut"], c.Sprites["bg_planet_moon"] });
 
             // ---- Systems
             var systems = new GameObject("Systems");
@@ -110,6 +114,8 @@ namespace PofudukFilo.EditorTools
             Set(vfx, "lineMaterial", c.LineMaterial);
             Set(vfx, "spriteMaterial", c.SpriteMaterial);
             Set(vfx, "confetti", BuildConfetti(systems.transform, c.ConfettiMaterial));
+            Set(vfx, "sparkSprite", c.Sprites["star"]);
+            systems.AddComponent<CombatFx>();
 
             var juice = systems.AddComponent<Juice>();
             Set(juice, "cameraRig", cam.transform);

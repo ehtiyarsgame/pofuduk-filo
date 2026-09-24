@@ -29,6 +29,8 @@ namespace PofudukFilo.Enemies
         /// <summary>Raised on the main thread when an enemy dies. XP gems / VFX / audio / WaveDirector listen.
         /// The enemy stays valid until the next Update, when it returns to its pool.</summary>
         public event Action<Enemy> EnemyKilled;
+        /// <summary>Every hit that lands (damage numbers, hit sparks). Fires before <see cref="EnemyKilled"/>.</summary>
+        public event Action<Enemy, float> EnemyDamaged;
 
         private readonly List<Enemy> _active = new(256);
         private readonly List<Enemy> _toDespawn = new(64);
@@ -83,7 +85,10 @@ namespace PofudukFilo.Enemies
         /// <returns>True if the hit killed the enemy.</returns>
         public bool DamageEnemy(Enemy enemy, float damage)
         {
-            if (enemy == null || !enemy.TakeDamage(damage)) return false;
+            if (enemy == null || enemy.IsDead) return false;
+            bool killed = enemy.TakeDamage(damage);
+            EnemyDamaged?.Invoke(enemy, damage);
+            if (!killed) return false;
 
             enemy.Group?.OnMemberKilled();
             EnemyKilled?.Invoke(enemy);

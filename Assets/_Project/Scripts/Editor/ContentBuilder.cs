@@ -105,6 +105,14 @@ namespace PofudukFilo.EditorTools
             Add("circle", ArtRecipes.SoftCircle(Color.white, 128), 128);
             Add("confetti", ArtRecipes.SoftCircle(Color.white, 16), 16);
             Add("ui_rounded", ArtRecipes.RoundedPanel(), 100, new Vector4(32, 32, 32, 32));
+
+            Add("bg_sky", ArtRecipes.SkyGradient(), 100);
+            Add("bg_nebula", ArtRecipes.Nebula(), 100);
+            Add("bg_stars_far", ArtRecipes.StarField(false), 100);
+            Add("bg_stars_near", ArtRecipes.StarField(true), 100);
+            Add("bg_planet_ring", ArtRecipes.RingPlanet(), 256);
+            Add("bg_planet_donut", ArtRecipes.DonutPlanet(), 256);
+            Add("bg_planet_moon", ArtRecipes.CandyMoon(), 256);
         }
 
         private void BuildMeshAndMaterials()
@@ -512,11 +520,20 @@ namespace PofudukFilo.EditorTools
             T enemy = go.AddComponent<T>();
             Set(enemy, "spriteRenderer", renderer);
             Set(enemy, "flashMaterial", FlashMaterial);
+            Set(enemy, "fxColor", FxColors.TryGetValue(sprite, out Color fx) ? fx : ArtRecipes.Pink);
+            if (typeof(T) == typeof(BossEnemy)) Set(enemy, "wobble", 0.025f);
             configure(enemy);
             Enemy saved = SavePrefab<T>(go, "E_" + name);
             Enemies[name] = saved;
             return saved;
         }
+
+        private static readonly Dictionary<string, Color> FxColors = new()
+        {
+            ["chick"] = ArtRecipes.Chick, ["chick_elite"] = ArtRecipes.Honey, ["jelly_bear"] = ArtRecipes.Lilac,
+            ["jelly_king"] = ArtRecipes.Lilac, ["cookie_robot"] = ArtRecipes.Cookie, ["cookie_mech"] = ArtRecipes.Cookie,
+            ["ice_cream"] = ArtRecipes.Mint, ["gum_balloon"] = ArtRecipes.Hex(0xFF7AC2), ["queen_hen"] = ArtRecipes.Coral
+        };
 
         private static void Stats(Enemy e, float hp, float radius, int xp, int gold, float fall, float fire,
             int bullets, float spread, float speed, float damage, bool aim, int type = BEnemy)

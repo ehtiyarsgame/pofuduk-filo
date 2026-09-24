@@ -324,13 +324,14 @@ namespace PofudukFilo.UI
             _settings = _ui.Node("Settings", root).gameObject;
             _ui.Dimmer(_settings.transform);
             Image card = _ui.Panel(_settings.transform, Palette.Lavender, "Card");
-            UIFactory.Place(card, 0.08f, 0.28f, 0.92f, 0.74f);
+            UIFactory.Place(card, 0.08f, 0.24f, 0.92f, 0.78f);
 
-            UIFactory.Place(_ui.Label(card.transform, "Ayarlar", 80, Palette.Cream), 0.05f, 0.84f, 0.95f, 0.97f);
-            Toggle(card.transform, 0.66f, "Ses efektleri", () => GameSettings.Sfx, v => GameSettings.Sfx = v);
-            Toggle(card.transform, 0.5f, "Müzik", () => GameSettings.Music, v => GameSettings.Music = v);
-            Toggle(card.transform, 0.34f, "Titreşim", () => GameSettings.Vibration, v => GameSettings.Vibration = v);
-            Toggle(card.transform, 0.18f, "Ekran sarsıntısı", () => GameSettings.ScreenShake, v => GameSettings.ScreenShake = v);
+            UIFactory.Place(_ui.Label(card.transform, "Ayarlar", 80, Palette.Cream), 0.05f, 0.86f, 0.95f, 0.98f);
+            Toggle(card.transform, 0.71f, "Ses efektleri", () => GameSettings.Sfx, v => GameSettings.Sfx = v);
+            Toggle(card.transform, 0.575f, "Müzik", () => GameSettings.Music, v => GameSettings.Music = v);
+            Toggle(card.transform, 0.44f, "Titreşim", () => GameSettings.Vibration, v => GameSettings.Vibration = v);
+            Toggle(card.transform, 0.305f, "Ekran sarsıntısı", () => GameSettings.ScreenShake, v => GameSettings.ScreenShake = v);
+            Toggle(card.transform, 0.17f, "Hasar sayıları", () => GameSettings.DamageNumbers, v => GameSettings.DamageNumbers = v);
 
             UIFactory.Place(_ui.Button(card.transform, "Kapat", Palette.HotPink, () => _settings.SetActive(false), 52), 0.3f, 0.02f, 0.7f, 0.13f);
             _settings.SetActive(false);

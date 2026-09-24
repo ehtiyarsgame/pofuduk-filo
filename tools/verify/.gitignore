@@ -3,3 +3,5 @@ compile/bin/
 compile/obj/
 tests/bin/
 tests/obj/
+art/bin/
+art/obj/
