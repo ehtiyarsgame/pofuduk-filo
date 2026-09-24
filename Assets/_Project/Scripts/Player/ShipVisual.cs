@@ -25,6 +25,8 @@ namespace PofudukFilo.Player
         private float _speed;
         private Vector3 _visualBase;
         private PlayerHealth _health;
+        private SpriteRenderer[] _renderers;
+        private bool _shown = true;
 
         private void Start()
         {
@@ -41,6 +43,16 @@ namespace PofudukFilo.Player
                 _outer[i] = Flame($"flame-{i}", new Vector3(x, engineOffset.y, 0f), flameOuter, 9);
                 _core[i] = Flame($"flame-core-{i}", new Vector3(x, engineOffset.y + 0.02f, 0f), flameCore, 9);
             }
+            _renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        }
+
+        /// <summary>The ship only exists in play; menus and the run-end screen show the hero art instead.</summary>
+        private void SetShown(bool show)
+        {
+            if (show == _shown) return;
+            _shown = show;
+            if (_renderers == null) _renderers = GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (SpriteRenderer r in _renderers) r.enabled = show;
         }
 
         private Transform Flame(string name, Vector3 local, Color color, int order)
@@ -58,6 +70,8 @@ namespace PofudukFilo.Player
 
         private void LateUpdate()
         {
+            Core.RunController run = Core.RunController.Instance;
+            SetShown(run == null || run.State is not (Core.GameState.MainMenu or Core.GameState.RunEnd));
             float dt = Time.unscaledDeltaTime;
             if (dt <= 0f) return;
             Vector3 delta = transform.position - _lastPosition;

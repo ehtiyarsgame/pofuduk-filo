@@ -107,6 +107,7 @@ namespace PofudukFilo.UI
         private void Update()
         {
             UpdateRushHud();
+            UpdateMenuAnim();
             if (_toast != null && _toast.gameObject.activeSelf && Time.unscaledTime > _toastUntil)
                 _toast.gameObject.SetActive(false);
 
@@ -462,33 +463,69 @@ namespace PofudukFilo.UI
 
         // ---------------------------------------------------------------- Main menu
 
+        private Image _heroShip;
+        private Text _titleTop;
+        private Text _titleBottom;
+
         private void BuildMenu(Transform root)
         {
             _menu = MakeScreen(root, GameState.MainMenu, dim: false);
 
-            Text title = _ui.Label(_menu.transform, "Pofuduk Filo", 140, Palette.Cream);
-            UIFactory.Place(title, 0.05f, 0.72f, 0.95f, 0.86f);
+            // Top bar: wallet left, settings right.
+            Image bar = _ui.Panel(_menu.transform, new Color(0.23f, 0.16f, 0.31f, 0.7f), "TopBar");
+            UIFactory.Place(bar, 0.02f, 0.925f, 0.98f, 0.985f);
+            _walletText = _ui.Label(bar.transform, "", 44, Palette.Honey, TextAnchor.MiddleLeft);
+            UIFactory.Place(_walletText, 0.04f, 0f, 0.7f, 1f);
+            UIFactory.Place(_ui.Button(bar.transform, "Ayarlar", Palette.Lavender, OpenSettings, 38), 0.72f, 0.1f, 0.98f, 0.9f);
 
-            _walletText = _ui.Label(_menu.transform, "", 56, Palette.Honey);
-            UIFactory.Place(_walletText, 0.05f, 0.64f, 0.95f, 0.7f);
+            // Two-tone logo that bobs gently (UpdateMenuAnim).
+            _titleTop = _ui.Label(_menu.transform, "POFUDUK", 150, Palette.Pink);
+            UIFactory.Place(_titleTop, 0.02f, 0.8f, 0.98f, 0.9f);
+            _titleBottom = _ui.Label(_menu.transform, "FİLO", 170, Palette.Cream);
+            UIFactory.Place(_titleBottom, 0.02f, 0.71f, 0.98f, 0.81f);
+            foreach (Text t in new[] { _titleTop, _titleBottom })
+            {
+                var o = t.GetComponent<Outline>();
+                o.effectDistance = new Vector2(6f, -6f);
+                var shadow = t.gameObject.AddComponent<Shadow>();
+                shadow.effectColor = new Color(0.1f, 0.05f, 0.18f, 0.6f);
+                shadow.effectDistance = new Vector2(0f, -14f);
+            }
 
-            UIFactory.Place(_ui.Button(_menu.transform, "<", Palette.Lavender, () => SelectChapter(-1)), 0.06f, 0.5f, 0.2f, 0.57f);
-            UIFactory.Place(_ui.Button(_menu.transform, ">", Palette.Lavender, () => SelectChapter(1)), 0.8f, 0.5f, 0.94f, 0.57f);
-            _chapterText = _ui.Label(_menu.transform, "", 60, Palette.White);
-            UIFactory.Place(_chapterText, 0.22f, 0.5f, 0.78f, 0.57f);
-
-            _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, () => run.StartRun(_selectedChapter), 110);
-            UIFactory.Place(_playButton, 0.12f, 0.33f, 0.88f, 0.46f);
-            UIFactory.Place(_ui.Button(_menu.transform, "Atölye", Palette.Mint, OpenWorkshop, 64), 0.25f, 0.2f, 0.75f, 0.28f);
-
-            // Meta hub row (meta-economy.md §3.3 B–D) and settings.
-            UIFactory.Place(_ui.Button(_menu.transform, "Hangar", Palette.Lavender, OpenHangar, 48), 0.04f, 0.1f, 0.34f, 0.17f);
-            UIFactory.Place(_ui.Button(_menu.transform, "Laboratuvar", Palette.Lavender, OpenLab, 44), 0.35f, 0.1f, 0.65f, 0.17f);
-            UIFactory.Place(_ui.Button(_menu.transform, "Takımyıldız", Palette.Lavender, OpenConstellation, 44), 0.66f, 0.1f, 0.96f, 0.17f);
-            UIFactory.Place(_ui.Button(_menu.transform, "Ayarlar", Palette.Outline, OpenSettings, 40), 0.7f, 0.92f, 0.97f, 0.97f);
+            // Hero: the selected pilot's ship.
+            _heroShip = _ui.Node("HeroShip", _menu.transform).gameObject.AddComponent<Image>();
+            _heroShip.preserveAspect = true;
+            _heroShip.raycastTarget = false;
+            UIFactory.Place(_heroShip, 0.25f, 0.5f, 0.75f, 0.7f);
 
             _pilotText = _ui.Label(_menu.transform, "", 46, Palette.Pink);
-            UIFactory.Place(_pilotText, 0.1f, 0.58f, 0.9f, 0.63f);
+            UIFactory.Place(_pilotText, 0.1f, 0.47f, 0.9f, 0.51f);
+
+            UIFactory.Place(_ui.Button(_menu.transform, "<", Palette.Lavender, () => SelectChapter(-1)), 0.08f, 0.41f, 0.22f, 0.465f);
+            UIFactory.Place(_ui.Button(_menu.transform, ">", Palette.Lavender, () => SelectChapter(1)), 0.78f, 0.41f, 0.92f, 0.465f);
+            _chapterText = _ui.Label(_menu.transform, "", 60, Palette.White);
+            UIFactory.Place(_chapterText, 0.22f, 0.41f, 0.78f, 0.465f);
+
+            _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, () => run.StartRun(_selectedChapter), 120);
+            UIFactory.Place(_playButton, 0.12f, 0.27f, 0.88f, 0.39f);
+            UIFactory.Place(_ui.Button(_menu.transform, "Atölye", Palette.Mint, OpenWorkshop, 64), 0.25f, 0.18f, 0.75f, 0.25f);
+
+            // Meta hub row (meta-economy.md §3.3 B–D).
+            UIFactory.Place(_ui.Button(_menu.transform, "Hangar", Palette.Lavender, OpenHangar, 48), 0.04f, 0.08f, 0.34f, 0.15f);
+            UIFactory.Place(_ui.Button(_menu.transform, "Laboratuvar", Palette.Lavender, OpenLab, 44), 0.35f, 0.08f, 0.65f, 0.15f);
+            UIFactory.Place(_ui.Button(_menu.transform, "Takımyıldız", Palette.Lavender, OpenConstellation, 44), 0.66f, 0.08f, 0.96f, 0.15f);
+        }
+
+        private void UpdateMenuAnim()
+        {
+            if (_menu == null || !_menu.activeSelf || _heroShip == null) return;
+            float t = Time.unscaledTime;
+            _heroShip.rectTransform.anchoredPosition = new Vector2(0f, Mathf.Sin(t * 1.8f) * 18f);
+            _heroShip.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 1.1f) * 4f);
+            float s = 1f + Mathf.Sin(t * 2.4f) * 0.02f;
+            _titleTop.rectTransform.localScale = new Vector3(s, s, 1f);
+            _titleBottom.rectTransform.localScale = new Vector3(2f - s, 2f - s, 1f);
+            _playButton.transform.localScale = Vector3.one * (1f + Mathf.Max(0f, Mathf.Sin(t * 3f)) * 0.04f);
         }
 
         private void RefreshMenu()

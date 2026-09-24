@@ -128,13 +128,15 @@ namespace PofudukFilo.UI
         {
             if (_pilotText == null) return;
             string id = run.Meta.SelectedCharacterId;
+            CharacterDefinition pilot = run.Characters.Count > 0 ? run.Characters[0] : null;
             foreach (CharacterDefinition c in run.Characters)
-                if (c.id == id && run.Meta.IsUnlocked(c))
-                {
-                    _pilotText.text = $"Pilot: {c.displayName}";
-                    return;
-                }
-            _pilotText.text = run.Characters.Count > 0 ? $"Pilot: {run.Characters[0].displayName}" : "";
+                if (c.id == id && run.Meta.IsUnlocked(c)) pilot = c;
+            _pilotText.text = pilot != null ? $"Pilot: {pilot.displayName}" : "";
+            if (_heroShip != null && pilot != null)
+            {
+                _heroShip.sprite = pilot.shipSprite != null ? pilot.shipSprite : pilot.sprite;
+                Feel.Juice.PopIn(_heroShip.transform);
+            }
         }
 
         private void RefreshHangar()
