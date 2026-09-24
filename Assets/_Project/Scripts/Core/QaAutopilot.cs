@@ -20,7 +20,7 @@ namespace PofudukFilo.Core
     public sealed class QaAutopilot : MonoBehaviour
     {
         private const int MaxRevives = 3;
-        private static readonly float[] ShotTimes = { 4f, 12f, 25f, 45f, 70f, 100f, 140f, 185f, 230f, 280f };
+        private static readonly float[] ShotTimes = { 4f, 12f, 25f, 45f, 70f, 100f, 140f, 185f, 230f, 280f, 340f, 400f };
 
         private string _dir;
         private float _runSeconds = 300f;
@@ -73,9 +73,9 @@ namespace PofudukFilo.Core
                 yield break;
             }
 
-            run.StartRun(0);
+            run.StartEndless(); // the Ball Blast-style main mode; pw = Power Match HP scale
             float gameTime = 0f, nextTelemetry = 0f;
-            Line("t(s)\tlvl\tkills\thp\tenemies\tfps\tcombo(best)\trushes\tfleet\tstate\tweapons");
+            Line("t(s)\tlvl\tkills\thp\tenemies\tfps\tcombo(best)\trushes\tfleet\tpw(ttk)\tstate\tweapons");
             if (SugarRush.Instance != null) SugarRush.Instance.RushStarted += () => _rushes++;
 
             while (gameTime < _runSeconds)
@@ -167,7 +167,15 @@ namespace PofudukFilo.Core
             Line($"{t:0}\t{(xp != null ? xp.Level : 0)}\t{run.Kills}\t{(hp != null ? hp.CurrentHp : 0):0}/{(hp != null ? hp.MaxHp : 0):0}\t" +
                  $"{(EnemyManager.Instance != null ? EnemyManager.Instance.ActiveCount : 0)}\t{fps:0}\t" +
                  $"{(rush != null ? rush.Combo : 0)}({(rush != null ? rush.BestCombo : 0)})\t{_rushes}\t{(fleet != null ? fleet.Count : 0)}\t" +
+                 $"{PowerText()}\t" +
                  $"{run.State}\t{weapons}");
+        }
+
+        private static string PowerText()
+        {
+            if (EnemyManager.Instance == null) return "-";
+            PowerMatch pm = EnemyManager.Instance.Power;
+            return $"{pm.Scale:0.00}({pm.AverageTtk:0.00}/{pm.BaselineTtk:0.00})";
         }
 
         private IEnumerator Shot(string name)

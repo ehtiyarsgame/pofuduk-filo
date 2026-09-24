@@ -206,14 +206,14 @@ namespace PofudukFilo.Weapons
                 w.Transform.position = next;
                 w.Transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Clamp(-w.Velocity.x * 3f, -20f, 20f));
 
-                w.Cooldown -= dt * SugarRush.FireRate;
+                w.Cooldown -= dt * SugarRush.FireRate * Forge.FireRate;
                 if (w.Cooldown > 0f || bullets == null) continue;
                 w.Cooldown = fireInterval;
 
                 Enemy e = EnemyManager.Instance != null ? EnemyManager.Instance.FindNearest(next, targetRange) : null;
                 Vector2 dir = e != null ? ((Vector2)e.transform.position - next).normalized : Vector2.up;
                 if (dir.y < 0.2f) dir = new Vector2(dir.x, 0.2f).normalized; // never shoot backwards into the player's space
-                float dmg = baseDamage * _power * (stats != null ? stats.DamageMultiplier : 1f);
+                float dmg = baseDamage * _power * (stats != null ? stats.DamageMultiplier : 1f) * Forge.DamageMultiplier;
                 bullets.SpawnPlayerBullet(bulletTypeIndex, next + dir * 0.3f, dir * bulletSpeed, dmg, 0, 2f);
             }
         }

@@ -43,7 +43,7 @@ namespace PofudukFilo.Weapons
         {
             if (Definition == null) return;
 
-            _cooldownTimer -= Time.deltaTime * Core.SugarRush.FireRate; // Şeker Hücumu speeds every weapon
+            _cooldownTimer -= Time.deltaTime * Core.SugarRush.FireRate * Forge.FireRate; // Şeker Hücumu and the Forge speed every weapon
             if (_cooldownTimer > 0f) return;
 
             WeaponLevelStats s = CurrentStats;
@@ -72,7 +72,7 @@ namespace PofudukFilo.Weapons
 
         protected float RollDamage(float baseDamage)
         {
-            float damage = baseDamage * Stats.DamageMultiplier * WeaponMastery.Multiplier(Definition);
+            float damage = baseDamage * Stats.DamageMultiplier * WeaponMastery.Multiplier(Definition) * Forge.DamageMultiplier;
             return Random.value < Stats.CritChance ? damage * 2f : damage;
         }
 

@@ -46,6 +46,17 @@ namespace PofudukFilo.Enemies
         public float RunMinutes { get; set; }
         public int ChapterIndex { get; set; }
 
+        /// <summary>Güç Eşleme: enemy HP follows the player's kill speed (power-match.md).</summary>
+        public PowerMatch Power { get; } = new();
+        private float _clock;
+
+        /// <summary>New run: forget the last run's calibration.</summary>
+        public void ResetPower()
+        {
+            Power.Reset();
+            _clock = 0f;
+        }
+
         private void Awake()
         {
             Instance = this;
@@ -69,7 +80,7 @@ namespace PofudukFilo.Enemies
 
             Enemy enemy = GetPool(prefab).Get(position);
             enemy.SourcePrefab = prefab;
-            enemy.Initialize(Formulas.EnemyHp(enemy.BaseHp, RunMinutes, ChapterIndex));
+            enemy.Initialize(Formulas.EnemyHp(enemy.BaseHp, RunMinutes, ChapterIndex) * Power.Scale);
             _active.Add(enemy);
             return enemy;
         }
@@ -91,6 +102,9 @@ namespace PofudukFilo.Enemies
             if (!killed) return false;
 
             enemy.Group?.OnMemberKilled();
+            // Normal enemies only, and not during a rush (a 6 s fire-rate spike would teach the wrong baseline).
+            if (!enemy.IsElite && enemy is not BossEnemy && enemy.SeenAt >= 0f && !SugarRush.RushActive)
+                Power.RecordKill(_clock - enemy.SeenAt);
             EnemyKilled?.Invoke(enemy);
             _toDespawn.Add(enemy); // removed next Update, so indices and iteration stay valid this frame
             return true;
@@ -181,6 +195,8 @@ namespace PofudukFilo.Enemies
             UpdateScreenBounds();
 
             float dt = Time.deltaTime;
+            _clock += dt;
+            Power.Tick(dt);
             Vector2 playerPos = PlayerHealth.Instance != null
                 ? (Vector2)PlayerHealth.Instance.transform.position
                 : Vector2.zero;
@@ -201,6 +217,7 @@ namespace PofudukFilo.Enemies
             {
                 Enemy e = _active[i];
                 bool visible = IsOnScreen(e);
+                if (visible && e.SeenAt < 0f) e.SeenAt = _clock;
                 _proxies[i] = new EnemyProxy
                 {
                     // Off-screen enemies are parked far away so no bullet can reach them.

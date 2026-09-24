@@ -87,6 +87,38 @@ namespace PofudukFilo.Core
         public static float RushMeterMax(float baseMax, float growthPerMinute, float minutes, float startMinutes = 0f) =>
             baseMax * (1f + growthPerMinute * Math.Max(0f, minutes - startMinutes));
 
+        // ---- Power Match & Forge (power-match.md §4)
+
+        /// <summary>
+        /// One Power Match step: the enemy HP scale moves toward the value that brings the average time-to-kill
+        /// back to <paramref name="targetTtk"/>, by at most e^(rate·dt) per step, clamped to [1, maxScale].
+        /// Killing faster than the target raises it; slower lowers it, never below the authored curve.
+        /// </summary>
+        public static float PowerMatchStep(float scale, float avgTtk, float targetTtk, float rate, float dt, float maxScale)
+        {
+            if (avgTtk <= 0f || targetTtk <= 0f) return scale;
+            float error = Math.Clamp(MathF.Log(targetTtk / avgTtk), -1f, 1f);
+            return Math.Clamp(scale * MathF.Exp(rate * error * dt), 1f, maxScale);
+        }
+
+        public const float ForgePowerPerLevel = 0.05f;
+        public const float ForgeSpeedPerLevel = 0.025f;
+        public const int MaxForgeSpeedLevel = 40;
+
+        /// <summary>Gold for the next Forge level (either track, unlimited): 40·1.14^L, rounded to 5.</summary>
+        public static int ForgeCost(int level)
+        {
+            if (level < 0) throw new ArgumentOutOfRangeException(nameof(level));
+            double raw = 40 * Math.Pow(1.14, Math.Min(level, 150));
+            return (int)Math.Min(int.MaxValue / 2, Math.Round(raw / 5.0, MidpointRounding.AwayFromZero) * 5);
+        }
+
+        /// <summary>Ateş Gücü: damage × (1 + 0.05·L), no cap.</summary>
+        public static float ForgePowerMultiplier(int level) => 1f + ForgePowerPerLevel * Math.Max(0, level);
+
+        /// <summary>Ateş Hızı: fire rate × (1 + 0.025·L), capped at level 40 (×2) so bullet density stays readable.</summary>
+        public static float ForgeSpeedMultiplier(int level) => 1f + ForgeSpeedPerLevel * Math.Clamp(level, 0, MaxForgeSpeedLevel);
+
         /// <summary>
         /// Final cooldown = base · Π(1 − r_i), floored at 35 % of base (weapon-system.md §4).
         /// </summary>

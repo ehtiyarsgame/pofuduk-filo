@@ -223,12 +223,20 @@ namespace PofudukFilo.Core
             // ---- Ads
             ["Kilitli — açınca kart havuzuna girer"] = "Locked — unlocking adds it to the card pool",
             ["Sv. Atla"] = "Level Up",
+            ["SONSUZ"] = "ENDLESS",
+            ["ATEŞ GÜCÜ"] = "FIREPOWER",
+            ["ATEŞ HIZI"] = "FIRE RATE",
+            ["YENİ REKOR!"] = "NEW RECORD!",
             ["Reklam hazır değil, biraz sonra dene."] = "Ad not ready, try again soon."
         };
 
         public static readonly Dictionary<string, string> Templates = new()
         {
             ["Sv. {0}"] = "Lv. {0}",
+            ["SONSUZ\nRekor {0}"] = "ENDLESS\nBest {0}",
+            ["Rekor: {0}"] = "Best: {0}",
+            ["{0}\nSv.{1}  ·  {2} altın"] = "{0}\nLv.{1}  ·  {2} gold",
+            ["{0}\nSv.{1}  ·  MAKS"] = "{0}\nLv.{1}  ·  MAX",
             ["{0}  YENİ!"] = "{0}  NEW!",
             ["{0}  Sv.{1}"] = "{0}  Lv.{1}",
             ["Sv.{0}"] = "Lv.{0}",

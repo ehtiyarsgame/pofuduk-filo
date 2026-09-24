@@ -31,6 +31,10 @@ namespace PofudukFilo.Enemies
         [SerializeField] private float firstFormationDelay = 4f;
         [SerializeField] private float bossSlotBelowTop = 3f;
 
+        [Header("Endless (power-match.md §3.3)")]
+        [Tooltip("In Endless, a boss from the chapter's roster returns this long after the previous one dies.")]
+        [SerializeField] private float endlessBossEverySeconds = 120f;
+
         public event Action<RunPhase> PhaseStarted;
         public event Action<FormationGroup> FormationCleared;
         public event Action<Enemy> BossSpawned;
@@ -52,6 +56,9 @@ namespace PofudukFilo.Enemies
         private float _breatherUntil;
         private Enemy _currentBoss;
         private bool _currentBossIsFinal;
+        private bool _endlessMode;
+        private float _nextEndlessBoss;
+        private int _endlessBossCycle;
 
         public float RunMinutes => _elapsed / 60f;
         public RunPhase CurrentPhase => _phaseIndex >= 0 ? run.phases[_phaseIndex] : null;
@@ -72,9 +79,12 @@ namespace PofudukFilo.Enemies
             if (PlayerHealth.Instance != null) PlayerHealth.Instance.Damaged -= OnPlayerDamaged;
         }
 
-        public void StartRun(RunDefinition definition)
+        /// <param name="endlessMode">Sonsuz Mod from the menu: the final boss does not end the run; the waves roll on.</param>
+        public void StartRun(RunDefinition definition, bool endlessMode = false)
         {
             run = definition;
+            _endlessMode = endlessMode;
+            _endlessBossCycle = 0;
             _running = true;
             _elapsed = 0f;
             _nextDdaEvaluation = 1f;
@@ -86,6 +96,7 @@ namespace PofudukFilo.Enemies
             IsEndless = false;
             _dda.Reset(0f);
             EnemyManager.Instance.ChapterIndex = run.chapterIndex;
+            EnemyManager.Instance.ResetPower();
         }
 
         public void StopRun() => _running = false;
@@ -107,7 +118,28 @@ namespace PofudukFilo.Enemies
             }
             _currentBoss = null;
             _breatherUntil = _elapsed + run.breatherSeconds;
+            _nextEndlessBoss = _elapsed + endlessBossEverySeconds;
             _running = true;
+        }
+
+        /// <summary>Endless: the chapter's bosses return in rotation, each tougher on the clock and Power Match.</summary>
+        private void TickEndlessBoss()
+        {
+            if (IsBossAlive || _elapsed < _nextEndlessBoss) return;
+            int bosses = 0;
+            foreach (RunPhase p in run.phases)
+                if (p.kind != PhaseKind.Waves && p.bossPrefab != null) bosses++;
+            if (bosses == 0) return;
+
+            int pick = _endlessBossCycle++ % bosses;
+            foreach (RunPhase p in run.phases)
+            {
+                if (p.kind == PhaseKind.Waves || p.bossPrefab == null) continue;
+                if (pick-- > 0) continue;
+                SpawnBoss(p.bossPrefab, false);
+                break;
+            }
+            _nextEndlessBoss = float.MaxValue; // re-armed when this boss dies
         }
 
         private void Update()
@@ -138,7 +170,12 @@ namespace PofudukFilo.Enemies
         private void AdvancePhases()
         {
             // The timeline waits for a living boss, so two bosses never overlap.
-            if (IsBossAlive || IsEndless) return;
+            if (IsEndless)
+            {
+                TickEndlessBoss();
+                return;
+            }
+            if (IsBossAlive) return;
 
             int target = run.PhaseIndexAt(RunMinutes);
             while (_phaseIndex < target && !IsBossAlive)
@@ -152,15 +189,19 @@ namespace PofudukFilo.Enemies
             PhaseStarted?.Invoke(phase);
 
             if (phase.kind == PhaseKind.Waves || phase.bossPrefab == null) return;
+            SpawnBoss(phase.bossPrefab, phase.kind == PhaseKind.FinalBoss);
+        }
 
+        private void SpawnBoss(Enemy prefab, bool isFinal)
+        {
             Vector2 top = TopCenter();
-            Enemy boss = EnemyManager.Instance.Spawn(phase.bossPrefab, top + Vector2.up * spawnAboveScreen);
+            Enemy boss = EnemyManager.Instance.Spawn(prefab, top + Vector2.up * spawnAboveScreen);
             if (boss == null) return;
 
             // Boss prefabs should use a very long Formation Hold Seconds so they never dive away.
             boss.AssignFormationSlot(top + Vector2.down * bossSlotBelowTop);
             _currentBoss = boss;
-            _currentBossIsFinal = phase.kind == PhaseKind.FinalBoss;
+            _currentBossIsFinal = isFinal;
             BossSpawned?.Invoke(boss);
         }
 
@@ -172,6 +213,15 @@ namespace PofudukFilo.Enemies
             _currentBoss = null;
             _breatherUntil = _elapsed + run.breatherSeconds;
             if (BulletSystem.Instance != null) BulletSystem.Instance.RequestClearEnemyBullets();
+            if (IsEndless) _nextEndlessBoss = _elapsed + endlessBossEverySeconds;
+
+            if (isFinal && _endlessMode)
+            {
+                // Sonsuz Mod: the final boss is a milestone, not the end.
+                BossDefeated?.Invoke(enemy, false);
+                ContinueEndless();
+                return;
+            }
             BossDefeated?.Invoke(enemy, isFinal);
 
             if (isFinal)

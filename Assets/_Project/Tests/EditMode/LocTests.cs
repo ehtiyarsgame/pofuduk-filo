@@ -18,6 +18,14 @@ namespace PofudukFilo.Tests
         }
 
         [Test]
+        public void test_forge_and_endless_labels_translate()
+        {
+            Assert.That(Loc.ToEnglish("ATEŞ GÜCÜ\nSv.3  ·  60 altın"), Is.EqualTo("FIREPOWER\nLv.3  ·  60 gold"));
+            Assert.That(Loc.ToEnglish("ATEŞ HIZI\nSv.40  ·  MAKS"), Is.EqualTo("FIRE RATE\nLv.40  ·  MAX"));
+            Assert.That(Loc.ToEnglish("SONSUZ\nRekor 4:05"), Is.EqualTo("ENDLESS\nBest 4:05"));
+        }
+
+        [Test]
         public void test_template_capture_is_translated_recursively()
         {
             Assert.That(Loc.ToEnglish("EVRİM! Tüy Blaster"), Is.EqualTo("EVOLVED! Feather Blaster"));

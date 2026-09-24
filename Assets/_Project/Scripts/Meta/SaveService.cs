@@ -32,6 +32,11 @@ namespace PofudukFilo.Meta
         public int highestChapterCleared = -1;
         public List<UpgradeLevelEntry> weaponMastery = new();
         public List<UpgradeLevelEntry> pilotLevels = new();
+        // Forge tracks (power-match.md §3.4) and the Endless record.
+        public int forgePower;
+        public int forgeSpeed;
+        public float bestEndlessSeconds;
+        public int bestEndlessKills;
     }
 
     [Serializable]

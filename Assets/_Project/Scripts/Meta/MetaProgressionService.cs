@@ -93,6 +93,41 @@ namespace PofudukFilo.Meta
             return IsUnlocked(c) && level < Core.Formulas.MaxPilotLevel && _data.gold >= Core.Formulas.PilotLevelCost(level);
         }
 
+        // ---------------------------------------------------------------- Forge (power-match.md §3.4)
+
+        public int GetForgeLevel(ForgeTrack track) => track == ForgeTrack.Power ? _data.forgePower : _data.forgeSpeed;
+
+        public bool IsForgeMaxed(ForgeTrack track) =>
+            track == ForgeTrack.Speed && _data.forgeSpeed >= Core.Formulas.MaxForgeSpeedLevel;
+
+        public int ForgeCost(ForgeTrack track) => Core.Formulas.ForgeCost(GetForgeLevel(track));
+
+        public bool CanUpgradeForge(ForgeTrack track) => !IsForgeMaxed(track) && _data.gold >= ForgeCost(track);
+
+        public bool TryUpgradeForge(ForgeTrack track)
+        {
+            if (!CanUpgradeForge(track) || !TrySpend(ForgeCost(track), 0)) return false;
+            if (track == ForgeTrack.Power) _data.forgePower++;
+            else _data.forgeSpeed++;
+            Commit();
+            return true;
+        }
+
+        // ---------------------------------------------------------------- Endless record
+
+        public float BestEndlessSeconds => _data.bestEndlessSeconds;
+        public int BestEndlessKills => _data.bestEndlessKills;
+
+        /// <summary>Stores an Endless result; true if it beat the time record.</summary>
+        public bool RecordEndless(float seconds, int kills)
+        {
+            bool best = seconds > _data.bestEndlessSeconds;
+            if (best) _data.bestEndlessSeconds = seconds;
+            if (kills > _data.bestEndlessKills) _data.bestEndlessKills = kills;
+            _persist(_data);
+            return best;
+        }
+
         public bool TryLevelPilot(CharacterDefinition c)
         {
             if (!CanLevelPilot(c)) return false;

@@ -421,7 +421,11 @@ namespace PofudukFilo.UI
             UIFactory.Place(_endGoal, 0.08f, 0.47f, 0.92f, 0.52f);
 
             // One big call to action (game-concept.md §4.5 step 4).
-            Button again = _ui.Button(screen.transform, "Tekrar Oyna", Palette.HotPink, () => AfterRunAd(() => run.StartRun(run.ChapterIndex)), 80);
+            Button again = _ui.Button(screen.transform, "Tekrar Oyna", Palette.HotPink, () => AfterRunAd(() =>
+            {
+                if (run.IsEndlessRun) run.StartEndless();
+                else run.StartRun(run.ChapterIndex);
+            }), 80);
             UIFactory.Place(again, 0.1f, 0.22f, 0.9f, 0.33f);
             _upgradeButton = _ui.Button(screen.transform, "Geliştir", Palette.Lavender, OpenWorkshopFromEnd, 52);
             UIFactory.Place(_upgradeButton, 0.3f, 0.12f, 0.7f, 0.19f);
@@ -432,19 +436,24 @@ namespace PofudukFilo.UI
 
         private void OnRunEnded(RunSummary s)
         {
-            _endTitle.text = Loc.T(s.Endless ? "Sonsuz Mod bitti!" : s.Victory ? "Zafer!" : "Az kaldı!");
+            _endTitle.text = Loc.T(s.NewRecord ? "YENİ REKOR!" : s.Endless ? "Sonsuz Mod bitti!" : s.Victory ? "Zafer!" : "Az kaldı!");
             _endlessButton.gameObject.SetActive(run.CanContinueEndless);
             int minutes = Mathf.FloorToInt(s.Minutes);
             int seconds = Mathf.FloorToInt((s.Minutes - minutes) * 60f);
             _endStats.text = Loc.T($"Seviye {s.Level}   ·   {s.Kills} düşman   ·   {minutes}:{seconds:00}");
             if (s.Stardust > 0) _endStats.text += Loc.T($"\n+{s.Stardust} Yıldız Tozu");
+            if (run.IsEndlessRun)
+            {
+                float best = run.Meta.BestEndlessSeconds;
+                _endStats.text += "\n" + Loc.T($"Rekor: {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}");
+            }
 
             _goldShown = 0f;
             _goldTarget = s.Gold;
             _endGold.text = Loc.T("+0 altın");
             _endGoal.text = Loc.T(NextGoalText());
 
-            bool affordable = run.Meta.AnyAffordable(run.Workshop);
+            bool affordable = run.Meta.AnyAffordable(run.Workshop) || run.Meta.CanUpgradeForge(ForgeTrack.Power);
             UIFactory.SetText(_upgradeButton, affordable ? "Geliştir  !" : "Geliştir");
             OnRunEndedAds(s);
         }
@@ -513,24 +522,64 @@ namespace PofudukFilo.UI
             _heroShip = _ui.Node("HeroShip", _menu.transform).gameObject.AddComponent<Image>();
             _heroShip.preserveAspect = true;
             _heroShip.raycastTarget = false;
-            UIFactory.Place(_heroShip, 0.25f, 0.5f, 0.75f, 0.7f);
+            UIFactory.Place(_heroShip, 0.25f, 0.53f, 0.75f, 0.71f);
 
             _pilotText = _ui.Label(_menu.transform, "", 46, Palette.Pink);
-            UIFactory.Place(_pilotText, 0.1f, 0.47f, 0.9f, 0.51f);
+            UIFactory.Place(_pilotText, 0.1f, 0.5f, 0.9f, 0.535f);
 
-            UIFactory.Place(_ui.Button(_menu.transform, "<", Palette.Lavender, () => SelectChapter(-1)), 0.08f, 0.41f, 0.22f, 0.465f);
-            UIFactory.Place(_ui.Button(_menu.transform, ">", Palette.Lavender, () => SelectChapter(1)), 0.78f, 0.41f, 0.92f, 0.465f);
+            UIFactory.Place(_ui.Button(_menu.transform, "<", Palette.Lavender, () => SelectChapter(-1)), 0.08f, 0.44f, 0.22f, 0.49f);
+            UIFactory.Place(_ui.Button(_menu.transform, ">", Palette.Lavender, () => SelectChapter(1)), 0.78f, 0.44f, 0.92f, 0.49f);
             _chapterText = _ui.Label(_menu.transform, "", 60, Palette.White);
-            UIFactory.Place(_chapterText, 0.22f, 0.41f, 0.78f, 0.465f);
+            UIFactory.Place(_chapterText, 0.22f, 0.44f, 0.78f, 0.49f);
 
-            _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, () => run.StartRun(_selectedChapter), 120);
-            UIFactory.Place(_playButton, 0.12f, 0.27f, 0.88f, 0.39f);
-            UIFactory.Place(_ui.Button(_menu.transform, "Atölye", Palette.Mint, OpenWorkshop, 64), 0.25f, 0.18f, 0.75f, 0.25f);
+            // Two ways in: the chapter story, or Sonsuz Mod — Ball Blast's endless climb (power-match.md §3.3).
+            _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, () => run.StartRun(_selectedChapter), 110);
+            UIFactory.Place(_playButton, 0.04f, 0.335f, 0.6f, 0.43f);
+            _endlessMenuButton = _ui.Button(_menu.transform, "SONSUZ", Palette.Honey, run.StartEndless, 44);
+            UIFactory.Place(_endlessMenuButton, 0.62f, 0.335f, 0.96f, 0.43f);
+
+            // The Forge: always something to buy between runs (power-match.md §3.4).
+            _forgePowerButton = _ui.Button(_menu.transform, "", Palette.Mint, () => BuyForge(ForgeTrack.Power), 40);
+            UIFactory.Place(_forgePowerButton, 0.04f, 0.215f, 0.49f, 0.32f);
+            _forgeSpeedButton = _ui.Button(_menu.transform, "", Palette.Mint, () => BuyForge(ForgeTrack.Speed), 40);
+            UIFactory.Place(_forgeSpeedButton, 0.51f, 0.215f, 0.96f, 0.32f);
 
             // Meta hub row (meta-economy.md §3.3 B–D).
-            UIFactory.Place(_ui.Button(_menu.transform, "Hangar", Palette.Lavender, OpenHangar, 48), 0.04f, 0.08f, 0.34f, 0.15f);
-            UIFactory.Place(_ui.Button(_menu.transform, "Laboratuvar", Palette.Lavender, OpenLab, 44), 0.35f, 0.08f, 0.65f, 0.15f);
-            UIFactory.Place(_ui.Button(_menu.transform, "Takımyıldız", Palette.Lavender, OpenConstellation, 44), 0.66f, 0.08f, 0.96f, 0.15f);
+            UIFactory.Place(_ui.Button(_menu.transform, "Atölye", Palette.Lavender, OpenWorkshop, 38), 0.02f, 0.1f, 0.25f, 0.195f);
+            UIFactory.Place(_ui.Button(_menu.transform, "Hangar", Palette.Lavender, OpenHangar, 38), 0.26f, 0.1f, 0.49f, 0.195f);
+            UIFactory.Place(_ui.Button(_menu.transform, "Laboratuvar", Palette.Lavender, OpenLab, 32), 0.5f, 0.1f, 0.73f, 0.195f);
+            UIFactory.Place(_ui.Button(_menu.transform, "Takımyıldız", Palette.Lavender, OpenConstellation, 32), 0.74f, 0.1f, 0.98f, 0.195f);
+        }
+
+        private Button _endlessMenuButton;
+        private Button _forgePowerButton;
+        private Button _forgeSpeedButton;
+
+        private void BuyForge(ForgeTrack track)
+        {
+            if (run.Meta.TryUpgradeForge(track)) RefreshWallet();
+        }
+
+        private void RefreshForge()
+        {
+            if (_forgePowerButton == null) return;
+            MetaProgressionService meta = run.Meta;
+            SetForge(_forgePowerButton, "ATEŞ GÜCÜ", ForgeTrack.Power, meta);
+            SetForge(_forgeSpeedButton, "ATEŞ HIZI", ForgeTrack.Speed, meta);
+
+            float best = meta.BestEndlessSeconds;
+            UIFactory.SetText(_endlessMenuButton, best > 0f
+                ? $"SONSUZ\nRekor {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}"
+                : "SONSUZ");
+        }
+
+        private static void SetForge(Button b, string title, ForgeTrack track, MetaProgressionService meta)
+        {
+            int level = meta.GetForgeLevel(track);
+            UIFactory.SetText(b, meta.IsForgeMaxed(track)
+                ? $"{title}\nSv.{level}  ·  MAKS"
+                : $"{title}\nSv.{level}  ·  {meta.ForgeCost(track)} altın");
+            b.interactable = meta.CanUpgradeForge(track);
         }
 
         private void UpdateMenuAnim()
@@ -556,6 +605,7 @@ namespace PofudukFilo.UI
         private void RefreshWallet()
         {
             if (_walletText != null) _walletText.text = Loc.T($"{run.Meta.Gold} altın   ·   {run.Meta.Stardust} Yıldız Tozu");
+            RefreshForge();
             if (_workshop != null && _workshop.activeSelf) RefreshWorkshop();
             RefreshOpenMetaScreen();
         }

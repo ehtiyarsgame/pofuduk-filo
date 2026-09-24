@@ -83,7 +83,11 @@ namespace PofudukFilo.Enemies
         {
             _hp = maxHp;
             _maxHp = maxHp;
+            SeenAt = -1f;
         }
+
+        /// <summary>EnemyManager clock time when this enemy first entered the playfield (−1 = not yet). Power Match reads it.</summary>
+        public float SeenAt { get; set; } = -1f;
 
         public float HpFraction => _maxHp > 0f ? Mathf.Clamp01(_hp / _maxHp) : 0f;
 

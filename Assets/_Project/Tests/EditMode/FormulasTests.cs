@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using PofudukFilo.Core;
 
@@ -84,6 +85,34 @@ namespace PofudukFilo.Tests
             Assert.That(Formulas.RushMeterMax(120f, 0.5f, -1f), Is.EqualTo(120f).Within(1e-4f));
             Assert.That(Formulas.RushMeterMax(120f, 0.35f, 1.5f, 2f), Is.EqualTo(120f).Within(1e-4f));
             Assert.That(Formulas.RushMeterMax(120f, 0.35f, 5f, 2f), Is.EqualTo(246f).Within(1e-3f));
+        }
+
+        [Test]
+        public void test_power_match_rises_when_killing_too_fast()
+        {
+            // Killing in half the target time: ln(2) error → scale grows by e^(0.1·0.693) per second.
+            float next = Formulas.PowerMatchStep(1f, 0.5f, 1f, 0.1f, 1f, 6f);
+            Assert.That(next, Is.EqualTo(MathF.Exp(0.1f * MathF.Log(2f))).Within(1e-5f));
+        }
+
+        [Test]
+        public void test_power_match_never_below_one_or_above_max()
+        {
+            Assert.That(Formulas.PowerMatchStep(1f, 3f, 1f, 0.5f, 1f, 6f), Is.EqualTo(1f));
+            Assert.That(Formulas.PowerMatchStep(5.9f, 0.01f, 1f, 1f, 5f, 6f), Is.EqualTo(6f));
+            Assert.That(Formulas.PowerMatchStep(2f, 0f, 1f, 1f, 1f, 6f), Is.EqualTo(2f));
+        }
+
+        [Test]
+        public void test_forge_cost_and_multipliers()
+        {
+            Assert.That(Formulas.ForgeCost(0), Is.EqualTo(40));
+            Assert.That(Formulas.ForgeCost(1), Is.EqualTo(45));
+            Assert.That(Formulas.ForgeCost(10), Is.EqualTo(150));
+            Assert.That(Formulas.ForgeCost(1000), Is.GreaterThan(0));
+            Assert.That(Formulas.ForgePowerMultiplier(20), Is.EqualTo(2f).Within(1e-5f));
+            Assert.That(Formulas.ForgeSpeedMultiplier(40), Is.EqualTo(2f).Within(1e-5f));
+            Assert.That(Formulas.ForgeSpeedMultiplier(99), Is.EqualTo(2f).Within(1e-5f));
         }
     }
 }

@@ -31,11 +31,14 @@ namespace PofudukFilo.Core
         public readonly float Minutes;
         public readonly int ChapterIndex;
         public readonly bool Endless;
+        /// <summary>Sonsuz Mod run that beat the time record.</summary>
+        public readonly bool NewRecord;
 
         public RunSummary(bool victory, int gold, int stardust, int level, int kills, float minutes, int chapterIndex,
-            bool endless = false)
+            bool endless = false, bool newRecord = false)
         {
             Endless = endless;
+            NewRecord = newRecord;
             Victory = victory;
             Gold = gold;
             Stardust = stardust;
@@ -107,6 +110,7 @@ namespace PofudukFilo.Core
         private bool _endless;
         private int _goldAlreadyGranted;
         private bool _lastRunWasVictory;
+        private bool _endlessFromStart;
 
         public GameState State { get; private set; } = GameState.MainMenu;
         public MetaProgressionService Meta { get; private set; }
@@ -127,6 +131,8 @@ namespace PofudukFilo.Core
         public int RevivesLeft => _revivesLeft;
         /// <summary>After a victory the run can continue in Endless mode (once).</summary>
         public bool CanContinueEndless => State == GameState.RunEnd && _lastRunWasVictory && !_endless;
+        /// <summary>The current/last run was started from the menu's SONSUZ button.</summary>
+        public bool IsEndlessRun => _endlessFromStart;
         public int RunGold => (pickups != null ? pickups.RunGold : 0) + _fallbackGoldEarned;
 
         private void Awake()
@@ -175,8 +181,17 @@ namespace PofudukFilo.Core
 
         public bool IsChapterUnlocked(int index) => index <= Meta.HighestChapterCleared + 1;
 
-        public void StartRun(int chapterIndex)
+        /// <summary>
+        /// Sonsuz Mod (Ball Blast-style, power-match.md §3.3): the chapter's timeline, then endless waves with
+        /// returning bosses until the player falls. Plays the highest unlocked chapter's roster.
+        /// </summary>
+        public void StartEndless() => StartRun(Mathf.Min(Meta.HighestChapterCleared + 1, chapters.Length - 1), true);
+
+        public void StartRun(int chapterIndex) => StartRun(chapterIndex, false);
+
+        private void StartRun(int chapterIndex, bool endless)
         {
+            _endlessFromStart = endless;
             _chapterIndex = Mathf.Clamp(chapterIndex, 0, chapters.Length - 1);
             ClearWorld();
 
@@ -188,6 +203,7 @@ namespace PofudukFilo.Core
 
             CurrentCharacter = ResolveCharacter();
             WeaponMastery.Configure(labWeapons, Meta.GetMastery);
+            Forge.Configure(Meta.GetForgeLevel(ForgeTrack.Power), Meta.GetForgeLevel(ForgeTrack.Speed));
             if (CurrentCharacter != null)
             {
                 // Pilot level: +3 % damage and max HP per level above 1 (meta-economy.md §3.6).
@@ -223,7 +239,7 @@ namespace PofudukFilo.Core
             _goldAlreadyGranted = 0;
             _lastRunWasVictory = false;
 
-            waveDirector.StartRun(chapters[_chapterIndex]);
+            waveDirector.StartRun(chapters[_chapterIndex], endless);
             SetState(GameState.Playing);
         }
 
@@ -445,7 +461,13 @@ namespace PofudukFilo.Core
 
             int gold = RunGold;
             int stardust = 0;
-            if (_endless)
+            bool newRecord = false;
+            if (_endlessFromStart)
+            {
+                // Every Endless run is a "loss" that still pays; the record is the goal.
+                newRecord = Meta.RecordEndless(waveDirector.RunMinutes * 60f, _kills);
+            }
+            else if (_endless)
             {
                 // Only what was earned after the victory, with the endless bonus.
                 gold = Mathf.RoundToInt((RunGold - _goldAlreadyGranted) * endlessGoldMultiplier);
@@ -461,7 +483,7 @@ namespace PofudukFilo.Core
             _lastRunWasVictory = victory;
 
             var summary = new RunSummary(victory, gold, stardust, xpSystem.Level, _kills,
-                waveDirector.RunMinutes, _chapterIndex, _endless);
+                waveDirector.RunMinutes, _chapterIndex, _endless || _endlessFromStart, newRecord);
             SetState(GameState.RunEnd);
             RunEnded?.Invoke(summary);
         }

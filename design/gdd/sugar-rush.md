@@ -82,6 +82,7 @@ bullets is what keeps the sugar flowing.
 - **GameUI** (`GameUI.Rush.cs`): meter, combo, rush glow and toasts.
 - **AudioManager**: Evolution sound when a rush starts, LevelUp sound on a rescue.
 - **QaAutopilot**: telemetry records rushes, best combo and fleet size.
+- **Power Match** (power-match.md) reads `SugarRush.RushActive` and ignores kills made during a rush.
 
 ## 7. Tuning Knobs
 

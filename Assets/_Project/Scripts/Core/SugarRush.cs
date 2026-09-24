@@ -19,6 +19,8 @@ namespace PofudukFilo.Core
         /// <summary>Weapon cooldowns tick this much faster during a rush (1 otherwise).</summary>
         public static float FireRate => Instance != null && Instance.Active ? Instance.rushFireRate : 1f;
         /// <summary>XP gained is multiplied by this during a rush (1 otherwise).</summary>
+        /// <summary>True while a rush runs (Power Match ignores those kills).</summary>
+        public static bool RushActive => Instance != null && Instance.Active;
         public static float XpMultiplier => Instance != null && Instance.Active ? Instance.rushXpMultiplier : 1f;
 
         [SerializeField] private float comboWindow = 1.6f;
