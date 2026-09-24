@@ -185,7 +185,7 @@ namespace PofudukFilo.EditorTools
             var tex = new Texture2D(_w, _h, TextureFormat.RGBA32, false);
             tex.SetPixels(_px);
             tex.Apply();
-            Directory.CreateDirectory(Path.GetDirectoryName(assetPath)!);
+            SetupUtil.EnsureFolder(Path.GetDirectoryName(assetPath)!.Replace('\\', '/'));
             File.WriteAllBytes(assetPath, tex.EncodeToPNG());
             Object.DestroyImmediate(tex);
 

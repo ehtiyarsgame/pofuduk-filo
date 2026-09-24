@@ -119,6 +119,7 @@ namespace PofudukFilo.EditorTools
                 Quad.triangles = new[] { 0, 2, 1, 2, 3, 1 };
                 Quad.RecalculateBounds();
                 AssetDatabase.CreateAsset(Quad, meshPath);
+                RequirePersisted(Quad, meshPath);
             }
 
             FlashMaterial = SaveMaterial(new Material(Shader.Find("PofudukFilo/SpriteWhiteFlash")), "SpriteFlash");

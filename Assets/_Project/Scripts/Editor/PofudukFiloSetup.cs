@@ -33,12 +33,17 @@ namespace PofudukFilo.EditorTools
         {
             try
             {
+                // The scene must exist BEFORE the content: NewScene unloads every asset no scene
+                // references, which orphans the freshly created ScriptableObjects and prefabs the
+                // builder still holds, and they would then be wired into the scene as null.
+                UnityEngine.SceneManagement.Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
                 EditorUtility.DisplayProgressBar("Pofuduk Filo", "İçerik üretiliyor…", 0.2f);
                 var content = new ContentBuilder();
                 content.BuildAll();
 
                 EditorUtility.DisplayProgressBar("Pofuduk Filo", "Sahne kuruluyor…", 0.8f);
-                BuildScene(content);
+                BuildScene(content, scene);
                 ConfigureProject();
             }
             finally
@@ -64,9 +69,8 @@ namespace PofudukFilo.EditorTools
             EditorBuildSettings.scenes = list.ToArray();
         }
 
-        private static void BuildScene(ContentBuilder c)
+        private static void BuildScene(ContentBuilder c, UnityEngine.SceneManagement.Scene scene)
         {
-            UnityEngine.SceneManagement.Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             // Camera: 10 world units wide on a 9:19.5 portrait screen.
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
@@ -179,8 +183,9 @@ namespace PofudukFilo.EditorTools
             Set(ui, "pickups", pickups);
             Set(ui, "roundedSprite", c.Sprites["ui_rounded"]);
 
-            System.IO.Directory.CreateDirectory("Assets/_Project/Scenes");
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            EnsureFolder("Assets/_Project/Scenes");
+            if (!EditorSceneManager.SaveScene(scene, ScenePath))
+                throw new System.InvalidOperationException($"Could not save {ScenePath}.");
         }
 
         private static void SetPickupVisuals(PickupSystem pickups, PickupVisual[] visuals)
@@ -242,40 +247,55 @@ namespace PofudukFilo.EditorTools
 
     /// <summary>
     /// `commands.smoke` in project.yaml: batch-mode check that the scene opens and every
-    /// required reference is wired. Exit code 0 = OK.
+    /// required reference is wired. Exit code 0 = OK. CiBuild runs the same check before
+    /// building, so an APK with null references is never produced.
     /// </summary>
     public static class SmokeCheck
     {
         public static void Run()
         {
-            int problems = 0;
+            int problems = CountUnassignedReferences();
+            Debug.Log(problems == 0 ? "[Smoke] OK" : $"[Smoke] {problems} unassigned reference(s).");
+            EditorApplication.Exit(problems == 0 ? 0 : 1);
+        }
+
+        /// <summary>
+        /// Reopens the saved scene from disk (what the build will ship) and counts empty object
+        /// references on the game's components, array elements included.
+        /// </summary>
+        public static int CountUnassignedReferences()
+        {
             if (!System.IO.File.Exists(PofudukFiloSetup.ScenePath))
             {
                 Debug.LogError($"[Smoke] {PofudukFiloSetup.ScenePath} missing — run Pofuduk Filo ▸ Oynanabilir Sahneyi Kur.");
-                EditorApplication.Exit(1);
-                return;
+                return 1;
             }
 
+            int problems = 0;
             EditorSceneManager.OpenScene(PofudukFiloSetup.ScenePath);
             foreach (MonoBehaviour mb in Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
             {
-                string ns = mb == null ? null : mb.GetType().Namespace;
+                if (mb == null)
+                {
+                    Debug.LogError("[Smoke] A component's script is missing.");
+                    problems++;
+                    continue;
+                }
+                string ns = mb.GetType().Namespace;
                 if (ns == null || !ns.StartsWith("PofudukFilo")) continue;
                 var so = new SerializedObject(mb);
                 SerializedProperty p = so.GetIterator();
                 while (p.NextVisible(true))
                 {
                     if (p.propertyType != SerializedPropertyType.ObjectReference || p.objectReferenceValue != null) continue;
-                    if (p.name == "m_Script" || p.propertyPath.Contains("Array")) continue;
+                    if (p.name == "m_Script") continue;
                     // Optional art hooks may stay empty.
                     if (p.name is "font" or "icon" or "weaponMount") continue;
-                    Debug.LogWarning($"[Smoke] {mb.GetType().Name}.{p.propertyPath} is not assigned.");
+                    Debug.LogError($"[Smoke] {mb.GetType().Name}.{p.propertyPath} is not assigned.");
                     problems++;
                 }
             }
-
-            Debug.Log(problems == 0 ? "[Smoke] OK" : $"[Smoke] {problems} unassigned reference(s).");
-            EditorApplication.Exit(problems == 0 ? 0 : 1);
+            return problems;
         }
     }
 }

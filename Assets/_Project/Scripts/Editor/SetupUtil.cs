@@ -1,6 +1,7 @@
-using System.IO;
+using System;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace PofudukFilo.EditorTools
 {
@@ -12,8 +13,38 @@ namespace PofudukFilo.EditorTools
         public static string PathFor(string sub, string file)
         {
             string dir = $"{Root}/{sub}";
-            Directory.CreateDirectory(dir);
+            EnsureFolder(dir);
             return $"{dir}/{file}";
+        }
+
+        /// <summary>
+        /// Creates an asset folder through the AssetDatabase (not System.IO), so CreateAsset and
+        /// SaveAsPrefabAsset can write into it in the same editor session.
+        /// </summary>
+        public static void EnsureFolder(string assetFolder)
+        {
+            if (AssetDatabase.IsValidFolder(assetFolder)) return;
+            int slash = assetFolder.LastIndexOf('/');
+            string parent = assetFolder.Substring(0, slash);
+            EnsureFolder(parent);
+            AssetDatabase.CreateFolder(parent, assetFolder.Substring(slash + 1));
+        }
+
+        /// <summary>Throws when <paramref name="asset"/> was not written to disk — a silent failure here ships null references.</summary>
+        public static void RequirePersisted(Object asset, string path)
+        {
+            if (asset == null || !AssetDatabase.Contains(asset))
+                throw new InvalidOperationException($"[Setup] Could not save {path}. See the log above for Unity's reason.");
+        }
+
+        /// <summary>
+        /// Returns a live object for a reference the editor may have unloaded (a managed wrapper
+        /// whose native asset is gone compares equal to null but still knows its instance ID).
+        /// </summary>
+        public static Object Live(Object o)
+        {
+            if (o != null || ReferenceEquals(o, null)) return o;
+            return EditorUtility.InstanceIDToObject(o.GetInstanceID());
         }
 
         /// <summary>Creates or overwrites a ScriptableObject asset, keeping its GUID on re-runs.</summary>
@@ -29,6 +60,7 @@ namespace PofudukFilo.EditorTools
                 return existing;
             }
             AssetDatabase.CreateAsset(asset, path);
+            RequirePersisted(asset, path);
             return asset;
         }
 
@@ -47,6 +79,7 @@ namespace PofudukFilo.EditorTools
                 return existing;
             }
             AssetDatabase.CreateAsset(mat, path);
+            RequirePersisted(mat, path);
             return mat;
         }
 
@@ -55,6 +88,7 @@ namespace PofudukFilo.EditorTools
             string path = PathFor("Prefabs", name + ".prefab");
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
+            RequirePersisted(prefab, path);
             return prefab.GetComponent<T>();
         }
 
@@ -83,7 +117,7 @@ namespace PofudukFilo.EditorTools
                 return;
             }
             p.arraySize = values.Length;
-            for (int i = 0; i < values.Length; i++) p.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+            for (int i = 0; i < values.Length; i++) p.GetArrayElementAtIndex(i).objectReferenceValue = Live(values[i]);
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -91,7 +125,7 @@ namespace PofudukFilo.EditorTools
         {
             switch (value)
             {
-                case Object o: p.objectReferenceValue = o; break;
+                case Object o: p.objectReferenceValue = Live(o); break;
                 case float f: p.floatValue = f; break;
                 case int i when p.propertyType == SerializedPropertyType.Enum: p.enumValueIndex = i; break;
                 case int i: p.intValue = i; break;

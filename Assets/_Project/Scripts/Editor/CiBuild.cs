@@ -21,6 +21,14 @@ namespace PofudukFilo.EditorTools
                 PofudukFiloSetup.BuildEverythingNonInteractive();
                 ConfigureAndroid();
 
+                int missing = SmokeCheck.CountUnassignedReferences();
+                if (missing > 0)
+                {
+                    Debug.LogError($"[CiBuild] {missing} unassigned reference(s) in the scene; not building a broken APK.");
+                    EditorApplication.Exit(1);
+                    return;
+                }
+
                 string path = Arg("-customBuildPath") ?? "build/Android/PofudukFilo.apk";
                 if (!path.EndsWith(".apk", StringComparison.OrdinalIgnoreCase)) path = System.IO.Path.Combine(path, "PofudukFilo.apk");
 
@@ -66,8 +74,9 @@ namespace PofudukFilo.EditorTools
         }
 
         /// <summary>
-        /// Player Settings ▸ Active Input Handling = Both. There is no public API, so the serialized
-        /// ProjectSettings field is set (0 = old, 1 = new, 2 = both).
+        /// Player Settings ▸ Active Input Handling = Input System only. "Both" is flagged by the Android
+        /// build as unsupported; the one legacy call (PlayerController fallback) disables itself.
+        /// There is no public API, so the serialized ProjectSettings field is set (0 = old, 1 = new, 2 = both).
         /// </summary>
         private static void EnableNewInputSystem()
         {
@@ -80,7 +89,7 @@ namespace PofudukFilo.EditorTools
                 Debug.LogWarning("[CiBuild] activeInputHandler not found; touch input may be disabled.");
                 return;
             }
-            p.intValue = 2;
+            p.intValue = 1;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
