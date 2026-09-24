@@ -1,5 +1,5 @@
-# Builds an installable Android APK in the cloud with GameCI.
-# Needs repository secrets UNITY_EMAIL and UNITY_PASSWORD (optionally UNITY_LICENSE).
+# Builds an installable Android APK in the cloud.
+# Needs repository secrets UNITY_EMAIL and UNITY_PASSWORD (Unity Personal account, no 2FA).
 # Download the APK from the run's "Artifacts" section.
 name: Android APK
 
@@ -11,11 +11,16 @@ on:
       - "Assets/**"
       - "Packages/**"
       - "ProjectSettings/**"
+      - "tools/ci/**"
       - ".github/workflows/android.yml"
 
 concurrency:
-  group: android-${{ github.ref }}
-  cancel-in-progress: true
+  # One build at a time: each holds the account's single Personal seat.
+  group: android-build
+  cancel-in-progress: false
+
+env:
+  UNITY_IMAGE: unityci/editor:ubuntu-6000.3.24f1-android-3
 
 jobs:
   build:
@@ -30,12 +35,10 @@ jobs:
           dotnet: true
           haskell: true
           large-packages: false
-          docker-images: false
+          docker-images: true
           swap-storage: false
 
       - uses: actions/checkout@v4
-        with:
-          lfs: false
 
       - uses: actions/cache@v4
         with:
@@ -43,22 +46,27 @@ jobs:
           key: Library-Android-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library-Android-
 
-      - name: Build with Unity
-        uses: game-ci/unity-builder@v4
+      - name: Pull Unity image
+        run: docker pull "$UNITY_IMAGE"
+
+      - name: Activate license, build APK, return license
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-        with:
-          targetPlatform: Android
-          unityVersion: 6000.3.24f1
-          buildMethod: PofudukFilo.EditorTools.CiBuild.BuildAndroid
-          buildName: PofudukFilo
-          androidExportType: androidPackage
+        run: |
+          docker run --rm \
+            -e UNITY_EMAIL -e UNITY_PASSWORD -e PROJECT_PATH=/project \
+            -v "$GITHUB_WORKSPACE":/project \
+            "$UNITY_IMAGE" \
+            bash /project/tools/ci/build-android.sh
+
+      - name: Fix file ownership (container ran as root)
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: PofudukFilo-apk
-          path: build/Android
+          path: build/Android/*.apk
           if-no-files-found: error
