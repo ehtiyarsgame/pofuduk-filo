@@ -88,6 +88,8 @@ namespace PofudukFilo.Core
                     case GameState.Playing:
                         gameTime += Time.deltaTime;
                         Weave(gameTime);
+                        if (SugarRush.Instance != null && SugarRush.Instance.Ready && SugarRush.Instance.ReadyTimeLeft01 < 0.8f)
+                            SugarRush.Instance.Activate(); // a player taps within ~2 s
                         if (_shotIndex < ShotTimes.Length && gameTime >= ShotTimes[_shotIndex])
                         {
                             string shot = $"{10 + _shotIndex:00}_t{Mathf.RoundToInt(gameTime):000}";

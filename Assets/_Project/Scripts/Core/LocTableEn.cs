@@ -54,6 +54,9 @@ namespace PofudukFilo.Core
             ["HÜCUM!"] = "RUSH!",
             ["ŞEKER HÜCUMU!"] = "SUGAR RUSH!",
             ["Filo güçlendi!"] = "Fleet powered up!",
+            ["ŞEKER!"] = "SUGAR!",
+            ["ŞEKER HAZIR! Dokun!"] = "SUGAR READY! Tap!",
+            ["UYARI!"] = "WARNING!",
 
             // ---- Level-up
             ["Seviye Atladın!"] = "Level Up!",

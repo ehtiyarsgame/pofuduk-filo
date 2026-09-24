@@ -99,7 +99,7 @@ namespace PofudukFilo.UI
             pickups.RunGoldChanged += g => _goldText.text = Loc.T($"{g}");
             waveDirector.BossSpawned += OnBossSpawned;
             waveDirector.FormationCleared += _ => Toast("Formasyon Temizlendi!");
-            waveDirector.PhaseStarted += p => { if (p.kind != PhaseKind.Waves) Toast(p.label); };
+            waveDirector.PhaseStarted += p => { if (p.kind != PhaseKind.Waves) ShowBossBanner(p.label); };
             inventory.WeaponEvolved += (from, to) => Toast($"EVRİM! {to.displayName}");
 
             OnStateChanged(run.State);

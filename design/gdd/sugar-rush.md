@@ -30,7 +30,12 @@ bullets is what keeps the sugar flowing.
 ### Rush meter
 - Each kill adds `killValue × (1 + combo × comboBonus)` to the meter. `killValue` is 1 for normal enemies, `eliteKillValue` for elites and `bossKillValue` for bosses.
 - Getting hit multiplies the meter by `meterKeptOnHit` (the rest is spilled).
-- When the meter reaches `meterMax`, a rush starts and the meter resets to 0.
+- When the meter reaches `meterMax` it is **banked** (Ready): a pulsing **ŞEKER!** button appears bottom-left
+  with a countdown strip. Tapping it fires the **Sugar Bomb** — `bombBaseDamage + bombDamagePerMinute × minutes`
+  to every on-screen enemy, all enemy bullets cleared, big candy burst, shake, hitstop — and the rush starts.
+  If the player does not tap within `readyAutoSeconds`, it fires by itself (never wasted). While banked, kills
+  do not fill the meter and hits do not spill it. *(2026-09-24: player-triggered so the rush is a decision —
+  save it for a boss or a bullet wall — which neither genre neighbour offers.)*
 
 ### Rush
 - A rush lasts `rushSeconds`. The meter bar drains over that time and cycles through rainbow colours; a pulsing rainbow glow frames the screen.
@@ -87,6 +92,8 @@ bullets is what keeps the sugar flowing.
 | `rushSeconds` | 6 | 4–9 | Length of the power spike |
 | `rushFireRate` | 1.7 | 1.3–2.2 | Size of the power spike; above 2.2 bullet density hurts readability |
 | `rushXpMultiplier` | 2 | 1.5–3 | Progression pull toward rushes |
+| `readyAutoSeconds` | 10 s | 5–20 | How long a banked rush waits for the tap |
+| `bombBaseDamage` / `bombDamagePerMinute` | 40 / 25 | 20–80 / 10–40 | Sugar Bomb screen clear strength (≈ clears normal enemies, dents elites/bosses) |
 | `killMilestones` | 40, 160, 400, 800 | — | Guarantees the first wingman arrives within about 40 s of a run |
 | `baseDamage` / `fireInterval` | 7 / 0.6 s | 4–12 / 0.4–1.0 | Wingman share of total DPS (target: 15–25 % with a full fleet) |
 | `powerPerExtraRescue` | 0.25 | 0.1–0.4 | Late-run value of rescues |

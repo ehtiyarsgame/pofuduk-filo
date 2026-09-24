@@ -17,6 +17,11 @@ namespace PofudukFilo.UI
         private Image _edgeGlow;
         private float _comboPunch;
         private float _hurtFlash;
+        private Button _rushButton;
+        private Image _rushButtonTimer;
+        private GameObject _bossBanner;
+        private Text _bossBannerName;
+        private float _bossBannerUntil;
 
         private void BuildRushHud(Transform hud)
         {
@@ -41,12 +46,29 @@ namespace PofudukFilo.UI
             _edgeGlow.raycastTarget = false;
             _edgeGlow.gameObject.SetActive(false);
 
+            // Sugar Bomb button: bottom-left corner, appears when the meter is full.
+            _rushButton = _ui.Button(hud, "ŞEKER!", Palette.HotPink, () => { if (_rush != null) _rush.Activate(); }, 50);
+            UIFactory.Place(_rushButton, 0.03f, 0.03f, 0.33f, 0.12f);
+            _rushButtonTimer = _ui.Bar(_rushButton.transform, new Color(0f, 0f, 0f, 0f), new Color(1f, 1f, 1f, 0.35f));
+            UIFactory.Place(_rushButtonTimer.transform.parent, 0.08f, 0.04f, 0.92f, 0.16f);
+            _rushButton.gameObject.SetActive(false);
+
+            BuildBossBanner(hud);
+
             if (_rush != null)
             {
+                _rush.RushReady += () =>
+                {
+                    _rushButton.gameObject.SetActive(true);
+                    Feel.Juice.PopIn(_rushButton.transform);
+                    Toast("ŞEKER HAZIR! Dokun!", 1.3f);
+                    if (Audio.AudioManager.Instance != null) Audio.AudioManager.Instance.Play(Audio.SfxId.LevelUp, 0.02f);
+                };
                 _rush.MeterChanged += v => _rushFill.fillAmount = v;
                 _rush.ComboChanged += OnComboChanged;
                 _rush.RushStarted += () =>
                 {
+                    _rushButton.gameObject.SetActive(false);
                     Toast("ŞEKER HÜCUMU!", 1.4f);
                     _edgeGlow.gameObject.SetActive(true);
                     if (Audio.AudioManager.Instance != null) Audio.AudioManager.Instance.Play(Audio.SfxId.Evolution);
@@ -57,6 +79,31 @@ namespace PofudukFilo.UI
             if (player != null) player.Damaged += _ => _hurtFlash = 1f;
             if (fleet != null)
                 fleet.WingmanJoined += n => Toast(n >= Fleet.MaxWingmen ? "Filo güçlendi!" : $"Filoya katıldı! ({n}/{Fleet.MaxWingmen})");
+        }
+
+        private void BuildBossBanner(Transform hud)
+        {
+            Image stripe = _ui.Panel(hud, new Color(0.55f, 0.08f, 0.2f, 0.88f), "BossBanner");
+            UIFactory.Place(stripe, -0.05f, 0.56f, 1.05f, 0.7f);
+            stripe.raycastTarget = false;
+            Text warn = _ui.Label(stripe.transform, "UYARI!", 44, Palette.Cream);
+            UIFactory.Place(warn, 0f, 0.62f, 1f, 0.98f);
+            _bossBannerName = _ui.Label(stripe.transform, "", 64, Palette.White);
+            UIFactory.Place(_bossBannerName, 0.02f, 0.05f, 0.98f, 0.65f);
+            _bossBanner = stripe.gameObject;
+            _bossBanner.SetActive(false);
+        }
+
+        /// <summary>Boss entrance: red warning stripe with the boss's name, siren, shake.</summary>
+        private void ShowBossBanner(string label)
+        {
+            _bossBannerName.text = Loc.T(label);
+            _bossBanner.SetActive(true);
+            Feel.Juice.PopIn(_bossBanner.transform);
+            _bossBannerUntil = Time.unscaledTime + 2.4f;
+            _hurtFlash = 0.8f; // red edge pulse
+            if (Audio.AudioManager.Instance != null) Audio.AudioManager.Instance.Play(Audio.SfxId.BossWarning);
+            if (Feel.Juice.Instance != null) Feel.Juice.Instance.Shake(0.6f, 0.5f);
         }
 
         private void OnComboChanged(int combo)
@@ -72,6 +119,17 @@ namespace PofudukFilo.UI
         {
             if (_rush == null || _rushFill == null) return;
             float dt = Time.unscaledDeltaTime;
+
+            if (_bossBanner != null && _bossBanner.activeSelf && Time.unscaledTime > _bossBannerUntil) _bossBanner.SetActive(false);
+
+            if (_rushButton != null && _rushButton.gameObject.activeSelf)
+            {
+                float pulse = 1f + Mathf.Sin(Time.unscaledTime * 9f) * 0.06f;
+                _rushButton.transform.localScale = new Vector3(pulse, pulse, 1f);
+                _rushButtonTimer.fillAmount = _rush.ReadyTimeLeft01;
+                _rushButton.transform.Find("Face").GetComponent<Image>().color =
+                    Color.HSVToRGB(Mathf.Repeat(Time.unscaledTime * 0.5f, 1f), 0.45f, 1f);
+            }
 
             _hurtFlash = Mathf.MoveTowards(_hurtFlash, 0f, dt * 2.8f);
             if (_hurtFlash > 0f && !_rush.Active)
