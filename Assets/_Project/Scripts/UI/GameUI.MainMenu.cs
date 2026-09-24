@@ -77,7 +77,7 @@ namespace PofudukFilo.UI
 
             // --- Logo: ribbon behind line 2, gradient + wave letters, twinkles.
             Image ribbon = Img(m, ribbonSprite, "Ribbon");
-            UIFactory.Place(ribbon, 0.08f, 0.745f, 0.92f, 0.815f);
+            UIFactory.Place(ribbon, 0.06f, 0.736f, 0.94f, 0.83f);
             _titleTop = LogoLine(m, "GALAXY", 140, Palette.Hex(0xE6D9FF), Palette.Hex(0x9C7BFF), 0.815f, 0.9f);
             _titleBottom = LogoLine(m, "PAWS", 124, Palette.Hex(0xFFF6C8), Palette.Honey, 0.742f, 0.822f);
             _twinkles = new Image[5];
@@ -92,19 +92,19 @@ namespace PofudukFilo.UI
 
             // --- Hero: rays, pedestal, ship, pilot name capsule.
             Image rays = Img(m, raysSprite, "Rays");
-            UIFactory.Place(rays, 0.02f, 0.44f, 0.98f, 0.74f);
+            UIFactory.Place(rays, 0.0f, 0.43f, 1f, 0.75f);
             rays.preserveAspect = true;
             _rays = rays.rectTransform;
             Image pedestal = Img(m, pedestalSprite, "Pedestal");
-            UIFactory.Place(pedestal, 0.18f, 0.475f, 0.82f, 0.54f);
+            UIFactory.Place(pedestal, 0.1f, 0.468f, 0.9f, 0.548f);
             _heroShip = Img(m, null, "HeroShip");
-            UIFactory.Place(_heroShip, 0.28f, 0.52f, 0.72f, 0.72f);
-            Image pilotCap = Capsule(m, 0.3f, 0.47f, 0.7f, 0.5f);
+            UIFactory.Place(_heroShip, 0.25f, 0.5f, 0.75f, 0.725f);
+            Image pilotCap = Capsule(m, 0.3f, 0.445f, 0.7f, 0.477f);
             _pilotText = _ui.Label(pilotCap.transform, "", 36, Palette.Pink);
             UIFactory.Place(_pilotText, 0.05f, 0f, 0.95f, 1f);
 
             // --- Record / saved-run capsule with a trophy.
-            Image recordCap = Capsule(m, 0.22f, 0.412f, 0.78f, 0.45f);
+            Image recordCap = Capsule(m, 0.22f, 0.388f, 0.78f, 0.426f);
             _recordCapsule = recordCap.gameObject;
             RectTransform recordRow = CurrencyRow(recordCap.transform, TextAnchor.MiddleCenter);
             UIFactory.Place(recordRow, 0.04f, 0.08f, 0.96f, 0.92f);
@@ -122,13 +122,13 @@ namespace PofudukFilo.UI
                 if (run.HasSavedRun) run.ResumeRun();
                 else run.StartEndless();
             }, 112);
-            UIFactory.Place(_playButton, 0.1f, 0.29f, 0.9f, 0.4f);
+            UIFactory.Place(_playButton, 0.08f, 0.235f, 0.92f, 0.368f);
             Transform playFace = _playButton.transform.Find("Face");
             playFace.gameObject.AddComponent<RectMask2D>();
             Image play = Img(playFace, playIcon, "PlayIcon");
-            UIFactory.Place(play, 0.07f, 0.2f, 0.22f, 0.8f);
+            UIFactory.Place(play, 0.16f, 0.22f, 0.3f, 0.78f);
             Text playText = _playButton.GetComponentInChildren<Text>();
-            UIFactory.Place(playText, 0.2f, 0f, 0.98f, 1f);
+            UIFactory.Place(playText, 0.26f, 0f, 0.9f, 1f);
             Image shine = Img(playFace, shineSprite, "Shine");
             _shine = shine.rectTransform;
             _shine.anchorMin = new Vector2(0f, -0.2f);
@@ -136,7 +136,7 @@ namespace PofudukFilo.UI
             _shine.sizeDelta = new Vector2(120f, 0f);
 
             _restartButton = _ui.Button(m, "Yeni Oyun", Palette.Lavender, run.StartEndless, 32);
-            UIFactory.Place(_restartButton, 0.32f, 0.232f, 0.68f, 0.278f);
+            UIFactory.Place(_restartButton, 0.32f, 0.19f, 0.68f, 0.228f);
 
             // --- Bottom tab bar.
             Image nav = Img(m, navBarSprite, "NavBar");
@@ -148,7 +148,7 @@ namespace PofudukFilo.UI
             _pilotsTile = NavTab(nav.transform, "PİLOTLAR", null, 2f / 3f, OpenHangar);
 
             Text credit = _ui.Label(m, $"© {StudioIntro.StudioName}", 22, new Color(0.78f, 0.71f, 1f, 0.55f));
-            UIFactory.Place(credit, 0.1f, 0.004f, 0.9f, 0.022f);
+            UIFactory.Place(credit, 0.1f, 0.176f, 0.9f, 0.19f);
         }
 
         // ---------------------------------------------------------------- Pieces

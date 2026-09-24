@@ -72,22 +72,34 @@ namespace PofudukFilo.EditorTools
             return p;
         }
 
-        /// <summary>Pink ribbon banner with folded tails (under the logo's second line).</summary>
+        /// <summary>Pink ribbon banner: a glossy front band over two darker, V-notched tails that fold behind it.</summary>
         public static Painter LogoRibbon()
         {
             var p = new Painter(640, 160);
             Color front = HotPink, back = Painter.Deep(HotPink, 0.35f);
             for (int s = -1; s <= 1; s += 2)
             {
-                float cx = 320 + s * 250;
-                p.Triangle(new Vector2(cx - s * 70, 30), new Vector2(cx + s * 70, 30), new Vector2(cx + s * 30, 70), Painter.Outline, 6f);
-                p.Fill((x, y) => Painter.RoundRectSdf(x, y, cx - 70, 30, cx + 70, 110, 8) - 6f, Painter.Outline);
-                p.Fill((x, y) => Painter.RoundRectSdf(x, y, cx - 70, 30, cx + 70, 110, 8), back);
+                float outer = 320 + s * 312, inner = 320 + s * 200, cy = 62, half = 36, depth = 30;
+                float x0 = Mathf.Min(outer, inner), x1 = Mathf.Max(outer, inner);
+                Painter.Sdf tail = (x, y) =>
+                {
+                    float rect = Painter.RoundRectSdf(x, y, x0, cy - half, x1, cy + half, 4);
+                    // V notch cut into the outer end.
+                    float n = s > 0
+                        ? (outer - depth + Mathf.Abs(y - cy) * depth / half) - x
+                        : x - (outer + depth - Mathf.Abs(y - cy) * depth / half);
+                    return Mathf.Max(rect, -n);
+                };
+                p.Fill((x, y) => tail(x, y) - 6f, Painter.Outline);
+                p.Fill((x, y) => tail(x, y), back);
+                // Fold shadow where the tail tucks under the band.
+                float fx = 320 + s * 214;
+                p.Triangle(new Vector2(fx, 98), new Vector2(fx + s * 26, 98), new Vector2(fx + s * 26, 76), Painter.Deep(HotPink, 0.6f));
             }
-            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 80, 44, 560, 134, 14) - 6f, Painter.Outline);
-            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 80, 44, 560, 134, 14), (x, y) =>
-                Color.Lerp(Painter.Deep(front, 0.15f), Painter.Light(front, 0.25f), Mathf.Clamp01((y - 44f) / 90f)));
-            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 100, 108, 540, 124, 8), new Color(1f, 1f, 1f, 0.3f), 2f);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 96, 52, 544, 138, 14) - 6f, Painter.Outline);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 96, 52, 544, 138, 14), (x, y) =>
+                Color.Lerp(Painter.Deep(front, 0.15f), Painter.Light(front, 0.25f), Mathf.Clamp01((y - 52f) / 86f)));
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 116, 114, 524, 128, 7), new Color(1f, 1f, 1f, 0.3f), 2f);
             return p;
         }
 

@@ -190,10 +190,21 @@ namespace PofudukFilo.UI
                 }
 
                 int pilotLevel = meta.GetPilotLevel(c.id);
-                string levelLine = meta.IsUnlocked(c) ? $"\n<size=32>Pilot Sv. {pilotLevel}/{Formulas.MaxPilotLevel}  (+%{Mathf.RoundToInt(Formulas.PilotBonusPerLevel * (pilotLevel - 1) * 100f)} hasar ve can)</size>" : "";
-                Text text = _ui.Label(row.transform, $"{c.displayName}\n<size=34>{c.perkText}</size>{levelLine}", 46, Palette.White, TextAnchor.MiddleLeft);
-                text.supportRichText = true;
-                UIFactory.Place(text, 0.22f, 0.04f, 0.64f, 0.96f);
+                // Name, perk and level as separate, individually translated lines (no composite rich text).
+                Text nameText = _ui.Label(row.transform, c.displayName, 44, Palette.Cream, TextAnchor.MiddleLeft);
+                UIFactory.Place(nameText, 0.22f, 0.68f, 0.64f, 0.96f);
+                Text perk = _ui.Label(row.transform, c.perkText, 28, Palette.White, TextAnchor.UpperLeft);
+                perk.horizontalOverflow = HorizontalWrapMode.Wrap;
+                perk.resizeTextForBestFit = true;
+                perk.resizeTextMinSize = 20;
+                perk.resizeTextMaxSize = 28;
+                UIFactory.Place(perk, 0.22f, 0.3f, 0.64f, 0.68f);
+                if (meta.IsUnlocked(c))
+                {
+                    int bonus = Mathf.RoundToInt(Formulas.PilotBonusPerLevel * (pilotLevel - 1) * 100f);
+                    Text lvl = _ui.Label(row.transform, $"Pilot Sv. {pilotLevel}/{Formulas.MaxPilotLevel}  (+%{bonus} hasar ve can)", 26, Palette.Mint, TextAnchor.MiddleLeft);
+                    UIFactory.Place(lvl, 0.22f, 0.04f, 0.64f, 0.3f);
+                }
 
                 CharacterDefinition captured = c;
                 Button action;
@@ -249,9 +260,10 @@ namespace PofudukFilo.UI
             ClearChildren(_lab.List);
             MetaProgressionService meta = run.Meta;
 
+            var listed = new HashSet<WeaponDefinition>();
             foreach (WeaponDefinition w in run.LabWeapons)
             {
-                if (w == null) continue;
+                if (w == null || !listed.Add(w)) continue; // the starter can appear twice in the lab list
                 WeaponDefinition captured = w;
                 bool unlocked = meta.IsUnlocked(w);
                 int mastery = meta.GetMastery(w.id);
@@ -427,7 +439,7 @@ namespace PofudukFilo.UI
         {
             _settings = _ui.Node("Settings", root).gameObject;
             _ui.Dimmer(_settings.transform);
-            Image card = _ui.Panel(_settings.transform, Palette.Lavender, "Card");
+            Image card = _ui.Panel(_settings.transform, Palette.Hex(0x3E2C63), "Card");
             UIFactory.Place(card, 0.08f, 0.2f, 0.92f, 0.82f);
 
             UIFactory.Place(_ui.Label(card.transform, "Ayarlar", 80, Palette.Cream), 0.05f, 0.88f, 0.95f, 0.98f);
@@ -461,8 +473,8 @@ namespace PofudukFilo.UI
             }, 36);
             // Language names are shown as themselves, never translated.
             Text t = b.GetComponentInChildren<Text>();
-            t.text = active ? $"• {label}" : label;
-            t.color = active ? Palette.Outline : Palette.White;
+            t.text = label;
+            t.color = active ? Palette.White : new Color(1f, 1f, 1f, 0.6f);
             UIFactory.Place(b, x0, 0.15f, x1, 0.25f);
         }
 
