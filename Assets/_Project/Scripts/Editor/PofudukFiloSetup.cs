@@ -224,6 +224,7 @@ namespace PofudukFilo.EditorTools
             Set(ui, "xpIcon", c.Sprites["p_gem_blue"]);
             Set(ui, "sugarIcon", c.Sprites["p_gem_pink"]);
             Set(ui, "researchIcon", c.Sprites["icon_research"]);
+            Set(ui, "stardustIcon", c.Sprites["icon_stardust"]);
             // Rounded display font, fetched by CI (tools/ci, OFL licence); built-in font otherwise.
             Font uiFont = AssetDatabase.LoadAssetAtPath<Font>(UiFontPath);
             if (uiFont != null)

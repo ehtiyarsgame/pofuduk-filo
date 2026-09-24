@@ -18,7 +18,7 @@ namespace PofudukFilo.UI
         {
             public GameObject Root;
             public Transform List;
-            public Text Wallet;
+            public WalletView Wallet;
             public Action Refresh;
         }
 
@@ -56,12 +56,11 @@ namespace PofudukFilo.UI
             foreach (MetaScreen m in _metaScreens)
             {
                 if (!m.Root.activeSelf) continue;
-                m.Wallet.text = Loc.T(WalletLine());
+                SetWallet(m.Wallet);
                 m.Refresh();
             }
         }
 
-        private string WalletLine() => $"{run.Meta.Gold} altın   ·   {run.Meta.Stardust} Yıldız Tozu";
 
         private void OpenHangar() => OpenMeta(_hangar);
         private void OpenLab() => OpenMeta(_lab);
@@ -72,7 +71,7 @@ namespace PofudukFilo.UI
             _menu.SetActive(false);
             screen.Root.SetActive(true);
             screen.Root.transform.SetAsLastSibling();
-            screen.Wallet.text = Loc.T(WalletLine());
+            SetWallet(screen.Wallet);
             screen.Refresh();
         }
 
@@ -90,8 +89,7 @@ namespace PofudukFilo.UI
             _ui.Panel(screen.Root.transform, Palette.Lavender, "Background");
 
             UIFactory.Place(_ui.Label(screen.Root.transform, title, 96, Palette.Cream), 0.05f, 0.9f, 0.95f, 0.97f);
-            screen.Wallet = _ui.Label(screen.Root.transform, "", 46, Palette.Honey);
-            UIFactory.Place(screen.Wallet, 0.05f, 0.86f, 0.95f, 0.9f);
+            screen.Wallet = MakeWallet(screen.Root.transform, 0.05f, 0.86f, 0.95f, 0.9f, 46);
 
             screen.List = ScrollList(screen.Root.transform, 0.04f, 0.13f, 0.96f, 0.85f);
 
@@ -206,7 +204,7 @@ namespace PofudukFilo.UI
 
                     // Level-up sits under the select button.
                     bool maxed = pilotLevel >= Formulas.MaxPilotLevel;
-                    Button levelUp = _ui.Button(row.transform, maxed ? "MAKS" : $"Sv. Atla\n{Formulas.PilotLevelCost(pilotLevel)} altın",
+                    Button levelUp = PriceButton(row.transform, maxed ? "MAKS" : "Sv. Atla", maxed ? 0 : Formulas.PilotLevelCost(pilotLevel), 0,
                         Palette.Honey, () =>
                         {
                             if (meta.TryLevelPilot(captured)) RefreshOpenMetaScreen();
@@ -220,7 +218,7 @@ namespace PofudukFilo.UI
                 {
                     // Reach the stage for free, or buy early access now.
                     int early = MetaProgressionService.EarlyAccessCost(c) + c.goldCost;
-                    action = _ui.Button(row.transform, $"Hemen aç\n{early} altın", Palette.Honey, () =>
+                    action = PriceButton(row.transform, "Hemen aç", early, c.stardustCost, Palette.Honey, () =>
                     {
                         if (meta.TryUnlockEarly(captured)) RefreshOpenMetaScreen();
                     }, 34);
@@ -230,7 +228,7 @@ namespace PofudukFilo.UI
                 }
                 else
                 {
-                    action = _ui.Button(row.transform, $"{c.goldCost} altın\n{c.stardustCost} toz", Palette.Honey, () =>
+                    action = PriceButton(row.transform, "Aç", c.goldCost, c.stardustCost, Palette.Honey, () =>
                     {
                         if (meta.TryUnlock(captured)) RefreshOpenMetaScreen();
                     }, 36);
@@ -274,7 +272,7 @@ namespace PofudukFilo.UI
                 Button b;
                 if (!unlocked)
                 {
-                    b = _ui.Button(row.transform, $"Aç\n{w.labCost} altın", Palette.Honey, () =>
+                    b = PriceButton(row.transform, "Aç", w.labCost, 0, Palette.Honey, () =>
                     {
                         if (meta.TryUnlock(captured)) RefreshOpenMetaScreen();
                     }, 38);
@@ -287,7 +285,7 @@ namespace PofudukFilo.UI
                 }
                 else
                 {
-                    b = _ui.Button(row.transform, $"Geliştir\n{Formulas.MasteryCost(mastery)} altın", Palette.HotPink, () =>
+                    b = PriceButton(row.transform, "Geliştir", Formulas.MasteryCost(mastery), 0, Palette.HotPink, () =>
                     {
                         if (meta.TryUpgradeMastery(captured)) RefreshOpenMetaScreen();
                     }, 36);
@@ -309,7 +307,7 @@ namespace PofudukFilo.UI
                 UIFactory.Place(pdesc, 0.22f, 0.08f, 0.65f, 0.6f);
                 Button b = unlocked
                     ? _ui.Button(row.transform, "Havuzda", Palette.Mint, null, 44)
-                    : _ui.Button(row.transform, $"Aç\n{p.labCost} altın", Palette.Honey, () =>
+                    : PriceButton(row.transform, "Aç", p.labCost, 0, Palette.Honey, () =>
                     {
                         if (meta.TryUnlock(captured)) RefreshOpenMetaScreen();
                     }, 38);
@@ -339,8 +337,7 @@ namespace PofudukFilo.UI
             _ui.Panel(screen.Root.transform, Palette.Hex(0x2B2140), "Background"); // night sky
 
             UIFactory.Place(_ui.Label(screen.Root.transform, "Takımyıldız", 96, Palette.Cream), 0.05f, 0.9f, 0.95f, 0.97f);
-            screen.Wallet = _ui.Label(screen.Root.transform, "", 46, Palette.Honey);
-            UIFactory.Place(screen.Wallet, 0.05f, 0.86f, 0.95f, 0.9f);
+            screen.Wallet = MakeWallet(screen.Root.transform, 0.05f, 0.86f, 0.95f, 0.9f, 46);
 
             _nodeDetail = _ui.Label(screen.Root.transform, "Bir yıldıza dokun.", 40, Palette.White);
             UIFactory.Place(_nodeDetail, 0.06f, 0.76f, 0.94f, 0.85f);
@@ -384,7 +381,7 @@ namespace PofudukFilo.UI
                 Color color = owned ? Palette.Mint : available ? Palette.Honey : Palette.Outline;
 
                 ConstellationNode captured = node;
-                Button star = _ui.Button(column, $"{node.displayName}\n{node.stardustCost} toz", color, () => SelectNode(captured), 28);
+                Button star = PriceButton(column, node.displayName, 0, node.stardustCost, color, () => SelectNode(captured), 28);
                 if (node == _selectedNode) Feel.Juice.PopIn(star.transform);
             }
 

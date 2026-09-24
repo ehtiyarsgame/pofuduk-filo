@@ -48,7 +48,7 @@ namespace PofudukFilo.UI
             Section(_research.List, "YARDIMCI");
             WorkshopRows(meta, "magnet", "experience", "luck", "reroll", "banish");
 
-            Section(_research.List, "YILDIZ HARİTASI  ·  Yıldız Tozu ile");
+            Section(_research.List, "YILDIZ HARİTASI");
             Image row = Row(_research.List, "Constellation", 150f);
             Text info = _ui.Label(row.transform, "Boss yendikçe Yıldız Tozu kazanırsın; özel yetenekleri burada açarsın.",
                 32, Palette.White, TextAnchor.MiddleLeft);
@@ -130,7 +130,7 @@ namespace PofudukFilo.UI
             }
             else
             {
-                b = _ui.Button(row.transform, $"Geliştir\n{cost} altın", canBuy ? Palette.HotPink : Palette.Lavender, () =>
+                b = PriceButton(row.transform, "Geliştir", cost, 0, canBuy ? Palette.HotPink : Palette.Lavender, () =>
                 {
                     if (buy()) RefreshWallet();
                 }, 36);

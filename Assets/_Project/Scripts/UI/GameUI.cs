@@ -72,7 +72,7 @@ namespace PofudukFilo.UI
         // Menu / workshop
         private GameObject _menu;
         private GameObject _workshop;
-        private Text _walletText;
+        private WalletView _wallet;
         private Button _playButton;
         private Transform _workshopList;
 
@@ -128,7 +128,7 @@ namespace PofudukFilo.UI
             if (_endGold != null && _goldShown < _goldTarget)
             {
                 _goldShown = Mathf.MoveTowards(_goldShown, _goldTarget, Mathf.Max(60f, _goldTarget) * Time.unscaledDeltaTime);
-                _endGold.text = Loc.T($"+{Mathf.RoundToInt(_goldShown)} altın");
+                _endGold.text = $"+{Mathf.RoundToInt(_goldShown)}";
             }
         }
 
@@ -452,8 +452,14 @@ namespace PofudukFilo.UI
             UIFactory.Place(_endTitle, 0.05f, 0.76f, 0.95f, 0.86f);
             _endStats = _ui.Label(screen.transform, "", 52, Palette.White);
             UIFactory.Place(_endStats, 0.08f, 0.6f, 0.92f, 0.75f);
-            _endGold = _ui.Label(screen.transform, "", 72, Palette.Honey);
-            UIFactory.Place(_endGold, 0.08f, 0.52f, 0.92f, 0.6f);
+            // Reward line as icons: [coin] +123   [star] +3.
+            RectTransform reward = CurrencyRow(screen.transform, TextAnchor.MiddleCenter);
+            UIFactory.Place(reward, 0.08f, 0.52f, 0.92f, 0.6f);
+            _endGold = AddAmount(reward, coinIcon, "+0", 72, Palette.Honey);
+            _endDustGap = _ui.Node("Gap", reward).gameObject;
+            _endDustGap.AddComponent<LayoutElement>().preferredWidth = 50f;
+            _endDust = AddAmount(reward, stardustIcon, "", 72, Palette.Hex(0xC8B6FF));
+            _endDustIcon = reward.GetChild(reward.childCount - 2).gameObject;
             _endGoal = _ui.Label(screen.transform, "", 46, Palette.Mint);
             UIFactory.Place(_endGoal, 0.08f, 0.47f, 0.92f, 0.52f);
 
@@ -477,7 +483,8 @@ namespace PofudukFilo.UI
             int minutes = Mathf.FloorToInt(s.Minutes);
             int seconds = Mathf.FloorToInt((s.Minutes - minutes) * 60f);
             _endStats.text = Loc.T($"Seviye {s.Level}   ·   {s.Kills} düşman   ·   {minutes}:{seconds:00}");
-            if (s.Stardust > 0) _endStats.text += Loc.T($"\n+{s.Stardust} Yıldız Tozu");
+            _endDust.text = $"+{s.Stardust}";
+            foreach (GameObject go in new[] { _endDust.gameObject, _endDustIcon, _endDustGap }) go.SetActive(s.Stardust > 0);
             if (run.IsEndlessRun)
             {
                 float best = run.Meta.BestEndlessSeconds;
@@ -487,7 +494,7 @@ namespace PofudukFilo.UI
 
             _goldShown = 0f;
             _goldTarget = s.Gold;
-            _endGold.text = Loc.T("+0 altın");
+            _endGold.text = "+0";
             _endGoal.text = Loc.T(NextGoalText());
 
             bool affordable = run.Meta.AnyAffordable(run.Workshop) || run.Meta.CanUpgradeForge(ForgeTrack.Power);
@@ -537,8 +544,7 @@ namespace PofudukFilo.UI
             // Top bar: wallet left, settings right.
             Image bar = _ui.Panel(_menu.transform, new Color(0.23f, 0.16f, 0.31f, 0.7f), "TopBar");
             UIFactory.Place(bar, 0.02f, 0.925f, 0.98f, 0.985f);
-            _walletText = _ui.Label(bar.transform, "", 44, Palette.Honey, TextAnchor.MiddleLeft);
-            UIFactory.Place(_walletText, 0.04f, 0f, 0.7f, 1f);
+            _wallet = MakeWallet(bar.transform, 0.04f, 0.12f, 0.7f, 0.88f, 44, TextAnchor.MiddleLeft);
             UIFactory.Place(_ui.Button(bar.transform, "Ayarlar", Palette.Lavender, OpenSettings, 38), 0.72f, 0.1f, 0.98f, 0.9f);
 
             // Two-tone logo that bobs gently (UpdateMenuAnim).
@@ -588,6 +594,9 @@ namespace PofudukFilo.UI
         }
 
         private Text _recordText;
+        private Text _endDust;
+        private GameObject _endDustIcon;
+        private GameObject _endDustGap;
         private Button _restartButton;
         [SerializeField] private Sprite researchIcon;
 
@@ -682,7 +691,7 @@ namespace PofudukFilo.UI
 
         private void RefreshWallet()
         {
-            if (_walletText != null) _walletText.text = Loc.T($"{run.Meta.Gold} altın   ·   {run.Meta.Stardust} Yıldız Tozu");
+            SetWallet(_wallet);
             RefreshForge();
             if (_workshop != null && _workshop.activeSelf) RefreshWorkshop();
             RefreshOpenMetaScreen();
@@ -756,7 +765,7 @@ namespace PofudukFilo.UI
                 UIFactory.Place(buy, 0.64f, 0.14f, 0.97f, 0.86f);
                 buy.interactable = meta.CanAfford(u);
             }
-            if (_walletText != null) _walletText.text = Loc.T($"{meta.Gold} altın   ·   {meta.Stardust} Yıldız Tozu");
+            SetWallet(_wallet);
         }
 
         // ---------------------------------------------------------------- Helpers
