@@ -23,6 +23,8 @@ namespace PofudukFilo.Core
 
         [SerializeField] private float comboWindow = 1.6f;
         [SerializeField] private float meterMax = 120f; // QA run 13: a rush every ~20 s at 70 — too routine
+        [Tooltip("The bar grows this fraction of meterMax per run minute: kill rate climbs all run (QA run 24: a rush every ~15 s by minute 4).")]
+        [SerializeField] private float meterGrowthPerMinute = 0.5f;
         [Tooltip("Meter per kill = killValue × (1 + combo × comboBonus).")]
         [SerializeField] private float comboBonus = 0.03f;
         [SerializeField] private float eliteKillValue = 10f;
@@ -49,7 +51,11 @@ namespace PofudukFilo.Core
         public bool Active { get; private set; }
         public bool Ready { get; private set; }
         public float ReadyTimeLeft01 => Ready ? _readyLeft / readyAutoSeconds : 0f;
-        public float Meter01 => Active ? _rushLeft / rushSeconds : _meter / meterMax;
+        public float Meter01 => Active ? _rushLeft / rushSeconds : _meter / CurrentMax;
+
+        /// <summary>Meter needed for a rush right now (<see cref="Formulas.RushMeterMax"/>).</summary>
+        private float CurrentMax => Formulas.RushMeterMax(meterMax, meterGrowthPerMinute,
+            EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f);
         public float ComboTimeLeft01 => Combo > 0 ? _comboTimer / comboWindow : 0f;
 
         private float _meter;
@@ -99,16 +105,17 @@ namespace PofudukFilo.Core
             if (Active || Ready) return;
 
             float value = e is BossEnemy ? bossKillValue : e.IsElite ? eliteKillValue : 1f;
-            _meter += value * (1f + Combo * comboBonus);
-            if (_meter >= meterMax)
+            _meter += Formulas.RushMeterGain(value, Combo, comboBonus);
+            float max = CurrentMax;
+            if (_meter >= max)
             {
-                _meter = meterMax;
+                _meter = max;
                 Ready = true;
                 _readyLeft = readyAutoSeconds;
                 MeterChanged?.Invoke(1f);
                 RushReady?.Invoke();
             }
-            else MeterChanged?.Invoke(_meter / meterMax);
+            else MeterChanged?.Invoke(_meter / max);
         }
 
         private void OnPlayerHit(float damage)
@@ -117,7 +124,7 @@ namespace PofudukFilo.Core
             SetCombo(0);
             if (Active || Ready) return; // a banked rush is never lost to a hit
             _meter *= meterKeptOnHit;
-            MeterChanged?.Invoke(_meter / meterMax);
+            MeterChanged?.Invoke(_meter / CurrentMax);
         }
 
         /// <summary>

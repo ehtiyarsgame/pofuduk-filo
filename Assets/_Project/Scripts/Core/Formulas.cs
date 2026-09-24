@@ -71,6 +71,19 @@ namespace PofudukFilo.Core
         public static int ExpectedRunGold(int chapterIndex) =>
             (int)Math.Round(250 * Math.Pow(1.35, chapterIndex));
 
+        // ---- Sugar Rush meter (sugar-rush.md §4)
+
+        /// <summary>Combo above this adds no more meter per kill — keeps late-run combos in the hundreds from chaining rushes.</summary>
+        public const int RushComboCap = 40;
+
+        /// <summary>Meter gained per kill: value · (1 + min(combo, cap) · bonus).</summary>
+        public static float RushMeterGain(float killValue, int combo, float comboBonus) =>
+            killValue * (1f + Math.Clamp(combo, 0, RushComboCap) * comboBonus);
+
+        /// <summary>Meter needed for a rush at run minute t: base · (1 + growth · t). Kill rate climbs all run, so the bar must too.</summary>
+        public static float RushMeterMax(float baseMax, float growthPerMinute, float minutes) =>
+            baseMax * (1f + growthPerMinute * Math.Max(0f, minutes));
+
         /// <summary>
         /// Final cooldown = base · Π(1 − r_i), floored at 35 % of base (weapon-system.md §4).
         /// </summary>

@@ -67,5 +67,21 @@ namespace PofudukFilo.Tests
             Assert.That(Formulas.MasteryMultiplier(10), Is.EqualTo(1.8f).Within(1e-5f));
             Assert.That(Formulas.MasteryMultiplier(99), Is.EqualTo(1.8f).Within(1e-5f));
         }
+
+        [Test]
+        public void test_rush_meter_gain_caps_combo()
+        {
+            Assert.That(Formulas.RushMeterGain(1f, 20, 0.03f), Is.EqualTo(1.6f).Within(1e-5f));
+            Assert.That(Formulas.RushMeterGain(1f, Formulas.RushComboCap, 0.03f), Is.EqualTo(2.2f).Within(1e-5f));
+            Assert.That(Formulas.RushMeterGain(1f, 173, 0.03f), Is.EqualTo(2.2f).Within(1e-5f));
+        }
+
+        [Test]
+        public void test_rush_meter_max_grows_with_time()
+        {
+            Assert.That(Formulas.RushMeterMax(120f, 0.5f, 0f), Is.EqualTo(120f).Within(1e-4f));
+            Assert.That(Formulas.RushMeterMax(120f, 0.5f, 5f), Is.EqualTo(420f).Within(1e-4f));
+            Assert.That(Formulas.RushMeterMax(120f, 0.5f, -1f), Is.EqualTo(120f).Within(1e-4f));
+        }
     }
 }
