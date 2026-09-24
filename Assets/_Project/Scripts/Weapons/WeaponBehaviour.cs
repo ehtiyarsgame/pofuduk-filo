@@ -43,7 +43,7 @@ namespace PofudukFilo.Weapons
         {
             if (Definition == null) return;
 
-            _cooldownTimer -= Time.deltaTime;
+            _cooldownTimer -= Time.deltaTime * Core.SugarRush.FireRate; // Şeker Hücumu speeds every weapon
             if (_cooldownTimer > 0f) return;
 
             WeaponLevelStats s = CurrentStats;

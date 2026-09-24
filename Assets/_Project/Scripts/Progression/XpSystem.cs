@@ -37,7 +37,7 @@ namespace PofudukFilo.Progression
 
         public void AddXp(int amount)
         {
-            CurrentXp += Mathf.Max(1, Mathf.RoundToInt(amount * (1f + xpBonus)));
+            CurrentXp += Mathf.Max(1, Mathf.RoundToInt(amount * (1f + xpBonus) * Core.SugarRush.XpMultiplier));
 
             while (CurrentXp >= RequiredXp)
             {

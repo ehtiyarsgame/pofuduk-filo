@@ -106,6 +106,7 @@ namespace PofudukFilo.UI
 
         private void Update()
         {
+            UpdateRushHud();
             if (_toast != null && _toast.gameObject.activeSelf && Time.unscaledTime > _toastUntil)
                 _toast.gameObject.SetActive(false);
 
@@ -163,6 +164,8 @@ namespace PofudukFilo.UI
             UIFactory.Place(_bossBar.GetComponent<RectTransform>(), 0.1f, 0.87f, 0.9f, 0.895f);
             _bossFill = _ui.Bar(_bossBar.transform, Palette.Outline, Palette.Coral);
             _bossBar.SetActive(false);
+
+            BuildRushHud(_hud.transform);
 
             _toast = _ui.Label(_hud.transform, "", 80, Palette.Cream);
             UIFactory.Place(_toast, 0.05f, 0.6f, 0.95f, 0.7f);

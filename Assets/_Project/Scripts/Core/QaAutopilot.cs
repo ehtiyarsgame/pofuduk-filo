@@ -28,6 +28,7 @@ namespace PofudukFilo.Core
         private int _shotIndex;
         private int _levelUpShots;
         private int _deaths;
+        private int _rushes;
         private float _fpsAccum;
         private int _fpsFrames;
 
@@ -74,7 +75,8 @@ namespace PofudukFilo.Core
 
             run.StartRun(0);
             float gameTime = 0f, nextTelemetry = 0f;
-            Line("t(s)\tlvl\tkills\thp\tenemies\tfps\tstate\tweapons");
+            Line("t(s)\tlvl\tkills\thp\tenemies\tfps\tcombo(best)\trushes\tfleet\tstate\tweapons");
+            if (SugarRush.Instance != null) SugarRush.Instance.RushStarted += () => _rushes++;
 
             while (gameTime < _runSeconds)
             {
@@ -153,8 +155,12 @@ namespace PofudukFilo.Core
                 foreach (WeaponBehaviour w in inv.Weapons)
                     weapons.Append(w.Definition != null ? w.Definition.name : "?").Append(':').Append(w.Level).Append(' ');
 
+            SugarRush rush = SugarRush.Instance;
+            var fleet = FindAnyObjectByType<Fleet>();
             Line($"{t:0}\t{(xp != null ? xp.Level : 0)}\t{run.Kills}\t{(hp != null ? hp.CurrentHp : 0):0}/{(hp != null ? hp.MaxHp : 0):0}\t" +
-                 $"{(EnemyManager.Instance != null ? EnemyManager.Instance.ActiveCount : 0)}\t{fps:0}\t{run.State}\t{weapons}");
+                 $"{(EnemyManager.Instance != null ? EnemyManager.Instance.ActiveCount : 0)}\t{fps:0}\t" +
+                 $"{(rush != null ? rush.Combo : 0)}({(rush != null ? rush.BestCombo : 0)})\t{_rushes}\t{(fleet != null ? fleet.Count : 0)}\t" +
+                 $"{run.State}\t{weapons}");
         }
 
         private IEnumerator Shot(string name)

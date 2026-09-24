@@ -933,6 +933,19 @@ namespace PofudukFilo.EditorTools
             return p;
         }
 
+        /// <summary>9-slice screen-edge glow (Şeker Hücumu): clear centre, soft bright rim.</summary>
+        public static Painter EdgeGlow()
+        {
+            var p = new Painter(128, 128);
+            p.Fill((x, y) => -1f, (x, y) =>
+            {
+                float d = Mathf.Min(Mathf.Min(x, 128f - x), Mathf.Min(y, 128f - y)); // px from the nearest edge
+                float a = Mathf.Pow(1f - Mathf.Clamp01(d / 56f), 2.2f);
+                return new Color(1f, 1f, 1f, a);
+            });
+            return p;
+        }
+
         /// <summary>9-slice base for every UI panel and button.</summary>
         public static Painter RoundedPanel()
         {

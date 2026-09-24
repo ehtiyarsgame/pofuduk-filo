@@ -106,6 +106,7 @@ namespace PofudukFilo.EditorTools
             Add("confetti", ArtRecipes.SoftCircle(Color.white, 16), 16);
             Add("ui_rounded", ArtRecipes.RoundedPanel(), 100, new Vector4(32, 32, 32, 32));
 
+            Add("ui_edge_glow", ArtRecipes.EdgeGlow(), 100, new Vector4(60, 60, 60, 60));
             Add("bg_sky", ArtRecipes.SkyGradient(), 100);
             Add("bg_nebula", ArtRecipes.Nebula(), 100);
             Add("bg_stars_far", ArtRecipes.StarField(false), 100);
@@ -169,14 +170,14 @@ namespace PofudukFilo.EditorTools
             // Hit radii ~30 % under the visual (art-bible §3); enemy bullets render in a later queue.
             BulletTypes = new[]
             {
-                Type("Feather", "b_feather", 0.45f, 0.12f, true, 3000),
+                Type("Feather", "b_feather", 0.55f, 0.12f, true, 3000),
                 Type("GiantFeather", "b_feather_giant", 0.9f, 0.3f, true, 3000),
                 Type("Chick", "b_chick", 0.35f, 0.14f, false, 3000),
-                Type("Star", "b_star", 0.35f, 0.14f, true, 3000),
+                Type("Star", "b_star", 0.45f, 0.14f, true, 3000),
                 Type("Meteor", "b_meteor", 0.5f, 0.2f, false, 3000),
-                Type("EnemyRound", "b_enemy", 0.32f, 0.1f, false, 3010),
-                Type("EnemyBig", "b_enemy_big", 0.5f, 0.17f, false, 3010),
-                Type("BossSpecial", "b_boss_special", 0.55f, 0.19f, false, 3011)
+                Type("EnemyRound", "b_enemy", 0.5f, 0.1f, false, 3010),
+                Type("EnemyBig", "b_enemy_big", 0.75f, 0.17f, false, 3010),
+                Type("BossSpecial", "b_boss_special", 0.8f, 0.19f, false, 3011)
             };
         }
 

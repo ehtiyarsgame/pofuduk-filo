@@ -188,6 +188,19 @@ namespace PofudukFilo.EditorTools
             Set(ui, "waveDirector", waves);
             Set(ui, "pickups", pickups);
             Set(ui, "roundedSprite", c.Sprites["ui_rounded"]);
+            Set(ui, "edgeGlowSprite", c.Sprites["ui_edge_glow"]);
+
+            // Signature loop: Şeker Hücumu combo/fever and the rescued-wingmen fleet.
+            flow.AddComponent<SugarRush>();
+            var fleet = flow.AddComponent<Fleet>();
+            Set(fleet, "inventory", inventory);
+            SetArray(fleet, "pilotSprites", new Object[]
+            {
+                c.Sprites["pilot_chick"], c.Sprites["pilot_cat"], c.Sprites["pilot_hamster"], c.Sprites["pilot_fox"]
+            });
+            Set(fleet, "bubbleSprite", c.Sprites["bubble"]);
+            Set(fleet, "material", c.SpriteMaterial);
+            Set(fleet, "bulletTypeIndex", ContentBuilder.BStar);
 
             EnsureFolder("Assets/_Project/Scenes");
             if (!EditorSceneManager.SaveScene(scene, ScenePath))
