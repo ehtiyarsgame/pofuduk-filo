@@ -17,8 +17,15 @@ fi
 return_seat() {
   echo "Returning the Personal license seat…"
   for attempt in 1 2 3; do
-    if "$CLIENT" --return-ulf 2>&1 | tee /tmp/return.log | grep -qE "Successfully returned|License has been returned"; then
+    "$CLIENT" --return-ulf > /tmp/return.log 2>&1
+    code=$?
+    cat /tmp/return.log   # keep the client's own words in the job log
+    if grep -qiE "Successfully returned|License has been returned|returned successfully" /tmp/return.log; then
       echo "Seat returned."
+      return 0
+    fi
+    if [ $code -eq 0 ]; then
+      echo "Return command exited 0 (no explicit confirmation line)."
       return 0
     fi
     sleep 5
