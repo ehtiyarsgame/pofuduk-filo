@@ -16,21 +16,28 @@ fi
 
 return_seat() {
   echo "Returning the Personal license seat…"
+  # 1) Licensing client (works when activation wrote a Unity_lic.ulf).
+  "$CLIENT" --return-ulf > /tmp/return.log 2>&1
+  cat /tmp/return.log
+  if grep -qiE "Successfully returned|License has been returned|returned successfully" /tmp/return.log; then
+    echo "Seat returned."
+    return 0
+  fi
+
+  # 2) The Personal client route on 6000.x grants an *entitlement* seat with no .ulf behind it
+  #    ("Ulf license file not found (1404)"). The editor returns entitlements; it needs the
+  #    account credentials to refresh its token (game-ci/cli return_license.sh, same finding).
   for attempt in 1 2 3; do
-    "$CLIENT" --return-ulf > /tmp/return.log 2>&1
-    code=$?
-    cat /tmp/return.log   # keep the client's own words in the job log
-    if grep -qiE "Successfully returned|License has been returned|returned successfully" /tmp/return.log; then
+    unity-editor -logFile /dev/stdout -batchmode -nographics -quit -returnlicense \
+      -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" -projectPath "$PROJECT" > /tmp/return.log 2>&1
+    grep -iE "licens|entitlement|seat" /tmp/return.log | tail -15
+    if grep -qiE "Successfully returned|returned the entitlement|License has been returned|return.*succe" /tmp/return.log; then
       echo "Seat returned."
-      return 0
-    fi
-    if [ $code -eq 0 ]; then
-      echo "Return command exited 0 (no explicit confirmation line)."
       return 0
     fi
     sleep 5
   done
-  echo "::warning::Could not confirm the seat was returned. If the next build says 'No seat available', remove the old activation at https://id.unity.com."
+  echo "::warning::Could not confirm the seat was returned. If a later build says 'No seat available', remove old activations at https://id.unity.com."
 }
 
 echo "Activating Unity Personal license…"
