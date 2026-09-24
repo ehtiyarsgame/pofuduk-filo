@@ -32,11 +32,18 @@ namespace PofudukFilo.UI
 
         // HUD
         private GameObject _hud;
-        private Image _xpFill;
-        private Text _levelText;
-        private Image _hpFill;
+        [Header("HUD art")]
+        [SerializeField] private Sprite barTrackSprite;
+        [SerializeField] private Sprite barFillSprite;
+        [SerializeField] private Sprite heartIcon;
+        [SerializeField] private Sprite coinIcon;
+        [SerializeField] private Sprite xpIcon;
+        [SerializeField] private Sprite sugarIcon;
+
+        private HudBar _xpBar;
+        private HudBar _hpBar;
         private Text _goldText;
-        private Image _bossFill;
+        private HudBar _bossHp;
         private GameObject _bossBar;
         private Enemy _boss;
         private Text _toast;
@@ -99,7 +106,7 @@ namespace PofudukFilo.UI
             waveDirector.FormationCleared += _ => Toast("Formasyon Temizlendi!");
             waveDirector.PhaseStarted += p => { if (p.kind != PhaseKind.Waves) ShowBossBanner(p.label); };
             waveDirector.StageAdvanced += (cleared, next) => Toast($"Bölüm {next + 1} başladı!", 2.4f);
-            inventory.WeaponEvolved += (from, to) => Toast($"EVRİM! {to.displayName}");
+            inventory.WeaponEvolved += (from, to) => Toast(Loc.T($"EVRİM! {Loc.T(from.displayName)} » {Loc.T(to.displayName)}"), 2.6f);
 
             OnStateChanged(run.State);
         }
@@ -114,7 +121,7 @@ namespace PofudukFilo.UI
             if (_bossBar != null && _bossBar.activeSelf)
             {
                 if (_boss == null || _boss.IsDead || !_boss.gameObject.activeInHierarchy) _bossBar.SetActive(false);
-                else _bossFill.fillAmount = _boss.HpFraction;
+                else _bossHp.Set(_boss.HpFraction, Loc.T($"BOSS  %{Mathf.CeilToInt(_boss.HpFraction * 100f)}"));
             }
 
             // Run-end reward counter "clinks" up (game-concept.md §4.5 step 2).
@@ -146,24 +153,36 @@ namespace PofudukFilo.UI
         {
             _hud = _ui.Node("HUD", root).gameObject;
 
-            // Thin XP bar across the top (art-bible §4: minimal HUD, nothing in the thumb zone).
-            _xpFill = _ui.Bar(_hud.transform, Palette.Outline, Palette.Sky);
-            UIFactory.Place(_xpFill.transform.parent, 0.02f, 0.975f, 0.98f, 0.995f);
-            _levelText = _ui.Label(_hud.transform, "Sv. 1", 44, Palette.White);
-            UIFactory.Place(_levelText, 0.38f, 0.935f, 0.62f, 0.972f);
+            // Top plate (design/ux/hud.md): HP + gold + pause on row 1, XP + level on row 2, all out of the thumb zone.
+            Image plate = _ui.Panel(_hud.transform, new Color(0.12f, 0.08f, 0.2f, 0.55f), "TopPlate");
+            UIFactory.Place(plate, 0.015f, 0.892f, 0.985f, 0.99f);
+            plate.raycastTarget = false;
 
-            _hpFill = _ui.Bar(_hud.transform, Palette.Outline, Palette.HotPink);
-            UIFactory.Place(_hpFill.transform.parent, 0.03f, 0.94f, 0.33f, 0.965f);
+            _hpBar = HudBar.Create(_ui, _hud.transform, barTrackSprite, barFillSprite, Palette.HotPink, heartIcon, 32);
+            UIFactory.Place(_hpBar, 0.085f, 0.943f, 0.47f, 0.975f);
 
+            if (coinIcon != null)
+            {
+                Image coin = _ui.Node("CoinIcon", _hud.transform).gameObject.AddComponent<Image>();
+                coin.sprite = coinIcon;
+                coin.preserveAspect = true;
+                coin.raycastTarget = false;
+                UIFactory.Place(coin, 0.5f, 0.945f, 0.56f, 0.973f);
+            }
             _goldText = _ui.Label(_hud.transform, "0", 44, Palette.Honey, TextAnchor.MiddleLeft);
-            UIFactory.Place(_goldText, 0.03f, 0.905f, 0.33f, 0.938f);
+            UIFactory.Place(_goldText, 0.565f, 0.94f, 0.8f, 0.978f);
 
-            Button pause = _ui.Button(_hud.transform, "II", Palette.Lavender, run.Pause, 56);
-            UIFactory.Place(pause, 0.84f, 0.925f, 0.97f, 0.97f);
+            Button pause = _ui.Button(_hud.transform, "II", Palette.Lavender, run.Pause, 52);
+            UIFactory.Place(pause, 0.845f, 0.93f, 0.97f, 0.982f);
+
+            _xpBar = HudBar.Create(_ui, _hud.transform, barTrackSprite, barFillSprite, Palette.Sky, xpIcon, 28);
+            UIFactory.Place(_xpBar, 0.085f, 0.902f, 0.81f, 0.93f);
+            _xpBar.Snap(0f);
 
             _bossBar = _ui.Node("BossBar", _hud.transform).gameObject;
-            UIFactory.Place(_bossBar.GetComponent<RectTransform>(), 0.1f, 0.85f, 0.9f, 0.872f); // below the rush meter
-            _bossFill = _ui.Bar(_bossBar.transform, Palette.Outline, Palette.Coral);
+            UIFactory.Place(_bossBar.GetComponent<RectTransform>(), 0.1f, 0.818f, 0.94f, 0.848f); // below the sugar meter
+            _bossHp = HudBar.Create(_ui, _bossBar.transform, barTrackSprite, barFillSprite, Palette.Coral, null, 30);
+            UIFactory.Place(_bossHp, 0f, 0f, 1f, 1f);
             _bossBar.SetActive(false);
 
             BuildRushHud(_hud.transform);
@@ -175,16 +194,18 @@ namespace PofudukFilo.UI
 
         private void OnXpChanged(int current, int required)
         {
-            _xpFill.fillAmount = required > 0 ? current / (float)required : 0f;
-            _levelText.text = Loc.T($"Sv. {xpSystem.Level}");
+            _xpBar.Set(required > 0 ? current / (float)required : 0f, Loc.T($"Sv. {xpSystem.Level}"));
         }
 
-        private void OnHealthChanged(float current, float max) => _hpFill.fillAmount = max > 0f ? current / max : 0f;
+        private void OnHealthChanged(float current, float max) =>
+            _hpBar.Set(max > 0f ? current / max : 0f, $"{Mathf.CeilToInt(current)}/{Mathf.CeilToInt(max)}");
 
         private void OnBossSpawned(Enemy boss)
         {
             _boss = boss;
             _bossBar.SetActive(true);
+            _bossHp.Snap(1f);
+            _bossHp.Set(1f, "BOSS");
         }
 
         private void OnChestOpened(int evolved)
@@ -287,23 +308,29 @@ namespace PofudukFilo.UI
                 textLeft = 0.29f;
             }
 
-            Text titleText = _ui.Label(inner.transform, title, 52, Palette.Cream, TextAnchor.UpperLeft);
-            UIFactory.Place(titleText, textLeft, 0.58f, 0.72f, 0.92f);
+            // Title row: name on the left, a coloured chip on the right saying what this card is (YENİ! / Sv.3 / rarity).
+            Text titleText = _ui.Label(inner.transform, title, 48, Palette.Cream, TextAnchor.MiddleLeft);
+            UIFactory.Place(titleText, textLeft, 0.66f, 0.72f, 0.95f);
             titleText.horizontalOverflow = HorizontalWrapMode.Wrap;
             titleText.resizeTextForBestFit = true;
-            titleText.resizeTextMinSize = 34;
-            titleText.resizeTextMaxSize = 52;
+            titleText.resizeTextMinSize = 30;
+            titleText.resizeTextMaxSize = 48;
             titleText.verticalOverflow = VerticalWrapMode.Truncate;
-            Text tagText = _ui.Label(inner.transform, tag, 40, tag == "YENİ!" ? Palette.Mint : Palette.Honey, TextAnchor.UpperLeft);
-            UIFactory.Place(tagText, textLeft, 0.42f, 0.97f, 0.6f);
-            Text bodyText = _ui.Label(inner.transform, body, 38, Palette.White, TextAnchor.UpperLeft);
-            UIFactory.Place(bodyText, textLeft, 0.05f, 0.97f, 0.43f);
 
-            Image chip = _ui.Panel(inner.transform, frame, "Rarity");
-            UIFactory.Place(chip, 0.72f, 0.8f, 0.98f, 0.98f);
+            Image chip = _ui.Panel(inner.transform, tag == "YENİ!" ? Palette.Mint : tag.Length > 0 ? Palette.Honey : frame, "Chip");
+            UIFactory.Place(chip, 0.74f, 0.72f, 0.98f, 0.95f);
             chip.raycastTarget = false;
-            Text chipText = _ui.Label(chip.transform, RarityName(rarity), 30, Palette.Outline);
+            Text chipText = _ui.Label(chip.transform, tag.Length > 0 ? tag : RarityName(rarity), 30, Palette.Outline);
             chipText.GetComponent<Outline>().enabled = false;
+
+            // Body: what it does, then what this level adds — never just a name (device feedback 2026-09-24).
+            Text bodyText = _ui.Label(inner.transform, body, 34, Palette.White, TextAnchor.UpperLeft);
+            UIFactory.Place(bodyText, textLeft, 0.05f, 0.98f, 0.64f);
+            bodyText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            bodyText.resizeTextForBestFit = true;
+            bodyText.resizeTextMinSize = 24;
+            bodyText.resizeTextMaxSize = 34;
+            bodyText.verticalOverflow = VerticalWrapMode.Truncate;
             return button.gameObject;
         }
 
@@ -321,20 +348,29 @@ namespace PofudukFilo.UI
             {
                 case UpgradeKind.Weapon:
                 {
-                    WeaponBehaviour owned = inventory.Find(option.Weapon);
+                    WeaponDefinition w = option.Weapon;
+                    WeaponBehaviour owned = inventory.Find(w);
                     int next = owned != null ? owned.Level + 1 : 1;
-                    title = next == 1 ? $"{option.Weapon.displayName}  YENİ!" : $"{option.Weapon.displayName}  Sv.{next}";
-                    body = option.Weapon.GetStats(next).upgradeText;
-                    if (next == option.Weapon.MaxLevel && option.Weapon.evolutionPassive != null)
-                        body += $"\nEvrim anahtarı: {option.Weapon.evolutionPassive.displayName}";
+                    title = next == 1 ? $"{w.displayName}  YENİ!" : $"{w.displayName}  Sv.{next}";
+                    string levelLine = Loc.T($"Seviye {next}: {Loc.T(w.GetStats(next).upgradeText)}");
+                    body = next == 1 && !string.IsNullOrEmpty(w.description) ? Loc.T(w.description) + "\n" + levelLine : levelLine;
+                    if (next == w.MaxLevel && w.evolutionPassive != null && w.evolvesInto != null)
+                        body += "\n" + Loc.T($"EVRİM: Maks. seviye + {Loc.T(w.evolutionPassive.displayName)} » {Loc.T(w.evolvesInto.displayName)}");
                     rarity = option.Rarity;
                     return;
                 }
                 case UpgradeKind.Passive:
                 {
-                    int next = inventory.GetPassiveLevel(option.Passive) + 1;
-                    title = next == 1 ? $"{option.Passive.displayName}  YENİ!" : $"{option.Passive.displayName}  Sv.{next}";
-                    body = $"+%{Mathf.RoundToInt(option.Passive.valuePerLevel * 100f)} {StatName(option.Passive.stat)}";
+                    PassiveDefinition p = option.Passive;
+                    int next = inventory.GetPassiveLevel(p) + 1;
+                    title = next == 1 ? $"{p.displayName}  YENİ!" : $"{p.displayName}  Sv.{next}";
+                    int per = Mathf.RoundToInt(p.valuePerLevel * 100f);
+                    body = (string.IsNullOrEmpty(p.description) ? "" : Loc.T(p.description) + "\n") +
+                           Loc.T($"+%{per} {Loc.T(StatName(p.stat))} (toplam +%{per * next})");
+                    // Say which owned weapon this passive can evolve.
+                    foreach (WeaponBehaviour owned in inventory.Weapons)
+                        if (owned.Definition.evolutionPassive == p && owned.Definition.evolvesInto != null)
+                            body += "\n" + Loc.T($"{Loc.T(owned.Definition.displayName)} evrim anahtarı");
                     rarity = option.Rarity;
                     return;
                 }

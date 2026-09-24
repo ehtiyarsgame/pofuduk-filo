@@ -118,6 +118,8 @@ namespace PofudukFilo.EditorTools
             Add("ui_edge_glow", ArtRecipes.EdgeGlow(), 100, new Vector4(60, 60, 60, 60));
             // Brand: studio intro emblem and the launcher icon (brand.md).
             Add("studio_emblem", ArtRecipes.StudioEmblem(), 256);
+            Add("ui_bar_track", ArtRecipes.BarTrack(), 100, new Vector4(26, 26, 26, 26));
+            Add("ui_bar_fill", ArtRecipes.BarFill(), 100, new Vector4(21, 21, 21, 21));
             Add("app_icon", ArtRecipes.AppIcon(), 512);
             Add("bg_sky", ArtRecipes.SkyGradient(), 100);
             Add("bg_nebula", ArtRecipes.Nebula(), 100);
@@ -207,11 +209,37 @@ namespace PofudukFilo.EditorTools
 
         // ---------------------------------------------------------------- Passives & weapons
 
+        private static readonly System.Collections.Generic.Dictionary<string, string> Descriptions = new()
+        {
+            ["feather_blaster"] = "Önüne düz tüy mermileri atar. Güvenilir ana silahın.",
+            ["egg_mortar"] = "Düşman kalabalığına patlayan yumurtalar fırlatır.",
+            ["star_boomerang"] = "Gidip geri dönen yıldız; iki yönde de vurur.",
+            ["bubble_orbit"] = "Geminin etrafında dönen balonlar yakındaki düşmanları ezer.",
+            ["spark_cat"] = "Düşmandan düşmana seken zincir şimşek atar.",
+            ["prism_beam"] = "EVRİM: Önündeki her şeyi delen gökkuşağı lazeri (ekrandaki ışık sütunu).",
+            ["supernova_omelette"] = "EVRİM: Dev yumurtalar ve ekranı kaplayan omlet dalgası.",
+            ["galaxy_vortex"] = "EVRİM: Düşmanları içine çekip ezen galaksi girdabı.",
+            ["gum_rings"] = "EVRİM: Mermileri emen, düşmanları biçen sakız halkaları.",
+            ["storm_cat"] = "EVRİM: Gökten yıldırım yağdıran kedi tanrıça.",
+            ["rainbow_storm"] = "FÜZYON: Prizma ışını ile fırtına kedisi tek silahta.",
+            ["cosmic_breakfast"] = "FÜZYON: Omlet dalgası ile galaksi girdabı tek silahta.",
+            ["candy_shield_galaxy"] = "FÜZYON: Sakız halkaları ile galaksi girdabı tek silahta.",
+            ["crystal_glasses"] = "Kritik vuruş şansı: kritik vuruş 2 kat hasar verir.",
+            ["hot_pan"] = "Patlama ve etki alanlarını büyütür.",
+            ["moon_dust"] = "Silah etkileri daha uzun sürer.",
+            ["stretchy_gum"] = "Yörünge ve alan silahlarını genişletir.",
+            ["battery_collar"] = "Tüm silahlar daha sık ateş eder.",
+            ["carrot_shield"] = "Maksimum canını artırır.",
+            ["magnet_ears"] = "Taş ve altınları daha uzaktan çeker.",
+            ["lucky_clover"] = "Nadir kart ve daha iyi ödül şansı.",
+        };
+
         private PassiveDefinition Passive(string id, string name, StatType stat, float value, Rarity rarity)
         {
             var p = ScriptableObject.CreateInstance<PassiveDefinition>();
             p.id = id;
             p.displayName = name;
+            p.description = Descriptions.TryGetValue(id, out string pd) ? pd : "";
             p.stat = stat;
             p.valuePerLevel = value;
             p.maxLevel = 5;
@@ -245,6 +273,7 @@ namespace PofudukFilo.EditorTools
             var w = ScriptableObject.CreateInstance<WeaponDefinition>();
             w.id = id;
             w.displayName = name;
+            w.description = Descriptions.TryGetValue(id, out string wd) ? wd : "";
             w.rarity = rarity;
             w.bulletTypeIndex = bulletType;
             w.behaviourPrefab = prefab;

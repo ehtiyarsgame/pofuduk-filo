@@ -217,6 +217,12 @@ namespace PofudukFilo.EditorTools
             Set(ui, "roundedSprite", c.Sprites["ui_rounded"]);
             Set(ui, "edgeGlowSprite", c.Sprites["ui_edge_glow"]);
             Set(ui, "buttonSprite", c.Sprites["ui_button"]);
+            Set(ui, "barTrackSprite", c.Sprites["ui_bar_track"]);
+            Set(ui, "barFillSprite", c.Sprites["ui_bar_fill"]);
+            Set(ui, "heartIcon", c.Sprites["p_heart"]);
+            Set(ui, "coinIcon", c.Sprites["p_coin"]);
+            Set(ui, "xpIcon", c.Sprites["p_gem_blue"]);
+            Set(ui, "sugarIcon", c.Sprites["p_gem_pink"]);
             // Rounded display font, fetched by CI (tools/ci, OFL licence); built-in font otherwise.
             Font uiFont = AssetDatabase.LoadAssetAtPath<Font>(UiFontPath);
             if (uiFont != null)

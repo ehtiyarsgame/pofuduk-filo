@@ -47,6 +47,7 @@ namespace PofudukFilo.Feel
 
         public void Release(SpriteRenderer r)
         {
+            if (r == null || !r.gameObject.activeSelf) return; // already free: never push twice
             r.gameObject.SetActive(false);
             _free.Push(r);
         }

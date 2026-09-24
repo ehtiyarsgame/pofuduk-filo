@@ -49,6 +49,7 @@ namespace PofudukFilo.Weapons
     {
         public string id;
         public string displayName;
+        [TextArea] public string description;
         public Sprite icon;
         public Rarity rarity = Rarity.Common;
         public StatType stat;

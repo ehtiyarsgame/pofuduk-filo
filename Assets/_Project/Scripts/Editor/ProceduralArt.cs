@@ -1146,6 +1146,39 @@ namespace PofudukFilo.EditorTools
         }
 
         /// <summary>9-slice base for every UI panel and button.</summary>
+        /// <summary>HUD bar track: a dark plum pill with an outline and an inner shadow (sliced 26 px ends).</summary>
+        public static Painter BarTrack()
+        {
+            var p = new Painter(128, 56);
+            Painter.Sdf body = (x, y) => Painter.RoundRectSdf(x, y, 2, 2, 126, 54, 26);
+            p.Fill((x, y) => body(x, y), Painter.Outline);
+            p.Fill((x, y) => body(x, y) + 5f, (x, y) =>
+            {
+                float t = y / 56f;
+                return Color.Lerp(new Color(0.12f, 0.07f, 0.2f, 1f), new Color(0.22f, 0.15f, 0.33f, 1f), t);
+            });
+            // Inner shadow along the top edge so the fill reads as sitting inside a groove.
+            p.Fill((x, y) => Mathf.Max(body(x, y) + 5f, 40f - y), new Color(0f, 0f, 0f, 0.35f), 6f);
+            return p;
+        }
+
+        /// <summary>HUD bar fill: a white pill with a soft vertical gradient and a glossy top band; tinted by the Image colour.</summary>
+        public static Painter BarFill()
+        {
+            var p = new Painter(128, 44);
+            Painter.Sdf body = (x, y) => Painter.RoundRectSdf(x, y, 1, 1, 127, 43, 21);
+            p.Fill((x, y) => body(x, y), (x, y) =>
+            {
+                float t = y / 44f;
+                float v = Mathf.Lerp(0.72f, 1f, Mathf.SmoothStep(0f, 1f, t));
+                return new Color(v, v, v, 1f);
+            });
+            p.Fill((x, y) => Mathf.Max(Painter.RoundRectSdf(x, y, 10, 25, 118, 38, 7), -body(x, y) - 4f),
+                new Color(1f, 1f, 1f, 0.55f), 2f);
+            p.Fill((x, y) => Mathf.Max(body(x, y), -(body(x, y) + 3f)), new Color(0f, 0f, 0f, 0.18f), 1.5f); // crisp edge
+            return p;
+        }
+
         public static Painter RoundedPanel()
         {
             var p = new Painter(96, 96);

@@ -38,6 +38,8 @@ namespace PofudukFilo.Weapons
     {
         public string id;
         public string displayName;
+        [Tooltip("What the weapon does, shown on level-up cards and in the Armory (Turkish source; Loc translates).")]
+        [TextArea] public string description;
         public Sprite icon;
         public Rarity rarity = Rarity.Common;
 

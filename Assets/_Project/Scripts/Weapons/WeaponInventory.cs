@@ -35,6 +35,18 @@ namespace PofudukFilo.Weapons
             set => startingWeapon = value;
         }
 
+        /// <summary>
+        /// Destroys every weapon (their pooled sprites are released in OnDestroy). Called on the way to the menu,
+        /// where time is frozen: a live weapon's orbiting cats and daisies would otherwise hang over the menu.
+        /// </summary>
+        public void ClearLoadout()
+        {
+            for (int i = 0; i < _weapons.Count; i++) Destroy(_weapons[i].gameObject);
+            _weapons.Clear();
+            _passives.Clear();
+            Stats.ClearPassiveBonuses();
+        }
+
         /// <summary>Destroys the loadout and re-equips the starting weapon (new run).</summary>
         public void ResetLoadout()
         {

@@ -158,7 +158,7 @@ namespace PofudukFilo.Core
             inventory.WeaponEvolved += OnWeaponEvolved;
             inventory.WeaponFused += OnWeaponFused;
             // Owned weapons stay offered even if locked in the Lab (a character's starting weapon).
-            draft.WeaponFilter = w => Meta.IsUnlocked(w) || inventory.Find(w) != null;
+            draft.WeaponFilter = w => (Meta.IsUnlocked(w) || inventory.Find(w) != null) && !IsRetired(w);
             draft.PassiveFilter = p => Meta.IsUnlocked(p);
             EnterMenu();
         }
@@ -309,6 +309,28 @@ namespace PofudukFilo.Core
             if (xpSystem.PendingLevelUps > 0) OfferNextDraft();
         }
 
+        /// <summary>
+        /// A base weapon whose evolution (or a fusion built from it) is owned is retired: it must not be offered
+        /// again as "YENİ!" (device feedback 2026-09-24: an evolved weapon could be bought again from level 1).
+        /// </summary>
+        private bool IsRetired(WeaponDefinition w)
+        {
+            if (inventory.Find(w) != null) return false;
+            foreach (WeaponBehaviour owned in inventory.Weapons)
+            {
+                WeaponDefinition have = owned.Definition;
+                for (WeaponDefinition e = w.evolvesInto; e != null; e = e.evolvesInto)
+                    if (e == have) return true;
+                foreach (FusionRecipe f in fusions)
+                {
+                    if (f == null || f.result != have) continue;
+                    for (WeaponDefinition e = w; e != null; e = e.evolvesInto)
+                        if (e == f.a || e == f.b) return true;
+                }
+            }
+            return false;
+        }
+
         private WeaponDefinition FindWeapon(string id)
         {
             foreach (WeaponDefinition w in labWeapons)
@@ -338,6 +360,7 @@ namespace PofudukFilo.Core
         {
             waveDirector.StopRun();
             ClearWorld();
+            inventory.ClearLoadout();
             SetState(GameState.MainMenu);
         }
 

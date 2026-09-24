@@ -11,8 +11,7 @@ namespace PofudukFilo.UI
         [SerializeField] private Sprite edgeGlowSprite;
 
         private SugarRush _rush;
-        private Image _rushFill;
-        private Text _rushLabel;
+        private HudBar _rushBar;
         private Text _comboText;
         private Image _edgeGlow;
         private float _comboPunch;
@@ -28,13 +27,12 @@ namespace PofudukFilo.UI
             _rush = FindAnyObjectByType<SugarRush>();
             var fleet = FindAnyObjectByType<Fleet>();
 
-            _rushFill = _ui.Bar(hud, Palette.Outline, Palette.Pink);
-            UIFactory.Place(_rushFill.transform.parent, 0.36f, 0.912f, 0.64f, 0.93f);
-            _rushLabel = _ui.Label(hud, "ŞEKER", 30, Palette.Cream);
-            UIFactory.Place(_rushLabel, 0.36f, 0.888f, 0.64f, 0.912f);
+            _rushBar = HudBar.Create(_ui, hud, barTrackSprite, barFillSprite, Palette.Pink, sugarIcon, 26);
+            UIFactory.Place(_rushBar, 0.27f, 0.858f, 0.78f, 0.884f);
+            _rushBar.Snap(0f);
 
             _comboText = _ui.Label(hud, "", 52, Palette.Cream, TextAnchor.MiddleRight);
-            UIFactory.Place(_comboText, 0.45f, 0.795f, 0.95f, 0.84f); // below the boss bar
+            UIFactory.Place(_comboText, 0.45f, 0.765f, 0.95f, 0.81f); // below the boss bar
             _comboText.rectTransform.pivot = new Vector2(1f, 0.5f); // punch grows leftwards, never off-screen
             _comboText.gameObject.SetActive(false);
 
@@ -64,7 +62,7 @@ namespace PofudukFilo.UI
                     Toast("ŞEKER HAZIR! Dokun!", 1.3f);
                     if (Audio.AudioManager.Instance != null) Audio.AudioManager.Instance.Play(Audio.SfxId.LevelUp, 0.02f);
                 };
-                _rush.MeterChanged += v => _rushFill.fillAmount = v;
+                _rush.MeterChanged += v => _rushBar.Set(v);
                 _rush.ComboChanged += OnComboChanged;
                 _rush.RushStarted += () =>
                 {
@@ -117,7 +115,7 @@ namespace PofudukFilo.UI
 
         private void UpdateRushHud()
         {
-            if (_rush == null || _rushFill == null) return;
+            if (_rush == null || _rushBar == null) return;
             float dt = Time.unscaledDeltaTime;
 
             if (_bossBanner != null && _bossBanner.activeSelf && Time.unscaledTime > _bossBannerUntil) _bossBanner.SetActive(false);
@@ -143,15 +141,15 @@ namespace PofudukFilo.UI
             {
                 // Rainbow bar and a breathing edge glow while the rush lasts.
                 Color c = Color.HSVToRGB(Mathf.Repeat(Time.unscaledTime * 0.6f, 1f), 0.55f, 1f);
-                _rushFill.color = c;
+                _rushBar.Color = c;
                 c.a = 0.35f + 0.2f * Mathf.Sin(Time.unscaledTime * 8f);
                 _edgeGlow.color = c;
-                _rushLabel.text = Loc.T("HÜCUM!");
+                _rushBar.Set(_rushBar.Value, Loc.T("HÜCUM!"));
             }
             else
             {
-                _rushFill.color = _rushFill.fillAmount > 0.85f ? Color.Lerp(Palette.Pink, Palette.White, Mathf.PingPong(Time.unscaledTime * 3f, 1f)) : Palette.Pink;
-                _rushLabel.text = Loc.T("ŞEKER");
+                _rushBar.Color = _rushBar.Value > 0.85f ? Color.Lerp(Palette.Pink, Palette.White, Mathf.PingPong(Time.unscaledTime * 3f, 1f)) : Palette.Pink;
+                _rushBar.Set(_rushBar.Value, Loc.T(_rush.Ready ? "ŞEKER HAZIR!" : "ŞEKER"));
             }
 
             if (_comboText.gameObject.activeSelf)
