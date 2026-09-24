@@ -127,7 +127,10 @@ namespace PofudukFilo.Core
         public bool Activate()
         {
             if (!Ready || Active) return false;
-            Ready = false;
+            // Start the rush FIRST: the bomb's own kills must not refill the meter and re-arm Ready
+            // while Active is still false (QA run 21: Ready+Active got stuck true and the rush
+            // never ended — a permanent +70 % fire rate).
+            StartRush();
 
             float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f;
             if (EnemyManager.Instance != null) EnemyManager.Instance.DamageAll(bombBaseDamage + bombDamagePerMinute * minutes);
@@ -146,12 +149,12 @@ namespace PofudukFilo.Core
                 Feel.Juice.Instance.Hitstop(0.08f);
                 Feel.Juice.Instance.Haptic();
             }
-            StartRush();
             return true;
         }
 
         private void StartRush()
         {
+            Ready = false;
             Active = true;
             _meter = 0f;
             _rushLeft = rushSeconds;
@@ -168,7 +171,7 @@ namespace PofudukFilo.Core
                 if (_comboTimer <= 0f) SetCombo(0);
             }
 
-            if (Ready)
+            if (Ready && !Active)
             {
                 _readyLeft -= dt;
                 if (_readyLeft <= 0f) Activate();
