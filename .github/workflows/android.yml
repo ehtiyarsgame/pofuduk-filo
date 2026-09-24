@@ -1,0 +1,64 @@
+# Builds an installable Android APK in the cloud with GameCI.
+# Needs repository secrets UNITY_EMAIL and UNITY_PASSWORD (optionally UNITY_LICENSE).
+# Download the APK from the run's "Artifacts" section.
+name: Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Assets/**"
+      - "Packages/**"
+      - "ProjectSettings/**"
+      - ".github/workflows/android.yml"
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Free disk space (the Android editor image is large)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: false
+          swap-storage: false
+
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-Android-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library-Android-
+
+      - name: Build with Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          targetPlatform: Android
+          unityVersion: 6000.3.24f1
+          buildMethod: PofudukFilo.EditorTools.CiBuild.BuildAndroid
+          buildName: PofudukFilo
+          androidExportType: androidPackage
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PofudukFilo-apk
+          path: build/Android
+          if-no-files-found: error

@@ -25,7 +25,12 @@ namespace PofudukFilo.EditorTools
         public static void BuildEverything()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            BuildEverythingNonInteractive();
+        }
 
+        /// <summary>Same as the menu item without prompts — used by CI (CiBuild.BuildAndroid).</summary>
+        public static void BuildEverythingNonInteractive()
+        {
             try
             {
                 EditorUtility.DisplayProgressBar("Pofuduk Filo", "İçerik üretiliyor…", 0.2f);

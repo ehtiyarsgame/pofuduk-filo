@@ -1,5 +1,6 @@
 // Unlit, alpha-blended quad for Graphics.RenderMeshInstanced (bullets, pickups).
-// No LightMode tag → drawn as SRPDefaultUnlit by both the URP 2D and Universal renderers.
+// Written with UnityCG and no LightMode tag, so it renders in the built-in pipeline and as
+// SRPDefaultUnlit in URP (2D or Universal renderer) alike.
 Shader "PofudukFilo/InstancedSprite"
 {
     Properties
@@ -9,54 +10,50 @@ Shader "PofudukFilo/InstancedSprite"
     }
     SubShader
     {
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" "IgnoreProjector" = "True" }
+        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "IgnoreProjector" = "True" }
         Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
         Cull Off
 
         Pass
         {
-            HLSLPROGRAM
+            CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_instancing
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "UnityCG.cginc"
 
-            TEXTURE2D(_MainTex);
-            SAMPLER(sampler_MainTex);
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            fixed4 _Color;
 
-            CBUFFER_START(UnityPerMaterial)
-                float4 _MainTex_ST;
-                half4 _Color;
-            CBUFFER_END
-
-            struct Attributes
+            struct appdata
             {
-                float4 positionOS : POSITION;
+                float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            struct Varyings
+            struct v2f
             {
-                float4 positionCS : SV_POSITION;
+                float4 pos : SV_POSITION;
                 float2 uv : TEXCOORD0;
             };
 
-            Varyings vert(Attributes input)
+            v2f vert(appdata v)
             {
-                Varyings output;
-                UNITY_SETUP_INSTANCE_ID(input);
-                output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
-                output.uv = TRANSFORM_TEX(input.uv, _MainTex);
-                return output;
+                v2f o;
+                UNITY_SETUP_INSTANCE_ID(v);
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                return o;
             }
 
-            half4 frag(Varyings input) : SV_Target
+            fixed4 frag(v2f i) : SV_Target
             {
-                return SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv) * _Color;
+                return tex2D(_MainTex, i.uv) * _Color;
             }
-            ENDHLSL
+            ENDCG
         }
     }
 }

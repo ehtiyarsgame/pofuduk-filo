@@ -1,5 +1,6 @@
 // Hit flash (art-bible §5.1): the sprite's silhouette in solid white, keeping its alpha.
 // Swapped in as a shared material for ~0.05 s, so flashing sprites still batch together.
+// Pipeline-agnostic (built-in and URP via SRPDefaultUnlit).
 Shader "PofudukFilo/SpriteWhiteFlash"
 {
     Properties
@@ -9,54 +10,50 @@ Shader "PofudukFilo/SpriteWhiteFlash"
     }
     SubShader
     {
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" "IgnoreProjector" = "True" "CanUseSpriteAtlas" = "True" }
+        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" "IgnoreProjector" = "True" "CanUseSpriteAtlas" = "True" }
         Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
         Cull Off
 
         Pass
         {
-            HLSLPROGRAM
+            CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "UnityCG.cginc"
 
-            TEXTURE2D(_MainTex);
-            SAMPLER(sampler_MainTex);
+            sampler2D _MainTex;
+            fixed4 _FlashColor;
 
-            CBUFFER_START(UnityPerMaterial)
-                half4 _FlashColor;
-            CBUFFER_END
-
-            struct Attributes
+            struct appdata
             {
-                float4 positionOS : POSITION;
+                float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
-                half4 color : COLOR;
+                fixed4 color : COLOR;
             };
 
-            struct Varyings
+            struct v2f
             {
-                float4 positionCS : SV_POSITION;
+                float4 pos : SV_POSITION;
                 float2 uv : TEXCOORD0;
-                half4 color : COLOR;
+                fixed4 color : COLOR;
             };
 
-            Varyings vert(Attributes input)
+            v2f vert(appdata v)
             {
-                Varyings output;
-                output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
-                output.uv = input.uv;
-                output.color = input.color;
-                return output;
+                v2f o;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.uv = v.uv;
+                o.color = v.color;
+                return o;
             }
 
-            half4 frag(Varyings input) : SV_Target
+            fixed4 frag(v2f i) : SV_Target
             {
-                half alpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv).a * input.color.a;
-                return half4(_FlashColor.rgb, alpha * _FlashColor.a);
+                fixed alpha = tex2D(_MainTex, i.uv).a * i.color.a;
+                return fixed4(_FlashColor.rgb, alpha * _FlashColor.a);
             }
-            ENDHLSL
+            ENDCG
         }
     }
 }
