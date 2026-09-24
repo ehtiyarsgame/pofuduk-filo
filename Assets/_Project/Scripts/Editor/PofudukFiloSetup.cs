@@ -225,6 +225,14 @@ namespace PofudukFilo.EditorTools
             Set(ui, "sugarIcon", c.Sprites["p_gem_pink"]);
             Set(ui, "researchIcon", c.Sprites["icon_research"]);
             Set(ui, "stardustIcon", c.Sprites["icon_stardust"]);
+            foreach ((string field, string key) in new[]
+                     {
+                         ("weaponsIcon", "icon_weapons"), ("gearIcon", "icon_gear"), ("playIcon", "icon_play"),
+                         ("pauseIcon", "icon_pause"), ("trophyIcon", "icon_trophy"), ("pedestalSprite", "menu_pedestal"),
+                         ("raysSprite", "menu_rays"), ("capsuleSprite", "ui_capsule"), ("navBarSprite", "ui_navbar"),
+                         ("ribbonSprite", "menu_ribbon"), ("shineSprite", "ui_shine"), ("vignetteSprite", "ui_vignette")
+                     })
+                Set(ui, field, c.Sprites[key]);
             // Rounded display font, fetched by CI (tools/ci, OFL licence); built-in font otherwise.
             Font uiFont = AssetDatabase.LoadAssetAtPath<Font>(UiFontPath);
             if (uiFont != null)

@@ -172,7 +172,9 @@ namespace PofudukFilo.UI
             _goldText = _ui.Label(_hud.transform, "0", 44, Palette.Honey, TextAnchor.MiddleLeft);
             UIFactory.Place(_goldText, 0.565f, 0.94f, 0.8f, 0.978f);
 
-            Button pause = _ui.Button(_hud.transform, "II", Palette.Lavender, run.Pause, 52);
+            Button pause = pauseIcon != null
+                ? IconButton(_hud.transform, pauseIcon, Palette.Lavender, run.Pause)
+                : _ui.Button(_hud.transform, "II", Palette.Lavender, run.Pause, 52);
             UIFactory.Place(pause, 0.845f, 0.93f, 0.97f, 0.982f);
 
             _xpBar = HudBar.Create(_ui, _hud.transform, barTrackSprite, barFillSprite, Palette.Sky, xpIcon, 28);
@@ -529,158 +531,6 @@ namespace PofudukFilo.UI
         {
             run.EnterMenu();
             OpenWorkshop();
-        }
-
-        // ---------------------------------------------------------------- Main menu
-
-        private Image _heroShip;
-        private Text _titleTop;
-        private Text _titleBottom;
-
-        private void BuildMenu(Transform root)
-        {
-            _menu = MakeScreen(root, GameState.MainMenu, dim: false);
-
-            // Top bar: wallet left, settings right.
-            Image bar = _ui.Panel(_menu.transform, new Color(0.23f, 0.16f, 0.31f, 0.7f), "TopBar");
-            UIFactory.Place(bar, 0.02f, 0.925f, 0.98f, 0.985f);
-            _wallet = MakeWallet(bar.transform, 0.04f, 0.12f, 0.7f, 0.88f, 44, TextAnchor.MiddleLeft);
-            UIFactory.Place(_ui.Button(bar.transform, "Ayarlar", Palette.Lavender, OpenSettings, 38), 0.72f, 0.1f, 0.98f, 0.9f);
-
-            // Two-tone logo that bobs gently (UpdateMenuAnim).
-            _titleTop = _ui.Label(_menu.transform, "POFUDUK", 150, Palette.Pink);
-            UIFactory.Place(_titleTop, 0.02f, 0.8f, 0.98f, 0.9f);
-            _titleBottom = _ui.Label(_menu.transform, "FİLO", 170, Palette.Cream);
-            UIFactory.Place(_titleBottom, 0.02f, 0.71f, 0.98f, 0.81f);
-            foreach (Text t in new[] { _titleTop, _titleBottom })
-            {
-                var o = t.GetComponent<Outline>();
-                o.effectDistance = new Vector2(6f, -6f);
-                var shadow = t.gameObject.AddComponent<Shadow>();
-                shadow.effectColor = new Color(0.1f, 0.05f, 0.18f, 0.6f);
-                shadow.effectDistance = new Vector2(0f, -14f);
-            }
-
-            // Hero: the selected pilot's ship.
-            _heroShip = _ui.Node("HeroShip", _menu.transform).gameObject.AddComponent<Image>();
-            _heroShip.preserveAspect = true;
-            _heroShip.raycastTarget = false;
-            UIFactory.Place(_heroShip, 0.27f, 0.5f, 0.73f, 0.7f);
-
-            _pilotText = _ui.Label(_menu.transform, "", 44, Palette.Pink);
-            UIFactory.Place(_pilotText, 0.1f, 0.465f, 0.9f, 0.5f);
-
-            // One way in, Ball Blast-style: OYNA starts the endless climb through every stage (power-match.md §3.3).
-            // With a saved run the big button continues it (run-resume.md); "Yeni Oyun" starts over.
-            _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, () =>
-            {
-                if (run.HasSavedRun) run.ResumeRun();
-                else run.StartEndless();
-            }, 120);
-            UIFactory.Place(_playButton, 0.12f, 0.335f, 0.88f, 0.445f);
-            _restartButton = _ui.Button(_menu.transform, "Yeni Oyun", Palette.Lavender, run.StartEndless, 32);
-            UIFactory.Place(_restartButton, 0.7f, 0.288f, 0.9f, 0.325f);
-            _recordText = _ui.Label(_menu.transform, "", 42, Palette.Honey);
-            UIFactory.Place(_recordText, 0.1f, 0.288f, 0.9f, 0.325f);
-
-            // Three clear doors out of the menu (device feedback 2026-09-24: five meta buttons read as clutter).
-            _researchTile = MenuTile("AR-GE", researchIcon, 0.03f, OpenResearch);
-            _armoryTile = MenuTile("SİLAHLAR", null, 0.355f, OpenLab);
-            _pilotsTile = MenuTile("PİLOTLAR", null, 0.68f, OpenHangar);
-
-            // Studio credit (brand.md).
-            Text credit = _ui.Label(_menu.transform, $"© {StudioIntro.StudioName}", 30, new Color(0.78f, 0.71f, 1f, 0.7f));
-            UIFactory.Place(credit, 0.1f, 0.035f, 0.9f, 0.07f);
-        }
-
-        private Text _recordText;
-        private Text _endDust;
-        private GameObject _endDustIcon;
-        private GameObject _endDustGap;
-        private Button _restartButton;
-        [SerializeField] private Sprite researchIcon;
-
-        private sealed class Tile
-        {
-            public Button Button;
-            public Image Icon;
-            public GameObject Badge;
-        }
-
-        private Tile _researchTile;
-        private Tile _armoryTile;
-        private Tile _pilotsTile;
-
-        /// <summary>A big square menu tile: icon on top, label below, a "!" badge when something there is affordable.</summary>
-        private Tile MenuTile(string label, Sprite icon, float x0, System.Action open)
-        {
-            var tile = new Tile();
-            tile.Button = _ui.Button(_menu.transform, "", Palette.Lavender, open, 38);
-            UIFactory.Place(tile.Button, x0, 0.095f, x0 + 0.29f, 0.255f);
-            Transform face = tile.Button.transform.Find("Face");
-
-            tile.Icon = _ui.Node("Icon", face).gameObject.AddComponent<Image>();
-            tile.Icon.sprite = icon;
-            tile.Icon.preserveAspect = true;
-            tile.Icon.raycastTarget = false;
-            UIFactory.Place(tile.Icon, 0.18f, 0.34f, 0.82f, 0.92f);
-
-            Text text = _ui.Label(face, label, 40, Palette.White);
-            UIFactory.Place(text, 0.02f, 0.04f, 0.98f, 0.32f);
-
-            Image badge = _ui.Panel(face, Palette.Honey, "Badge");
-            UIFactory.Place(badge, 0.74f, 0.76f, 0.98f, 0.98f);
-            badge.raycastTarget = false;
-            Text bang = _ui.Label(badge.transform, "!", 40, Palette.Outline);
-            bang.GetComponent<Outline>().enabled = false;
-            tile.Badge = badge.gameObject;
-            return tile;
-        }
-
-        private void RefreshForge()
-        {
-            if (_researchTile == null) return;
-            MetaProgressionService meta = run.Meta;
-            _researchTile.Badge.SetActive(ResearchAffordable());
-            _armoryTile.Badge.SetActive(ArmoryAffordable());
-            _pilotsTile.Badge.SetActive(false);
-            if (_armoryTile.Icon.sprite == null && run.LabWeapons.Count > 0 && run.LabWeapons[0] != null)
-                _armoryTile.Icon.sprite = run.LabWeapons[0].icon;
-
-            float best = meta.BestEndlessSeconds;
-            bool saved = run.HasSavedRun;
-            string line = "";
-            if (saved)
-            {
-                (int stage, float minutes) = run.SavedRunInfo();
-                line = Loc.T($"Kayıt: Bölüm {stage} · {Mathf.FloorToInt(minutes)}:{Mathf.FloorToInt(minutes * 60f % 60f):00}");
-            }
-            else if (best > 0f)
-                line = Loc.T($"Rekor: {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}");
-            _recordText.text = line;
-            UIFactory.SetText(_playButton, saved ? "DEVAM ET" : "OYNA");
-            _restartButton.gameObject.SetActive(saved);
-            UIFactory.Place(_recordText, 0.04f, 0.288f, saved ? 0.69f : 0.96f, 0.325f);
-        }
-
-        private bool ArmoryAffordable()
-        {
-            MetaProgressionService meta = run.Meta;
-            foreach (WeaponDefinition w in run.LabWeapons)
-                if (w != null && (meta.IsUnlocked(w) ? meta.CanUpgradeMastery(w) : meta.Gold >= w.labCost)) return true;
-            return false;
-        }
-
-        private void UpdateMenuAnim()
-        {
-            if (_menu == null || !_menu.activeSelf || _heroShip == null) return;
-            float t = Time.unscaledTime;
-            _heroShip.rectTransform.anchoredPosition = new Vector2(0f, Mathf.Sin(t * 1.8f) * 18f);
-            _heroShip.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 1.1f) * 4f);
-            float s = 1f + Mathf.Sin(t * 2.4f) * 0.02f;
-            _titleTop.rectTransform.localScale = new Vector3(s, s, 1f);
-            _titleBottom.rectTransform.localScale = new Vector3(2f - s, 2f - s, 1f);
-            _playButton.transform.localScale = Vector3.one * (1f + Mathf.Max(0f, Mathf.Sin(t * 3f)) * 0.04f);
         }
 
         private void RefreshMenu()

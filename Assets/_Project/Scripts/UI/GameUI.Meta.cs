@@ -86,10 +86,14 @@ namespace PofudukFilo.UI
         {
             var screen = new MetaScreen { Refresh = refresh };
             screen.Root = _ui.Node(title, root).gameObject;
-            _ui.Panel(screen.Root.transform, Palette.Lavender, "Background");
-
-            UIFactory.Place(_ui.Label(screen.Root.transform, title, 96, Palette.Cream), 0.05f, 0.9f, 0.95f, 0.97f);
-            screen.Wallet = MakeWallet(screen.Root.transform, 0.05f, 0.86f, 0.95f, 0.9f, 46);
+            // Night-sky panel with the menu's vignettes and a logo-style title (same family as the main menu).
+            Image bg = _ui.Panel(screen.Root.transform, Palette.Hex(0x2A1D45), "Background");
+            bg.type = Image.Type.Simple;
+            Vignette(screen.Root.transform, 0.82f, 1f, false);
+            Vignette(screen.Root.transform, 0f, 0.2f, true);
+            LogoLine(screen.Root.transform, title, 88, Palette.Hex(0xFFF6C8), Palette.Honey, 0.9f, 0.97f).GetComponent<UIWave>().amplitude = 2f;
+            Image walletCap = Capsule(screen.Root.transform, 0.2f, 0.855f, 0.8f, 0.895f);
+            screen.Wallet = MakeWallet(walletCap.transform, 0.05f, 0.1f, 0.95f, 0.9f, 40);
 
             screen.List = ScrollList(screen.Root.transform, 0.04f, 0.13f, 0.96f, 0.85f);
 
@@ -142,7 +146,7 @@ namespace PofudukFilo.UI
 
         private Image Row(Transform list, string name, float height)
         {
-            Image row = _ui.Panel(list, Palette.Outline, name);
+            Image row = _ui.Panel(list, Palette.Hex(0x3E2C63), name);
             row.gameObject.AddComponent<LayoutElement>().preferredHeight = height;
             return row;
         }

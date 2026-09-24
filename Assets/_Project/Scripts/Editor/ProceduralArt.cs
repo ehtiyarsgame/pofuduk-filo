@@ -422,7 +422,7 @@ namespace PofudukFilo.EditorTools
     }
 
     /// <summary>Recipes for every placeholder sprite (colours from art-bible §2.1).</summary>
-    public static class ArtRecipes
+    public static partial class ArtRecipes
     {
         public static readonly Color Pink = Hex(0xF7A6C1);
         public static readonly Color HotPink = Hex(0xFF4F9A);

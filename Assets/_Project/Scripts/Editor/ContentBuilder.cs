@@ -120,7 +120,20 @@ namespace PofudukFilo.EditorTools
             Add("studio_emblem", ArtRecipes.StudioEmblem(), 256);
             Add("ui_bar_track", ArtRecipes.BarTrack(), 100, new Vector4(26, 26, 26, 26));
             Add("icon_research", ArtRecipes.ResearchIcon(), 256);
-            Add("icon_stardust", ArtRecipes.MiniStar(ArtRecipes.Lilac), 64);
+            Add("icon_stardust", ArtRecipes.StardustIcon(), 96);
+            // Main menu dressing and icon set (design/ux/main-menu.md).
+            Add("menu_pedestal", ArtRecipes.MenuPedestal(), 100);
+            Add("menu_rays", ArtRecipes.LightRays(), 100);
+            Add("ui_capsule", ArtRecipes.Capsule(), 100, new Vector4(36, 36, 36, 36));
+            Add("ui_navbar", ArtRecipes.NavBar(), 100, new Vector4(40, 40, 40, 40));
+            Add("menu_ribbon", ArtRecipes.LogoRibbon(), 100);
+            Add("ui_shine", ArtRecipes.ShineBand(), 100);
+            Add("ui_vignette", ArtRecipes.Vignette(), 100);
+            Add("icon_gear", ArtRecipes.IconGear(), 128);
+            Add("icon_play", ArtRecipes.IconPlay(), 128);
+            Add("icon_pause", ArtRecipes.IconPause(), 128);
+            Add("icon_trophy", ArtRecipes.IconTrophy(), 128);
+            Add("icon_weapons", ArtRecipes.IconWeapons(), 256);
             Add("ui_bar_fill", ArtRecipes.BarFill(), 100, new Vector4(21, 21, 21, 21));
             Add("app_icon", ArtRecipes.AppIcon(), 512);
             Add("bg_sky", ArtRecipes.SkyGradient(), 100);
