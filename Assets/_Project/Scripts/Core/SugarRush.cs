@@ -22,7 +22,7 @@ namespace PofudukFilo.Core
         public static float XpMultiplier => Instance != null && Instance.Active ? Instance.rushXpMultiplier : 1f;
 
         [SerializeField] private float comboWindow = 1.6f;
-        [SerializeField] private float meterMax = 70f;
+        [SerializeField] private float meterMax = 120f; // QA run 13: a rush every ~20 s at 70 — too routine
         [Tooltip("Meter per kill = killValue × (1 + combo × comboBonus).")]
         [SerializeField] private float comboBonus = 0.03f;
         [SerializeField] private float eliteKillValue = 10f;

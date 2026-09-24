@@ -41,9 +41,9 @@ namespace PofudukFilo.Progression
         [SerializeField] private float renderZ = -0.5f;
 
         [Header("Movement")]
-        [SerializeField] private float baseMagnetRadius = 1.5f;
+        [SerializeField] private float baseMagnetRadius = 2.4f; // QA run 13: gems piled up uncollected at 1.5
         [SerializeField] private float collectRadius = 0.35f;
-        [SerializeField] private float driftSpeed = 0.6f;
+        [SerializeField] private float driftSpeed = 1.6f; // gems rain toward the ship's zone
         [SerializeField] private float attractAcceleration = 30f;
         [SerializeField] private float popSpeed = 2.5f;
         [SerializeField] private float bottomMargin = 1f;

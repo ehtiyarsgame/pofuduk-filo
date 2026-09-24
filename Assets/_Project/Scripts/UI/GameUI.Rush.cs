@@ -28,8 +28,9 @@ namespace PofudukFilo.UI
             _rushLabel = _ui.Label(hud, "ŞEKER", 30, Palette.Cream);
             UIFactory.Place(_rushLabel, 0.36f, 0.888f, 0.64f, 0.912f);
 
-            _comboText = _ui.Label(hud, "", 56, Palette.Cream, TextAnchor.MiddleRight);
-            UIFactory.Place(_comboText, 0.55f, 0.855f, 0.97f, 0.9f);
+            _comboText = _ui.Label(hud, "", 52, Palette.Cream, TextAnchor.MiddleRight);
+            UIFactory.Place(_comboText, 0.45f, 0.8f, 0.95f, 0.845f); // below the boss bar
+            _comboText.rectTransform.pivot = new Vector2(1f, 0.5f); // punch grows leftwards, never off-screen
             _comboText.gameObject.SetActive(false);
 
             var glowNode = _ui.Node("RushGlow", hud);

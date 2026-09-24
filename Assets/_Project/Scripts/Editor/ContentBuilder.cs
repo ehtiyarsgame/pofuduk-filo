@@ -583,7 +583,7 @@ namespace PofudukFilo.EditorTools
 
         private void BuildEnemies()
         {
-            EnemyPrefab<Enemy>("Chick", "chick", 0.9f, e => Stats(e, 10, 0.38f, 1, 1, 1.4f, 6.5f, 1, 0, 2.7f, 10, true));
+            EnemyPrefab<Enemy>("Chick", "chick", 0.9f, e => Stats(e, 10, 0.38f, 1, 1, 1.4f, 5f, 1, 0, 2.8f, 10, true));
             EnemyPrefab<Enemy>("JellyBear", "jelly_bear", 1.2f, e => Stats(e, 45, 0.55f, 5, 2, 0.8f, 5f, 3, 30, 2.8f, 12, true, BEnemyBig));
             EnemyPrefab<Enemy>("CookieRobot", "cookie_robot", 1f, e => Stats(e, 25, 0.45f, 3, 1, 1f, 3.4f, 1, 0, 4f, 12, true));
             EnemyPrefab<Enemy>("IceCreamTower", "ice_cream", 1.3f, e => Stats(e, 70, 0.6f, 8, 3, 0.6f, 3.5f, 8, 315, 2.4f, 10, false));

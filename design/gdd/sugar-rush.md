@@ -50,7 +50,7 @@ bullets is what keeps the sugar flowing.
 | Name | Formula | Variables | Range | Example |
 |---|---|---|---|---|
 | Meter gain | `g = v × (1 + c × b)` | v = kill value (1 / 10 / 35), c = combo after this kill, b = `comboBonus` (0.03) | 1.03 – ~50 | Combo 20, normal kill: 1 × 1.6 = 1.6 |
-| Kills to rush | `≈ meterMax / mean(g)` | `meterMax` = 70 | 30–68 kills | At a steady combo of 25: 70 / 1.75 ≈ 40 kills |
+| Kills to rush | `≈ meterMax / mean(g)` | `meterMax` = 120 | 50–116 kills | At a steady combo of 25: 120 / 1.75 ≈ 69 kills (QA run 13 at 70: one rush every ~20 s) |
 | Wingman damage | `d = baseDamage × power × DamageMultiplier` | baseDamage = 7, power = 1 + 0.25 × extra rescues | 7 – ~30 | 2 extras, +30 % damage stat: 7 × 1.5 × 1.3 = 13.7 |
 | Wingman DPS | `d × rushFireRate / fireInterval` | fireInterval = 0.6 s | 11.7 – 85 per wingman | 7 / 0.6 = 11.7; during a rush: 19.8 |
 
@@ -81,7 +81,7 @@ bullets is what keeps the sugar flowing.
 | Knob | Default | Safe range | Affects |
 |---|---|---|---|
 | `comboWindow` | 1.6 s | 1.0–2.5 | How forgiving combos are; below 1.0 combos only last during dense waves |
-| `meterMax` | 70 | 45–120 | Rush frequency (target: about one rush per 60–90 s for a decent player) |
+| `meterMax` | 120 | 70–160 | Rush frequency (target: about one rush per 60–90 s for a decent player) |
 | `comboBonus` | 0.03 | 0–0.06 | How much skill (keeping a long combo) speeds up rushes |
 | `meterKeptOnHit` | 0.5 | 0.25–0.8 | How hard getting hit is punished |
 | `rushSeconds` | 6 | 4–9 | Length of the power spike |
