@@ -100,6 +100,32 @@ Geminin yanında süzülen minik bir kedi, en yakın düşmana zincirleme şimş
 | 5 | Zıplama başına hasar azalmaz (+%0 düşüş) |
 | **★ Evrim: Fırtına Kedisi Tanrıçası** (pasif: **Pil Tasması** — bekleme −%) | Kedi dev bir **bulut-kediye** dönüşür, ekranın tepesinde uyur gibi süzülür; her 0.5 sn'de rastgele 3 düşmana **pastel sarı yıldırım** düşer, yıldırım düştüğü yerde **elektrikli papatya** açar (1.5 sn alan hasarı). Kedi esnediğinde (her 8 sn) ekran boyunca zincir 20 hedefe sekiyor. |
 
+#### 🐟 6) Balık Füzesi — *hedef takip eden, ıskalamayan* (ad-rewards.md: 1 200 altın veya 3 reklam)
+
+Yelpaze halinde fırlayan küçük balıklar 0.18 sn düz gider, sonra en yakın düşmana döner (320°/sn).
+
+| Sv | Değişiklik |
+|----|-----------|
+| 1 | 2 balık, 14 hasar, 1.1 sn bekleme, hız 9 |
+| 2 | 3 balık |
+| 3 | Çarpınca küçük patlama (yarıçap 0.8, %50 hasar) |
+| 4 | 4 balık, 0.95 sn bekleme |
+| 5 | 5 balık, 16 hasar, her biri 2 düşmana çarpar, patlama 1.0 |
+| **★ Evrim: Köpekbalığı Sürüsü** (pasif: **Mıknatıs Kulak**) | 4 dev köpekbalığı (24 hasar); her vuruşta 2 yavru balık (%45 hasar) kendi başına avlanır. |
+
+#### 🧶 7) Yün Yumağı — *Ball Blast topu, kenarlardan seker* (ad-rewards.md: 1 600 altın veya 4 reklam)
+
+Yumak oyun alanının kenarlarından (üstte HUD çizgisinin altından) seker; değdiği düşmana 0.25 sn'de bir vurur. Ölen yumak her bekleme süresinde yeniden fırlatılır.
+
+| Sv | Değişiklik |
+|----|-----------|
+| 1 | 1 yumak, 10 hasar, yarıçap 0.45, 8 sn ömür |
+| 2 | 2 yumak |
+| 3 | Yarıçap 0.6 |
+| 4 | 3 yumak, hız 8.5 |
+| 5 | 12 hasar; her sekme hasarı %10 artırır (en çok 5 sekme) |
+| **★ Evrim: Kozmik Yumak** (pasif: **Havuç Kalkan**) | Tek dev yumak (yarıçap 1.1, 22 hasar, 12 sn); her sekmede yana fırlayan mini yumak (en çok 6, 3 sn). |
+
 ---
 
 ### 3.3 Pasifler (8 adet; 5'i evrim anahtarı)

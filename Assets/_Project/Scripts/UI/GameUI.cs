@@ -115,6 +115,7 @@ namespace PofudukFilo.UI
         {
             UpdateRushHud();
             UpdateMenuAnim();
+            UpdateRewards();
             if (_toast != null && _toast.gameObject.activeSelf && Time.unscaledTime > _toastUntil)
                 _toast.gameObject.SetActive(false);
 

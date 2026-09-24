@@ -248,6 +248,13 @@ namespace PofudukFilo.UI
                         if (meta.TryUnlock(captured)) RefreshOpenMetaScreen();
                     }, 36);
                     action.interactable = meta.CanUnlock(c);
+                    if (c.adsToUnlock > 0)
+                    {
+                        // Gold on top, or the same pilot for a few ads below (ad-rewards.md §3.1).
+                        UIFactory.Place(action, 0.66f, 0.54f, 0.98f, 0.94f);
+                        AddPilotAdControls(row.transform, c);
+                        continue;
+                    }
                 }
                 UIFactory.Place(action, 0.66f, 0.14f, 0.98f, 0.86f);
             }
@@ -282,8 +289,12 @@ namespace PofudukFilo.UI
                 string state = unlocked
                     ? Loc.T($"Ustalık {mastery}/{Formulas.MaxWeaponMastery}: +%{Mathf.RoundToInt(Formulas.MasteryDamagePerLevel * mastery * 100f)} hasar")
                     : Loc.T("Kilitli: açınca oyunda kartı çıkmaya başlar");
-                Text stateText = _ui.Label(row.transform, state, 28, unlocked ? Palette.Mint : Palette.Honey, TextAnchor.MiddleLeft);
-                UIFactory.Place(stateText, 0.22f, 0.04f, 0.65f, 0.3f);
+                bool adUnlock = !unlocked && w.adsToUnlock > 0;
+                if (!adUnlock)
+                {
+                    Text stateText = _ui.Label(row.transform, state, 28, unlocked ? Palette.Mint : Palette.Honey, TextAnchor.MiddleLeft);
+                    UIFactory.Place(stateText, 0.22f, 0.04f, 0.65f, 0.3f);
+                }
 
                 Button b;
                 if (!unlocked)
@@ -293,6 +304,12 @@ namespace PofudukFilo.UI
                         if (meta.TryUnlock(captured)) RefreshOpenMetaScreen();
                     }, 38);
                     b.interactable = meta.Gold >= w.labCost;
+                    if (adUnlock)
+                    {
+                        UIFactory.Place(b, 0.66f, 0.54f, 0.98f, 0.94f);
+                        AddWeaponAdControls(row.transform, w);
+                        continue;
+                    }
                 }
                 else if (maxed)
                 {

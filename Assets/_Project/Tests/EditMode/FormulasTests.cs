@@ -138,5 +138,13 @@ namespace PofudukFilo.Tests
             Assert.That(size, Is.EqualTo(10.8f).Within(1e-4f));
             Assert.That(vw, Is.EqualTo(1f));
         }
+
+        [Test]
+        public void test_gift_gold_tracks_forge_depth_with_a_floor()
+        {
+            Assert.That(Formulas.GiftGold(0, 0), Is.EqualTo(100));
+            Assert.That(Formulas.GiftGold(10, 10), Is.EqualTo(Formulas.ForgeCost(10)));
+            Assert.That(Formulas.GiftGold(30, 10), Is.EqualTo(Formulas.ForgeCost(20)));
+        }
     }
 }

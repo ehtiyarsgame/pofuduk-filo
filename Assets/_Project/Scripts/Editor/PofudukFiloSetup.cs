@@ -227,6 +227,8 @@ namespace PofudukFilo.EditorTools
             Set(ui, "sugarIcon", c.Sprites["p_gem_pink"]);
             Set(ui, "researchIcon", c.Sprites["icon_research"]);
             Set(ui, "stardustIcon", c.Sprites["icon_stardust"]);
+            Set(ui, "adIcon", c.Sprites["icon_ad"]);
+            Set(ui, "giftIcon", c.Sprites["icon_gift"]);
             foreach ((string field, string key) in new[]
                      {
                          ("weaponsIcon", "icon_weapons"), ("gearIcon", "icon_gear"), ("playIcon", "icon_play"),

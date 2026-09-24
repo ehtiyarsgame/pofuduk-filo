@@ -29,6 +29,8 @@
     <Compile Include="../../../Assets/_Project/Tests/EditMode/SfxSynthTests.cs" />
     <Compile Include="../../../Assets/_Project/Scripts/Enemies/PowerMatch.cs" />
     <Compile Include="../../../Assets/_Project/Tests/EditMode/PowerMatchTests.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Meta/AdRules.cs" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/AdRulesTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="../.cache/modules/lib/net45/UnityEngine.CoreModule.dll" />

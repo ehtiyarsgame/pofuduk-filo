@@ -374,6 +374,33 @@ namespace PofudukFilo.Core
 
         public void StartRun(int chapterIndex) => StartRun(chapterIndex, false);
 
+        // ---------------------------------------------------------------- Trials (ad-rewards.md §3.2)
+
+        private WeaponDefinition _trialWeapon;
+
+        /// <summary>What the current run is trying out after a rewarded ad (display name), or null.</summary>
+        public string TrialName { get; private set; }
+
+        /// <summary>"Dene": one run with a locked pilot, paid for by a rewarded ad.</summary>
+        public void StartTrial(CharacterDefinition pilot) => StartTrial(pilot, null);
+
+        /// <summary>"Dene": one run that starts with a locked weapon next to the pilot's own.</summary>
+        public void StartTrial(WeaponDefinition weapon) => StartTrial(null, weapon);
+
+        /// <summary>A trial with a pilot, a weapon, or both (the QA autopilot plays both new ones at once).</summary>
+        public void StartTrial(CharacterDefinition pilot, WeaponDefinition weapon)
+        {
+            _forcedCharacterId = pilot != null ? pilot.id : null;
+            _trialWeapon = weapon;
+            StartEndless();
+            _forcedCharacterId = null;
+            _trialWeapon = null;
+            TrialName = pilot != null ? pilot.displayName : weapon != null ? weapon.displayName : null;
+        }
+
+        /// <summary>Lab weapon by id (base or evolution), or null.</summary>
+        public WeaponDefinition WeaponById(string id) => FindWeapon(id);
+
         private void StartRun(int chapterIndex, bool endless)
         {
             SaveService.DeleteRun(); // a new run replaces any saved one (ResumeRun re-saves as it plays)
@@ -407,6 +434,9 @@ namespace PofudukFilo.Core
                 if (playerSprite != null && ship != null) playerSprite.sprite = ship;
             }
             inventory.ResetLoadout();
+            TrialName = null;
+            if (_trialWeapon != null && inventory.Find(_trialWeapon) == null && inventory.CanTake(_trialWeapon))
+                inventory.AddOrLevelWeapon(_trialWeapon);
             if (CurrentCharacter != null && CurrentCharacter.perk == CharacterPerk.RandomPassive) GrantRandomPassive();
 
             player.transform.position = playerStartPosition;

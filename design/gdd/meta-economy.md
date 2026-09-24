@@ -189,3 +189,5 @@ Global: `Bölüm çarpanı (1.35)`, `Ölüm altın koruma oranı (%100)`, `Boss 
 - [ ] Hiçbir tek Atölye yükseltmesi oyuncu gücünü >%5 artırmaz (meta, beceriyi gölgelemez).
 - [ ] Tam meta ilerlemeli oyuncu, yeni oyuncuya göre bölüm 1'i en fazla **~2.2×** daha hızlı bitirir.
 - [ ] Hiçbir para birimi bakiyesi ortalama oyuncuda 3 günden uzun süre "harcanamaz" durumda kalmaz.
+
+> **2026-09-24:** Locked pilots and Lab weapons can also be unlocked with rewarded ads, tried for one run ("Dene"), and the menu has a daily ad gift — see `ad-rewards.md`.

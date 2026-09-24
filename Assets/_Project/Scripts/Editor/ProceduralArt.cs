@@ -1070,7 +1070,7 @@ namespace PofudukFilo.EditorTools
         public static Painter Icon(string id)
         {
             bool legendary = id is "supernova_omelette" or "galaxy_vortex" or "gum_rings" or "storm_cat" or "prism_beam" or "feather_storm"
-                or "rainbow_storm" or "cosmic_breakfast" or "candy_shield_galaxy";
+                or "rainbow_storm" or "cosmic_breakfast" or "candy_shield_galaxy" or "shark_swarm" or "cosmic_yarn";
             (Color badge, Painter symbol, float scale) = id switch
             {
                 "feather_blaster" => (Sky, Feather(false), 1.45f),
@@ -1085,6 +1085,10 @@ namespace PofudukFilo.EditorTools
                 "storm_cat" => (Honey, Cat(), 0.72f),
                 "prism_beam" => (Honey, GemSprite(Sky), 1.4f),
                 "feather_storm" => (Honey, Feather(true), 1.2f),
+                "fish_missile" => (Sky, FishSprite(false), 0.9f),
+                "shark_swarm" => (Honey, FishSprite(true), 0.9f),
+                "yarn_ball" => (Pink, YarnSprite(), 0.8f),
+                "cosmic_yarn" => (Honey, YarnSprite(), 0.8f),
                 "crystal_glasses" => (Lilac, GemSprite(Sky), 1.3f),
                 "hot_pan" => (Coral, Coin(), 1.3f),
                 "moon_dust" => (Hex(0x6B5B95), MiniStar(Lilac), 1.4f),

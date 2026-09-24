@@ -149,6 +149,8 @@ namespace PofudukFilo.UI
 
             Text credit = _ui.Label(m, $"© {StudioIntro.StudioName}", 22, new Color(0.78f, 0.71f, 1f, 0.55f));
             UIFactory.Place(credit, 0.1f, 0.176f, 0.9f, 0.19f);
+
+            BuildRewards(m, root);
         }
 
         // ---------------------------------------------------------------- Pieces
@@ -285,6 +287,7 @@ namespace PofudukFilo.UI
             _recordCapsule.SetActive(line.Length > 0);
             UIFactory.SetText(_playButton, saved ? "DEVAM ET" : "OYNA");
             _restartButton.gameObject.SetActive(saved);
+            RefreshGift();
         }
 
         private bool ArmoryAffordable()

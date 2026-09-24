@@ -37,6 +37,12 @@ namespace PofudukFilo.Meta
         public int forgeSpeed;
         public float bestEndlessSeconds;
         public int bestEndlessKills;
+        // Rewarded ads (ad-rewards.md): per-item unlock progress and the daily counters.
+        public List<UpgradeLevelEntry> adProgress = new();
+        public long adDay = -1;
+        public int adViewsToday;
+        public int giftsToday;
+        public long lastGiftUtcTicks;
     }
 
     /// <summary>

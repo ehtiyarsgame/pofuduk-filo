@@ -263,12 +263,48 @@ namespace PofudukFilo.Core
             ["DEVAM ET"] = "CONTINUE",
             ["Kaydet ve Çık"] = "Save & Quit",
             ["Güzel uçuş!"] = "Nice flight!",
-            ["Reklam hazır değil, biraz sonra dene."] = "Ad not ready, try again soon."
+            ["Reklam hazır değil, biraz sonra dene."] = "Ad not ready, try again soon.",
+
+            // ---- Rewarded ads: gift, unlock-by-ads, trials (ad-rewards.md)
+            ["HEDİYE"] = "GIFT",
+            ["Yarın"] = "Tomorrow",
+            ["Dene"] = "Try",
+            ["Reklam yükleniyor, birazdan tekrar dene."] = "Ad is loading, try again in a moment.",
+            ["Reklam yarıda kaldı, ödül verilmedi."] = "Ad was skipped, no reward.",
+            ["Önce kayıtlı oyununa devam et."] = "Finish your saved run first.",
+
+            // ---- New weapons and pilots
+            ["Balık Füzesi"] = "Fish Missile",
+            ["Köpekbalığı Sürüsü"] = "Shark Swarm",
+            ["Yün Yumağı"] = "Yarn Ball",
+            ["Kozmik Yumak"] = "Cosmic Yarn",
+            ["Kendi hedefini bulan balık füzeleri; hiç ıskalamaz."] = "Fish missiles that find their own target; they never miss.",
+            ["Ekran kenarlarından seken yün yumağı; değdiği her düşmanı ezer."] = "A yarn ball bouncing off the screen edges, flattening every foe it touches.",
+            ["EVRİM: Dev köpekbalıkları; her vuruşta 2 yavru balık saldırır."] = "EVOLUTION: Giant sharks; every hit sends 2 baby fish after foes.",
+            ["EVRİM: Dev yumak; her sekmede mini yumaklar saçar."] = "EVOLUTION: A giant ball that throws off mini balls on every bounce.",
+            ["Hedef takip eden 2 balık"] = "2 homing fish",
+            ["3 balık"] = "3 fish",
+            ["Çarpınca küçük patlama"] = "Small blast on impact",
+            ["4 balık, daha sık"] = "4 fish, more often",
+            ["5 balık; her biri 2 düşmana çarpar"] = "5 fish; each hits 2 foes",
+            ["4 köpekbalığı; her vuruşta 2 yavru balık"] = "4 sharks; 2 baby fish per hit",
+            ["Kenarlardan seken 1 yumak"] = "1 ball bouncing off the edges",
+            ["2 yumak"] = "2 balls",
+            ["Yumaklar büyür"] = "Bigger balls",
+            ["3 yumak"] = "3 balls",
+            ["Her sekme hasarı %10 artırır (en çok 5)"] = "Each bounce adds 10% damage (up to 5)",
+            ["Dev yumak; her sekmede mini yumaklar"] = "Giant ball; mini balls on every bounce",
+            ["Pengu"] = "Pengu",
+            ["Kuzu"] = "Lamby",
+            ["Penguen. Mermiler %25 hızlı, +%5 kritik."] = "Penguin. Shots 25% faster, +5% crit.",
+            ["Kuzu. Can +%30, alan +%10."] = "Lamb. +30% HP, +10% area."
         };
 
         public static readonly Dictionary<string, string> Templates = new()
         {
             ["Sv. {0}"] = "Lv. {0}",
+            ["{0} açıldı!"] = "{0} unlocked!",
+            ["Hediye: +{0} altın, +{1} yıldız tozu!"] = "Gift: +{0} gold, +{1} stardust!",
             ["Bölüm {0} başladı!"] = "Stage {0} begins!",
             ["Kayıt: Bölüm {0} · {1}"] = "Saved: Stage {0} · {1}",
             ["Rekor: {0}"] = "Best: {0}",

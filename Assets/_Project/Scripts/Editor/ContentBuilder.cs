@@ -89,6 +89,16 @@ namespace PofudukFilo.EditorTools
             AddShip("ship_hamster", ArtRecipes.Hamster(), ArtRecipes.Sky);
             AddShip("ship_fox", ArtRecipes.Fox(), ArtRecipes.Lilac);
             AddShip("ship_mystery", ArtRecipes.MysteryBunny(), ArtRecipes.HotPink);
+            Add("pilot_penguin", ArtRecipes.PenguinPilot(), 256);
+            Add("pilot_lamb", ArtRecipes.LambPilot(), 256);
+            AddShip("ship_penguin", ArtRecipes.PenguinPilot(), ArtRecipes.Sky);
+            AddShip("ship_lamb", ArtRecipes.LambPilot(), ArtRecipes.Pink);
+            Add("fish", ArtRecipes.FishSprite(false), 128);
+            Add("shark", ArtRecipes.FishSprite(true), 128);
+            Add("yarn", ArtRecipes.YarnSprite(), 128);
+            // Rewarded-ad placements (ad-rewards.md).
+            Add("icon_ad", ArtRecipes.IconAd(), 128);
+            Add("icon_gift", ArtRecipes.GiftBox(), 256);
 
             Add("b_feather", ArtRecipes.Feather(false), 64);
             Add("b_feather_giant", ArtRecipes.Feather(true), 64);
@@ -232,6 +242,10 @@ namespace PofudukFilo.EditorTools
             ["star_boomerang"] = "Gidip geri dönen yıldız; iki yönde de vurur.",
             ["bubble_orbit"] = "Geminin etrafında dönen balonlar yakındaki düşmanları ezer.",
             ["spark_cat"] = "Düşmandan düşmana seken zincir şimşek atar.",
+            ["fish_missile"] = "Kendi hedefini bulan balık füzeleri; hiç ıskalamaz.",
+            ["yarn_ball"] = "Ekran kenarlarından seken yün yumağı; değdiği her düşmanı ezer.",
+            ["shark_swarm"] = "EVRİM: Dev köpekbalıkları; her vuruşta 2 yavru balık saldırır.",
+            ["cosmic_yarn"] = "EVRİM: Dev yumak; her sekmede mini yumaklar saçar.",
             ["feather_storm"] = "EVRİM: 7 tüylük geniş yelpaze; tüyler 2 düşmanı deler, sık sık dev tüy atar.",
             ["supernova_omelette"] = "EVRİM: Dev yumurtalar ve ekranı kaplayan omlet dalgası.",
             ["galaxy_vortex"] = "EVRİM: Düşmanları içine çekip ezen galaksi girdabı.",
@@ -315,8 +329,8 @@ namespace PofudukFilo.EditorTools
             PassiveDefinition moonDust = Passive("moon_dust", "Ay Tozu", StatType.Duration, 0.12f, Rarity.Common);
             PassiveDefinition gum = Passive("stretchy_gum", "Esnek Sakız", StatType.Area, 0.10f, Rarity.Common);
             PassiveDefinition battery = Passive("battery_collar", "Pil Tasması", StatType.CooldownReduction, 0.07f, Rarity.Rare);
-            Passive("carrot_shield", "Havuç Kalkan", StatType.MaxHp, 0.15f, Rarity.Common);
-            Passive("magnet_ears", "Mıknatıs Kulak", StatType.MagnetRadius, 0.25f, Rarity.Common);
+            PassiveDefinition carrot = Passive("carrot_shield", "Havuç Kalkan", StatType.MaxHp, 0.15f, Rarity.Common);
+            PassiveDefinition magnetEars = Passive("magnet_ears", "Mıknatıs Kulak", StatType.MagnetRadius, 0.25f, Rarity.Common);
             Passive("lucky_clover", "Şans Yoncası", StatType.Luck, 0.10f, Rarity.Epic);
 
             // 1) Feather Blaster → Feather Storm. The Rainbow Prism Beam evolution was removed on device feedback
@@ -414,7 +428,45 @@ namespace PofudukFilo.EditorTools
                 L(18f, 1.2f, 4, 0, 0, 0, 3.5f, 0, "Sekmelerde hasar azalmaz")
             }, battery, catEvoDef));
 
+            // 6) Fish Missile → Shark Swarm (ad-rewards.md: the first weapons offered for ads)
+            var sharkPrefab = WeaponPrefab<FishMissile>("SharkSwarm", b =>
+            {
+                Set(b, "fishSprite", Sprites["shark"]);
+                Set(b, "isEvolved", true);
+            });
+            WeaponDefinition sharkDef = Weapon("shark_swarm", "Köpekbalığı Sürüsü", Rarity.Legendary, BStar, sharkPrefab,
+                new[] { L(24f, 0.8f, 4, 0, 10f, 1, 1.2f, 3.5f, "4 köpekbalığı; her vuruşta 2 yavru balık") });
+            var fishPrefab = WeaponPrefab<FishMissile>("FishMissile", b => Set(b, "fishSprite", Sprites["fish"]));
+            BaseWeapons.Add(Weapon("fish_missile", "Balık Füzesi", Rarity.Rare, BStar, fishPrefab, new[]
+            {
+                L(14f, 1.1f, 2, 0, 9f, 0, 0f, 3f, "Hedef takip eden 2 balık"),
+                L(14f, 1.1f, 3, 0, 9f, 0, 0f, 3f, "3 balık"),
+                L(14f, 1.1f, 3, 0, 9f, 0, 0.8f, 3f, "Çarpınca küçük patlama"),
+                L(14f, 0.95f, 4, 0, 10f, 0, 0.8f, 3f, "4 balık, daha sık"),
+                L(16f, 0.95f, 5, 0, 10f, 1, 1.0f, 3f, "5 balık; her biri 2 düşmana çarpar")
+            }, magnetEars, sharkDef));
+
+            // 7) Yarn Ball → Cosmic Yarn (Ball Blast's bouncing ball)
+            var cosmicPrefab = WeaponPrefab<YarnBall>("CosmicYarn", b =>
+            {
+                Set(b, "yarnSprite", Sprites["yarn"]);
+                Set(b, "isEvolved", true);
+            });
+            WeaponDefinition cosmicDef = Weapon("cosmic_yarn", "Kozmik Yumak", Rarity.Legendary, BStar, cosmicPrefab,
+                new[] { L(22f, 1f, 1, 0, 9f, 0, 1.1f, 12f, "Dev yumak; her sekmede mini yumaklar") });
+            var yarnPrefab = WeaponPrefab<YarnBall>("YarnBall", b => Set(b, "yarnSprite", Sprites["yarn"]));
+            BaseWeapons.Add(Weapon("yarn_ball", "Yün Yumağı", Rarity.Rare, BStar, yarnPrefab, new[]
+            {
+                L(10f, 1f, 1, 0, 8f, 0, 0.45f, 8f, "Kenarlardan seken 1 yumak"),
+                L(10f, 1f, 2, 0, 8f, 0, 0.45f, 8f, "2 yumak"),
+                L(10f, 1f, 2, 0, 8f, 0, 0.6f, 8f, "Yumaklar büyür"),
+                L(10f, 1f, 3, 0, 8.5f, 0, 0.6f, 8f, "3 yumak"),
+                L(12f, 1f, 3, 0, 8.5f, 0, 0.6f, 8f, "Her sekme hasarı %10 artırır (en çok 5)")
+            }, carrot, cosmicDef));
+
             BaseWeapons.Insert(0, StartingWeapon);
+            _evolved["shark_swarm"] = sharkDef;
+            _evolved["cosmic_yarn"] = cosmicDef;
             _evolved["feather_storm"] = prismDef;
             _evolved["supernova_omelette"] = eggEvoDef;
             _evolved["galaxy_vortex"] = starEvoDef;
@@ -424,17 +476,25 @@ namespace PofudukFilo.EditorTools
 
         // ---------------------------------------------------------------- Lab, fusions, Hangar, Constellation
 
-        /// <summary>meta-economy.md §3.3 C: 3 weapons + 4 passives free, the rest bought in the Lab.</summary>
+        /// <summary>
+        /// meta-economy.md §3.3 C: 3 weapons + 4 passives free, the rest bought in the Lab — or unlocked by
+        /// watching rewarded ads (ad-rewards.md §3.1).
+        /// </summary>
         private void ApplyLabCosts()
         {
             var costs = new Dictionary<string, int>
             {
-                ["star_boomerang"] = 400, ["bubble_orbit"] = 700,
+                ["star_boomerang"] = 400, ["bubble_orbit"] = 700, ["fish_missile"] = 1200, ["yarn_ball"] = 1600,
                 ["moon_dust"] = 300, ["stretchy_gum"] = 300, ["magnet_ears"] = 250, ["lucky_clover"] = 500
+            };
+            var ads = new Dictionary<string, int>
+            {
+                ["star_boomerang"] = 2, ["bubble_orbit"] = 3, ["fish_missile"] = 3, ["yarn_ball"] = 4
             };
             foreach (WeaponDefinition w in BaseWeapons)
             {
                 w.labCost = costs.TryGetValue(w.id, out int c) ? c : 0;
+                w.adsToUnlock = ads.TryGetValue(w.id, out int a) ? a : 0;
                 EditorUtility.SetDirty(w);
             }
             foreach (PassiveDefinition p in Passives)
@@ -477,7 +537,7 @@ namespace PofudukFilo.EditorTools
             }
 
             void C(string id, string name, string perk, string sprite, string weapon, int gold, int dust,
-                CharacterPerk special = CharacterPerk.None, int chapterGate = -1, params StatModifier[] mods)
+                CharacterPerk special = CharacterPerk.None, int chapterGate = -1, int ads = 0, params StatModifier[] mods)
             {
                 var c = ScriptableObject.CreateInstance<CharacterDefinition>();
                 c.id = id;
@@ -491,11 +551,14 @@ namespace PofudukFilo.EditorTools
                     "pilot_cat" => "ship_cat",
                     "pilot_hamster" => "ship_hamster",
                     "pilot_fox" => "ship_fox",
+                    "pilot_penguin" => "ship_penguin",
+                    "pilot_lamb" => "ship_lamb",
                     _ => "ship_mystery"
                 }];
                 c.startingWeapon = W(weapon);
                 c.goldCost = gold;
                 c.stardustCost = dust;
+                c.adsToUnlock = ads;
                 c.perk = special;
                 c.requiresChapterCleared = chapterGate;
                 c.modifiers = mods;
@@ -504,14 +567,18 @@ namespace PofudukFilo.EditorTools
 
             C("pitir", "Pıtır", "Tavşan. Her 10 seviyede +1 kart seçeneği.", "bunny", "feather_blaster", 0, 0,
                 CharacterPerk.CardEvery10Levels);
-            C("civik", "Cıvık", "Civciv. Patlamalar %20 büyük, can -%10.", "pilot_chick", "egg_mortar", 600, 5,
+            C("civik", "Cıvık", "Civciv. Patlamalar %20 büyük, can -%10.", "pilot_chick", "egg_mortar", 600, 5, ads: 2,
                 mods: new[] { new StatModifier(StatType.Area, 0.2f), new StatModifier(StatType.MaxHp, -0.1f) });
-            C("mirnav", "Mırnav", "Kedi. Sersemletme süresi 2 kat.", "pilot_cat", "spark_cat", 1500, 12,
+            C("mirnav", "Mırnav", "Kedi. Sersemletme süresi 2 kat.", "pilot_cat", "spark_cat", 1500, 12, ads: 3,
                 mods: new StatModifier(StatType.StunDuration, 1f));
-            C("balonbas", "Balonbaş", "Hamster. Yuttuğu her mermi 1 can.", "pilot_hamster", "bubble_orbit", 3000, 20,
+            C("balonbas", "Balonbaş", "Hamster. Yuttuğu her mermi 1 can.", "pilot_hamster", "bubble_orbit", 3000, 20, ads: 4,
                 mods: new StatModifier(StatType.AbsorbHeal, 1f));
-            C("yildizpati", "Yıldızpati", "Tilki. Her evrim +%15 hasar.", "pilot_fox", "star_boomerang", 5000, 35,
+            C("yildizpati", "Yıldızpati", "Tilki. Her evrim +%15 hasar.", "pilot_fox", "star_boomerang", 5000, 35, ads: 6,
                 mods: new StatModifier(StatType.EvolutionDamage, 0.15f));
+            C("pengu", "Pengu", "Penguen. Mermiler %25 hızlı, +%5 kritik.", "pilot_penguin", "fish_missile", 4000, 25, ads: 5,
+                mods: new[] { new StatModifier(StatType.ProjectileSpeed, 0.25f), new StatModifier(StatType.CritChance, 0.05f) });
+            C("kuzu", "Kuzu", "Kuzu. Can +%30, alan +%10.", "pilot_lamb", "yarn_ball", 6000, 40, ads: 6,
+                mods: new[] { new StatModifier(StatType.MaxHp, 0.3f), new StatModifier(StatType.Area, 0.1f) });
             C("gizli", "Gökkuşağı Pıtır", "Gizli. Her koşu rastgele bir pasifle başlar.", "pilot_mystery", "feather_blaster", 0, 0,
                 CharacterPerk.RandomPassive, chapterGate: 2);
         }

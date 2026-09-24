@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using PofudukFilo.Enemies;
 using PofudukFilo.Player;
+using PofudukFilo.Meta;
 using PofudukFilo.Progression;
 using PofudukFilo.Weapons;
 using UnityEngine;
@@ -93,7 +94,15 @@ namespace PofudukFilo.Core
                 yield break;
             }
 
-            run.StartEndless(); // the Ball Blast-style main mode; pw = Power Match HP scale
+            // The Ball Blast-style main mode; pw = Power Match HP scale. Played as an ad trial (ad-rewards.md §3.2)
+            // with the newest pilot and weapon, so both new weapons fire in every QA run.
+            CharacterDefinition pengu = null;
+            foreach (CharacterDefinition c in run.Characters)
+                if (c.id == "pengu") pengu = c;
+            WeaponDefinition yarn = run.WeaponById("yarn_ball");
+            if (pengu != null || yarn != null) run.StartTrial(pengu, yarn);
+            else run.StartEndless();
+            Line($"[QA] trial: {run.TrialName ?? "-"}");
             float gameTime = 0f, nextTelemetry = 0f;
             Line("t(s)\tlvl\tkills\thp\tenemies\tfps\tcombo(best)\trushes\tfleet\tpw(ttk)\tstate\tweapons");
             if (SugarRush.Instance != null) SugarRush.Instance.RushStarted += () => _rushes++;

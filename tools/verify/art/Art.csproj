@@ -12,6 +12,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="../../../Assets/_Project/Scripts/Editor/ProceduralArt.cs" />
     <Compile Include="../../../Assets/_Project/Scripts/Editor/ProceduralArt.Menu.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Editor/ProceduralArt.Content.cs" />
     <Compile Include="../../../Assets/_Project/Scripts/Editor/SetupUtil.cs" />
   </ItemGroup>
   <ItemGroup>

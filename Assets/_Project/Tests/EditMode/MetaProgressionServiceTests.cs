@@ -61,5 +61,66 @@ namespace PofudukFilo.Tests
 
             Assert.That(stats.DamageMultiplier, Is.EqualTo(1.10f).Within(1e-5f));
         }
+
+        // ---------------------------------------------------------------- Rewarded ads (ad-rewards.md)
+
+        private static readonly long Noon = new System.DateTime(2026, 9, 24, 12, 0, 0, System.DateTimeKind.Utc).Ticks;
+
+        private static CharacterDefinition AdPilot(int ads)
+        {
+            var c = ScriptableObject.CreateInstance<CharacterDefinition>();
+            c.id = "pengu";
+            c.goldCost = 4000;
+            c.adsToUnlock = ads;
+            return c;
+        }
+
+        [Test]
+        public void test_ad_unlock_completes_after_the_required_views()
+        {
+            CharacterDefinition pilot = AdPilot(3);
+            var service = new MetaProgressionService(new SaveData(), _ => { });
+
+            Assert.That(service.RecordAdView(pilot, Noon), Is.False);
+            Assert.That(service.RecordAdView(pilot, Noon), Is.False);
+            Assert.That(service.IsUnlocked(pilot), Is.False);
+            Assert.That(service.RecordAdView(pilot, Noon), Is.True);
+            Assert.That(service.IsUnlocked(pilot), Is.True);
+            Assert.That(service.CanWatchForUnlock(pilot, Noon), Is.False);
+            Object.DestroyImmediate(pilot);
+        }
+
+        [Test]
+        public void test_ad_views_capped_per_day_and_reset_next_day()
+        {
+            CharacterDefinition pilot = AdPilot(99);
+            var service = new MetaProgressionService(new SaveData(), _ => { });
+            for (int i = 0; i < AdRules.UnlockViewsPerDay; i++) service.RecordAdView(pilot, Noon);
+
+            Assert.That(service.AdViewsLeftToday(Noon), Is.EqualTo(0));
+            Assert.That(service.CanWatchForUnlock(pilot, Noon), Is.False);
+            long tomorrow = Noon + System.TimeSpan.TicksPerDay;
+            Assert.That(service.AdViewsLeftToday(tomorrow), Is.EqualTo(AdRules.UnlockViewsPerDay));
+            Assert.That(service.AdProgress(pilot.id), Is.EqualTo(AdRules.UnlockViewsPerDay));
+            Object.DestroyImmediate(pilot);
+        }
+
+        [Test]
+        public void test_gift_pays_then_waits_for_cooldown_and_daily_limit()
+        {
+            var service = new MetaProgressionService(new SaveData(), _ => { });
+            long t = Noon;
+
+            Assert.That(service.ClaimGift(t), Is.EqualTo(100));
+            Assert.That(service.Stardust, Is.EqualTo(AdRules.GiftStardust));
+            Assert.That(service.ClaimGift(t + 1), Is.EqualTo(0));
+            for (int i = 1; i < AdRules.GiftsPerDay; i++)
+            {
+                t += AdRules.GiftCooldown.Ticks;
+                Assert.That(service.ClaimGift(t), Is.GreaterThan(0));
+            }
+            Assert.That(service.ClaimGift(t + AdRules.GiftCooldown.Ticks), Is.EqualTo(0));
+            Assert.That(service.GiftsLeftToday(t), Is.EqualTo(0));
+        }
     }
 }

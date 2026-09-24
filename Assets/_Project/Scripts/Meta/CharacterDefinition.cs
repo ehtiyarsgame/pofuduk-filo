@@ -32,6 +32,8 @@ namespace PofudukFilo.Meta
         [Header("Unlock")]
         public int goldCost;
         public int stardustCost;
+        [Tooltip("Rewarded ads that also unlock it (ad-rewards.md); 0 = gold only.")]
+        public int adsToUnlock;
         [Tooltip("Unlocked for free once this chapter index is cleared; -1 = not chapter-gated.")]
         public int requiresChapterCleared = -1;
 

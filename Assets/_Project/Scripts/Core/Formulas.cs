@@ -142,6 +142,15 @@ namespace PofudukFilo.Core
         /// <summary>Ateş Hızı: fire rate × (1 + 0.025·L), capped at level 40 (×2) so bullet density stays readable.</summary>
         public static float ForgeSpeedMultiplier(int level) => 1f + ForgeSpeedPerLevel * Math.Clamp(level, 0, MaxForgeSpeedLevel);
 
+        // ---------------------------------------------------------------- Rewarded ads (ad-rewards.md)
+
+        /// <summary>
+        /// Daily gift gold: worth about one Forge level at the player's current depth, so the gift keeps its
+        /// value as the economy grows — max(100, ForgeCost(⌊(power+speed)/2⌋)).
+        /// </summary>
+        public static int GiftGold(int forgePower, int forgeSpeed) =>
+            Math.Max(100, ForgeCost(Math.Max(0, forgePower + forgeSpeed) / 2));
+
         /// <summary>
         /// Final cooldown = base · Π(1 − r_i), floored at 35 % of base (weapon-system.md §4).
         /// </summary>

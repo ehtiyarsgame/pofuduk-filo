@@ -8,7 +8,7 @@ namespace PofudukFilo.Meta
     /// Main-menu economy: wallet, Workshop purchases and applying meta bonuses at run start
     /// (design/gdd/meta-economy.md).
     /// </summary>
-    public sealed class MetaProgressionService
+    public sealed partial class MetaProgressionService
     {
         private readonly SaveData _data;
         private readonly Action<SaveData> _persist;
@@ -22,6 +22,7 @@ namespace PofudukFilo.Meta
             // Saves from before mastery/pilot levels existed deserialize these as null.
             _data.weaponMastery ??= new List<UpgradeLevelEntry>();
             _data.pilotLevels ??= new List<UpgradeLevelEntry>();
+            _data.adProgress ??= new List<UpgradeLevelEntry>();
         }
 
         public long Gold => _data.gold;
