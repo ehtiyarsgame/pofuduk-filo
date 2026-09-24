@@ -82,6 +82,7 @@ namespace PofudukFilo.Core
         [SerializeField] private int fallbackHeal = 30;
         [SerializeField] private int fallbackGold = 50;
         [SerializeField] private float reviveHpFraction = 0.5f;
+        [SerializeField] private float reviveShockwaveDamage = 60f;
         [SerializeField] private int victoryStardustBase = 3;
         [SerializeField, Range(0f, 1f)] private float victoryGoldBonusFraction = 0.4f;
         [SerializeField] private float endlessGoldMultiplier = 1.5f;
@@ -414,6 +415,12 @@ namespace PofudukFilo.Core
 
             BulletSystem.Instance.ClearAll();
             player.Revive(reviveHpFraction);
+            // Revive shockwave: without it a revive lands in the same crowd that just killed you
+            // (QA run 12 died again 4 s after reviving).
+            if (EnemyManager.Instance != null) EnemyManager.Instance.DamageAll(reviveShockwaveDamage);
+            if (Feel.VfxSystem.Instance != null)
+                Feel.VfxSystem.Instance.Pop(player.transform.position, 14f, new Color(1f, 0.8f, 0.95f, 0.6f), 0.6f);
+            if (juice != null) juice.Shake(0.8f, 0.4f);
             SetState(GameState.Playing);
         }
 

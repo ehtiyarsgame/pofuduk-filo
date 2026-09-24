@@ -33,8 +33,8 @@ Pıtır'ın kulaklarından pastel tüy mermileri. Yüksek atış hızı, tek hed
 
 | Sv | Değişiklik |
 |----|-----------|
-| 1 | 1 tüy, 12 hasar, 0.25 sn bekleme |
-| 2 | 2 paralel tüy |
+| 1 | 2 paralel tüy, 12 hasar, 0.25 sn bekleme *(QA run 12: tek şerit erken dalgaları temizleyemiyordu)* |
+| 2 | 3 paralel tüy, 0.22 sn bekleme |
 | 3 | 3 tüy, hafif yelpaze (±8°) |
 | 4 | Hasar +%30, tüyler 1 düşmanı deler |
 | 5 | 5 tüy yelpaze, her 5. atış **dev tüy** (3× hasar) |

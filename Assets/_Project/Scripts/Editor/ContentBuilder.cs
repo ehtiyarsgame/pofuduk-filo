@@ -276,8 +276,8 @@ namespace PofudukFilo.EditorTools
             var feather = WeaponPrefab<FeatherBlaster>("FeatherBlaster", b => Set(b, "giantBulletTypeIndex", BGiantFeather));
             StartingWeapon = Weapon("feather_blaster", "Tüy Blaster", Rarity.Common, BFeather, feather, new[]
             {
-                L(12f, 0.25f, 1, 0, 14f, 0, 0, 1.5f, "1 tüy, hızlı atış"),
-                L(12f, 0.25f, 2, 0, 14f, 0, 0, 1.5f, "2 paralel tüy"),
+                L(12f, 0.25f, 2, 0, 14f, 0, 0, 1.5f, "2 paralel tüy, hızlı atış"),
+                L(12f, 0.22f, 3, 0, 14f, 0, 0, 1.5f, "3 paralel tüy, daha hızlı"),
                 L(12f, 0.25f, 3, 16f, 14f, 0, 0, 1.5f, "3 tüy, hafif yelpaze"),
                 L(15.6f, 0.25f, 3, 16f, 14f, 1, 0, 1.5f, "Hasar +%30, tüyler 1 düşmanı deler"),
                 L(15.6f, 0.25f, 5, 30f, 14f, 1, 0, 1.5f, "5 tüy; her 5. atış dev tüy (3×)", 5, 3f)
@@ -582,11 +582,11 @@ namespace PofudukFilo.EditorTools
 
         private void BuildEnemies()
         {
-            EnemyPrefab<Enemy>("Chick", "chick", 0.9f, e => Stats(e, 10, 0.38f, 1, 1, 1.4f, 3.2f, 1, 0, 3.2f, 10, true));
-            EnemyPrefab<Enemy>("JellyBear", "jelly_bear", 1.2f, e => Stats(e, 45, 0.55f, 5, 2, 0.8f, 4f, 3, 30, 3f, 12, true, BEnemyBig));
-            EnemyPrefab<Enemy>("CookieRobot", "cookie_robot", 1f, e => Stats(e, 25, 0.45f, 3, 1, 1f, 2.2f, 1, 0, 4.5f, 12, true));
-            EnemyPrefab<Enemy>("IceCreamTower", "ice_cream", 1.3f, e => Stats(e, 70, 0.6f, 8, 3, 0.6f, 2.5f, 8, 315, 2.6f, 10, false));
-            EnemyPrefab<Enemy>("GumBalloon", "gum_balloon", 1f, e => Stats(e, 20, 0.45f, 3, 1, 1.2f, 5f, 6, 300, 2.8f, 10, false));
+            EnemyPrefab<Enemy>("Chick", "chick", 0.9f, e => Stats(e, 10, 0.38f, 1, 1, 1.4f, 6.5f, 1, 0, 2.7f, 10, true));
+            EnemyPrefab<Enemy>("JellyBear", "jelly_bear", 1.2f, e => Stats(e, 45, 0.55f, 5, 2, 0.8f, 5f, 3, 30, 2.8f, 12, true, BEnemyBig));
+            EnemyPrefab<Enemy>("CookieRobot", "cookie_robot", 1f, e => Stats(e, 25, 0.45f, 3, 1, 1f, 3.4f, 1, 0, 4f, 12, true));
+            EnemyPrefab<Enemy>("IceCreamTower", "ice_cream", 1.3f, e => Stats(e, 70, 0.6f, 8, 3, 0.6f, 3.5f, 8, 315, 2.4f, 10, false));
+            EnemyPrefab<Enemy>("GumBalloon", "gum_balloon", 1f, e => Stats(e, 20, 0.45f, 3, 1, 1.2f, 6f, 6, 300, 2.5f, 10, false));
             EnemyPrefab<Enemy>("EliteChick", "chick_elite", 1.3f, e =>
             {
                 Stats(e, 180, 0.6f, 25, 5, 0.7f, 1.8f, 3, 25, 3.6f, 12, true);

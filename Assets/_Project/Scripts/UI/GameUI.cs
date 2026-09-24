@@ -250,6 +250,13 @@ namespace PofudukFilo.UI
         private GameObject BuildCard(in UpgradeOption option, int index)
         {
             Describe(option, out string title, out string body, out Rarity rarity);
+            string tag = "";
+            int split = title.IndexOf("  ", System.StringComparison.Ordinal);
+            if (split > 0)
+            {
+                tag = title.Substring(split).Trim();
+                title = title.Substring(0, split);
+            }
             Sprite icon = option.Kind switch
             {
                 UpgradeKind.Weapon => option.Weapon.icon,
@@ -280,10 +287,17 @@ namespace PofudukFilo.UI
                 textLeft = 0.29f;
             }
 
-            Text titleText = _ui.Label(inner.transform, title, 54, Palette.Cream, TextAnchor.UpperLeft);
-            UIFactory.Place(titleText, textLeft, 0.5f, 0.97f, 0.9f);
-            Text bodyText = _ui.Label(inner.transform, body, 40, Palette.White, TextAnchor.UpperLeft);
-            UIFactory.Place(bodyText, textLeft, 0.08f, 0.97f, 0.5f);
+            Text titleText = _ui.Label(inner.transform, title, 52, Palette.Cream, TextAnchor.UpperLeft);
+            UIFactory.Place(titleText, textLeft, 0.58f, 0.72f, 0.92f);
+            titleText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            titleText.resizeTextForBestFit = true;
+            titleText.resizeTextMinSize = 34;
+            titleText.resizeTextMaxSize = 52;
+            titleText.verticalOverflow = VerticalWrapMode.Truncate;
+            Text tagText = _ui.Label(inner.transform, tag, 40, tag == "YENİ!" ? Palette.Mint : Palette.Honey, TextAnchor.UpperLeft);
+            UIFactory.Place(tagText, textLeft, 0.42f, 0.97f, 0.6f);
+            Text bodyText = _ui.Label(inner.transform, body, 38, Palette.White, TextAnchor.UpperLeft);
+            UIFactory.Place(bodyText, textLeft, 0.05f, 0.97f, 0.43f);
 
             Image chip = _ui.Panel(inner.transform, frame, "Rarity");
             UIFactory.Place(chip, 0.72f, 0.8f, 0.98f, 0.98f);

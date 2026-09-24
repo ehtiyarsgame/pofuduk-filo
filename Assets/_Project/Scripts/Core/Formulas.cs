@@ -29,11 +29,11 @@ namespace PofudukFilo.Core
             return baseHp * timeScale * (float)Math.Pow(1.22, chapterIndex);
         }
 
-        /// <summary>Threat points per second the spawner may spend. Budget(t) = 2 + 0.9t + 0.08t², scaled by DDA.</summary>
+        /// <summary>Threat points per second the spawner may spend. Budget(t) = 1.2 + 0.75t + 0.08t², scaled by DDA (lowered from 2 + 0.9t after QA run 12: 43 enemies alive at 10 s).</summary>
         public static float SpawnBudget(float minutes, float ddaMultiplier)
         {
             float clamped = Math.Clamp(ddaMultiplier, 0.75f, 1.15f);
-            return (2f + 0.9f * minutes + 0.08f * minutes * minutes) * clamped;
+            return (1.2f + 0.75f * minutes + 0.08f * minutes * minutes) * clamped;
         }
 
         /// <summary>Cost(L) = round10(base · growth^(L−1)) for a meta upgrade going to level L (L ≥ 1).</summary>

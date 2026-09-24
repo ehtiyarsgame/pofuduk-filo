@@ -89,7 +89,11 @@ namespace PofudukFilo.Core
                         gameTime += Time.deltaTime;
                         Weave(gameTime);
                         if (_shotIndex < ShotTimes.Length && gameTime >= ShotTimes[_shotIndex])
-                            yield return Shot($"{10 + _shotIndex:00}_t{Mathf.RoundToInt(gameTime):000}");
+                        {
+                            string shot = $"{10 + _shotIndex:00}_t{Mathf.RoundToInt(gameTime):000}";
+                            _shotIndex++;
+                            yield return Shot(shot);
+                        }
                         break;
 
                     case GameState.LevelUp:
@@ -103,8 +107,9 @@ namespace PofudukFilo.Core
                         Line($"[QA] Died at {gameTime:0}s (death {_deaths}).");
                         if (_deaths == 1) yield return Shot("90_dead");
                         yield return new WaitForSecondsRealtime(0.5f);
-                        if (_deaths <= MaxRevives) run.Revive(true);
-                        else
+                        if (run.FreeReviveAvailable) run.Revive(true);
+                        else if (run.RevivesLeft > 0 && _deaths <= MaxRevives) run.Revive();
+                        if (run.State == GameState.Dead)
                         {
                             run.GiveUp();
                             yield return new WaitForSecondsRealtime(1f);
