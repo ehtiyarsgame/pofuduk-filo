@@ -720,15 +720,30 @@ namespace PofudukFilo.EditorTools
 
         // Bullets, pickups and small props (64 px, 1 unit).
 
+        /// <summary>
+        /// Enemy fire (art-bible §3 readability): warm glow halo, a thick dark ring that separates it
+        /// from anything behind, a hot gradient body and a white core. Player shots never use this
+        /// ring or warm colours, so "red with a dark ring" always means danger.
+        /// </summary>
         public static Painter EnemyBullet(Color body)
         {
             var p = new Painter(64, 64);
-            p.Glow(32, 32, 31, WithAlpha(body, 0.75f), 1.6f); // halo: readable against any background
-            p.Circle(32, 32, 17, Painter.Outline);
-            p.Fill((x, y) => Painter.CircleSdf(x, y, 32, 32, 14), (x, y) =>
-                Color.Lerp(body, Painter.Light(body, 0.5f), Mathf.Clamp01((y - 18f) / 28f)));
-            p.Circle(32, 32, 7.5f, Color.white); // white core = top of the value hierarchy
-            p.Circle(28, 37, 3f, new Color(1f, 1f, 1f, 0.9f));
+            p.Glow(32, 32, 31, WithAlpha(body, 0.85f), 1.4f);
+            p.Circle(32, 32, 19, Painter.Outline);
+            p.Circle(32, 32, 16.5f, WithAlpha(Color.white, 0.9f)); // thin bright rim inside the dark ring
+            p.Fill((x, y) => Painter.CircleSdf(x, y, 32, 32, 14.5f), (x, y) =>
+                Color.Lerp(Color.Lerp(body, new Color(1f, 0.9f, 0.3f), 0.35f), body, Mathf.Clamp01(Mathf.Sqrt((x - 32) * (x - 32) + (y - 32) * (y - 32)) / 14.5f)));
+            p.Circle(32, 32, 6.5f, Color.white);
+            return p;
+        }
+
+        /// <summary>Player orb shot: soft cool glow, no dark ring, slightly translucent.</summary>
+        public static Painter PlayerOrb(Color c)
+        {
+            var p = new Painter(64, 64);
+            p.Glow(32, 32, 30, WithAlpha(c, 0.5f), 2f);
+            p.Fill((x, y) => Painter.CircleSdf(x, y, 32, 32, 13f), (x, y) =>
+                new Color(Mathf.Lerp(1f, c.r, 0.6f), Mathf.Lerp(1f, c.g, 0.6f), Mathf.Lerp(1f, c.b, 0.6f), 0.85f));
             return p;
         }
 
@@ -845,11 +860,11 @@ namespace PofudukFilo.EditorTools
         public static Painter Bubble()
         {
             var p = new Painter(64, 64);
-            p.Glow(32, 32, 31, WithAlpha(Hex(0xFF9ED6), 0.4f), 2f);
+            p.Glow(32, 32, 31, WithAlpha(Hex(0x9FE8FF), 0.4f), 2f);
             p.Fill((x, y) => Painter.CircleSdf(x, y, 32, 32, 24), (x, y) =>
             {
                 float d = Mathf.Sqrt((x - 32) * (x - 32) + (y - 32) * (y - 32)) / 24f;
-                return new Color(1f, 0.62f, 0.86f, Mathf.Lerp(0.25f, 0.85f, d * d)); // transparent middle, iridescent rim
+                return new Color(0.6f, 0.9f, 1f, Mathf.Lerp(0.2f, 0.85f, d * d)); // transparent middle, iridescent rim
             });
             p.Fill((x, y) => Mathf.Abs(Painter.CircleSdf(x, y, 32, 32, 24)) - 1.5f, WithAlpha(Painter.Outline, 0.8f));
             p.Ellipse(24, 42, 7, 4, new Color(1f, 1f, 1f, 0.9f));

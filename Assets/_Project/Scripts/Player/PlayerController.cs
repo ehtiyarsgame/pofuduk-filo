@@ -19,8 +19,34 @@ namespace PofudukFilo.Player
         [SerializeField] private float edgePadding = 0.35f;
         [SerializeField] private bool slowTimeWhenFingerLifted = true;
 
+        [Header("Hit stagger")]
+        [SerializeField] private float staggerSeconds = 0.4f;
+        [Tooltip("Share of finger movement that still steers the ship while staggered.")]
+        [SerializeField, Range(0f, 1f)] private float staggerControl = 0.3f;
+        [SerializeField] private float knockbackSpeed = 7f;
+
         private Camera _camera;
         private bool _wasTouching; // no slow-down before the first touch of the run
+        private float _staggerLeft;
+        private Vector2 _knock;
+        private PlayerHealth _health;
+
+        /// <summary>
+        /// Knock the ship back and dull the controls briefly, so a hit is felt in the hands and not
+        /// only seen in the HP bar. Direction defaults to "down and away from the centre".
+        /// </summary>
+        public void Stagger(Vector2 direction)
+        {
+            if (direction == Vector2.zero) direction = new Vector2(-Mathf.Sign(transform.position.x + 0.001f) * 0.4f, -1f);
+            _knock = direction.normalized * knockbackSpeed;
+            _staggerLeft = staggerSeconds;
+        }
+
+        private void Start()
+        {
+            _health = GetComponent<PlayerHealth>();
+            if (_health != null) _health.Damaged += _ => Stagger(Vector2.zero);
+        }
 
         private void OnEnable()
         {
@@ -44,11 +70,21 @@ namespace PofudukFilo.Player
                 TimeScaleController.SetFingerLifted(!touching);
                 _wasTouching = touching;
             }
-            if (!touching) return;
 
-            float worldPerPixel = 2f * _camera.orthographicSize / Screen.height;
-            Vector3 p = transform.position + (Vector3)(pixelDelta * (worldPerPixel * sensitivity));
-            transform.position = Clamp(p);
+            Vector3 p = transform.position;
+            if (_staggerLeft > 0f)
+            {
+                _staggerLeft -= Time.deltaTime;
+                p += (Vector3)(_knock * Time.deltaTime);
+                _knock = Vector2.Lerp(_knock, Vector2.zero, 1f - Mathf.Exp(-Time.deltaTime * 9f));
+            }
+            if (touching)
+            {
+                float control = _staggerLeft > 0f ? staggerControl : 1f;
+                float worldPerPixel = 2f * _camera.orthographicSize / Screen.height;
+                p += (Vector3)(pixelDelta * (worldPerPixel * sensitivity * control));
+            }
+            if (touching || _staggerLeft > 0f) transform.position = Clamp(p);
         }
 
         private static bool TryGetDragDelta(out Vector2 delta)

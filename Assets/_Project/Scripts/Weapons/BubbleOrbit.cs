@@ -15,7 +15,7 @@ namespace PofudukFilo.Weapons
     public sealed class BubbleOrbit : WeaponBehaviour, IBulletAbsorber
     {
         [SerializeField] private Sprite bubbleSprite;
-        [SerializeField] private Color bubbleColor = new(1f, 0.62f, 0.86f, 0.85f);
+        [SerializeField] private Color bubbleColor = new(0.7f, 0.95f, 1f, 0.9f); // cool: warm colours mean enemy fire
         [SerializeField] private Color recharging = new(1f, 0.62f, 0.86f, 0.35f);
         [SerializeField] private float bubbleRadius = 0.35f;
         [SerializeField] private float angularSpeedDeg = 160f;
@@ -30,7 +30,7 @@ namespace PofudukFilo.Weapons
         [SerializeField] private float slowFactor = 0.4f;
         [SerializeField] private Color[] ringColors =
         {
-            new(1f, 0.62f, 0.86f, 0.9f),   // pembe
+            new(0.6f, 0.9f, 1f, 0.9f),     // gök mavisi (sıcak renkler düşman ateşine ayrıldı)
             new(0.5f, 0.88f, 0.77f, 0.9f), // mint
             new(0.78f, 0.7f, 1f, 0.9f)     // lila
         };

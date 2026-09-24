@@ -16,6 +16,7 @@ namespace PofudukFilo.UI
         private Text _comboText;
         private Image _edgeGlow;
         private float _comboPunch;
+        private float _hurtFlash;
 
         private void BuildRushHud(Transform hud)
         {
@@ -52,6 +53,7 @@ namespace PofudukFilo.UI
                 };
                 _rush.RushEnded += () => _edgeGlow.gameObject.SetActive(false);
             }
+            if (player != null) player.Damaged += _ => _hurtFlash = 1f;
             if (fleet != null)
                 fleet.WingmanJoined += n => Toast(n >= Fleet.MaxWingmen ? "Filo güçlendi!" : $"Filoya katıldı! ({n}/{Fleet.MaxWingmen})");
         }
@@ -69,6 +71,14 @@ namespace PofudukFilo.UI
         {
             if (_rush == null || _rushFill == null) return;
             float dt = Time.unscaledDeltaTime;
+
+            _hurtFlash = Mathf.MoveTowards(_hurtFlash, 0f, dt * 2.8f);
+            if (_hurtFlash > 0f && !_rush.Active)
+            {
+                _edgeGlow.gameObject.SetActive(true);
+                _edgeGlow.color = new Color(1f, 0.15f, 0.2f, 0.75f * _hurtFlash);
+                if (_hurtFlash <= 0.01f) _edgeGlow.gameObject.SetActive(false);
+            }
 
             if (_rush.Active)
             {

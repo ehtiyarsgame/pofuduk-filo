@@ -26,11 +26,13 @@ namespace PofudukFilo.Player
         private Vector3 _visualBase;
         private PlayerHealth _health;
         private SpriteRenderer[] _renderers;
+        private float _hurt; // 1 → 0 after a hit: red flash + wobble
         private bool _shown = true;
 
         private void Start()
         {
             _health = GetComponent<PlayerHealth>();
+            if (_health != null) _health.Damaged += OnHurt;
             _lastPosition = transform.position;
             if (visual != null) _visualBase = visual.localPosition;
             if (flameSprite == null) return;
@@ -44,6 +46,22 @@ namespace PofudukFilo.Player
                 _core[i] = Flame($"flame-core-{i}", new Vector3(x, engineOffset.y + 0.02f, 0f), flameCore, 9);
             }
             _renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        }
+
+        private void OnHurt(float damage)
+        {
+            _hurt = 1f;
+            if (Feel.Juice.Instance != null)
+            {
+                Feel.Juice.Instance.Shake(0.55f, 0.3f);
+                Feel.Juice.Instance.Hitstop(0.07f);
+                Feel.Juice.Instance.Haptic();
+            }
+            if (Feel.VfxSystem.Instance != null)
+            {
+                Feel.VfxSystem.Instance.Pop(transform.position, 1.1f, new Color(1f, 0.25f, 0.3f, 0.75f), 0.25f);
+                Feel.VfxSystem.Instance.Sparks(transform.position, new Color(1f, 0.45f, 0.4f), 10, 7f, 0.3f);
+            }
         }
 
         /// <summary>The ship only exists in play; menus and the run-end screen show the hero art instead.</summary>
@@ -81,11 +99,15 @@ namespace PofudukFilo.Player
             _speed = Mathf.Lerp(_speed, Mathf.Sqrt(vx * vx + vy * vy), 1f - Mathf.Exp(-dt * 10f));
             _bank = Mathf.Lerp(_bank, Mathf.Clamp(-vx * 2.2f, -maxBankDegrees, maxBankDegrees), 1f - Mathf.Exp(-dt * 12f));
 
+            _hurt = Mathf.MoveTowards(_hurt, 0f, dt * 2.5f);
             if (visual != null)
             {
                 float hover = Mathf.Sin(Time.time * 3.1f) * 0.03f;
-                visual.localPosition = _visualBase + new Vector3(0f, hover, 0f);
-                visual.localRotation = Quaternion.Euler(0f, 0f, _bank);
+                // Stagger: a decaying shiver and a lurch.
+                float wobble = Mathf.Sin(Time.unscaledTime * 55f) * 18f * _hurt * _hurt;
+                Vector3 jitter = _hurt > 0f ? (Vector3)(Random.insideUnitCircle * 0.06f * _hurt) : Vector3.zero;
+                visual.localPosition = _visualBase + new Vector3(0f, hover, 0f) + jitter;
+                visual.localRotation = Quaternion.Euler(0f, 0f, _bank + wobble);
             }
 
             if (_outer != null)
@@ -106,7 +128,7 @@ namespace PofudukFilo.Player
             if (shipRenderer != null && _health != null)
             {
                 bool blinkOff = _health.IsInvulnerable && Mathf.Repeat(Time.time * 12f, 1f) < 0.5f;
-                Color c = shipRenderer.color;
+                Color c = Color.Lerp(Color.white, new Color(1f, 0.35f, 0.35f), Mathf.Clamp01(_hurt * 1.6f));
                 c.a = blinkOff ? 0.35f : 1f;
                 shipRenderer.color = c;
             }

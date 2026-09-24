@@ -92,12 +92,12 @@ namespace PofudukFilo.EditorTools
 
             Add("b_feather", ArtRecipes.Feather(false), 64);
             Add("b_feather_giant", ArtRecipes.Feather(true), 64);
-            Add("b_chick", ArtRecipes.SoftCircle(ArtRecipes.Chick), 64);
+            Add("b_chick", ArtRecipes.PlayerOrb(ArtRecipes.Chick), 64);
             Add("b_star", ArtRecipes.MiniStar(ArtRecipes.Cream), 64);
-            Add("b_meteor", ArtRecipes.SoftCircle(ArtRecipes.WithAlpha(ArtRecipes.HotPink, 0.85f)), 64);
-            Add("b_enemy", ArtRecipes.EnemyBullet(ArtRecipes.HotPink), 64);
-            Add("b_enemy_big", ArtRecipes.EnemyBullet(ArtRecipes.Hex(0xE84FFF)), 64);
-            Add("b_boss_special", ArtRecipes.EnemyBullet(ArtRecipes.Coral), 64);
+            Add("b_meteor", ArtRecipes.PlayerOrb(ArtRecipes.Sky), 64); // player shots stay cool-coloured
+            Add("b_enemy", ArtRecipes.EnemyBullet(ArtRecipes.Hex(0xFF2E4D)), 64);
+            Add("b_enemy_big", ArtRecipes.EnemyBullet(ArtRecipes.Hex(0xFF2E9A)), 64);
+            Add("b_boss_special", ArtRecipes.EnemyBullet(ArtRecipes.Hex(0xFF7A1A)), 64);
 
             Add("p_gem_blue", ArtRecipes.GemSprite(ArtRecipes.Sky), 64);
             Add("p_gem_green", ArtRecipes.GemSprite(ArtRecipes.Leaf), 64);
