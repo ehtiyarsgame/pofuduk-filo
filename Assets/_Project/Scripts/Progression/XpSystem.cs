@@ -35,6 +35,15 @@ namespace PofudukFilo.Progression
             XpChanged?.Invoke(CurrentXp, RequiredXp);
         }
 
+        /// <summary>Resume a saved run (run-resume.md).</summary>
+        public void Restore(int level, int xp, int pendingLevelUps)
+        {
+            Level = Mathf.Max(1, level);
+            CurrentXp = Mathf.Max(0, xp);
+            PendingLevelUps = Mathf.Max(0, pendingLevelUps);
+            XpChanged?.Invoke(CurrentXp, RequiredXp);
+        }
+
         public void AddXp(int amount)
         {
             CurrentXp += Mathf.Max(1, Mathf.RoundToInt(amount * (1f + xpBonus) * Core.SugarRush.XpMultiplier));

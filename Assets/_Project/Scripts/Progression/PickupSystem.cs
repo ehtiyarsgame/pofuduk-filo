@@ -118,6 +118,13 @@ namespace PofudukFilo.Progression
         }
 
         /// <summary>Clears pickups and the run's gold counter (new run).</summary>
+        /// <summary>Resume a saved run (run-resume.md).</summary>
+        public void RestoreRunGold(int gold)
+        {
+            RunGold = Mathf.Max(0, gold);
+            RunGoldChanged?.Invoke(RunGold);
+        }
+
         public void ResetRun()
         {
             _handle.Complete();

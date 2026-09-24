@@ -69,6 +69,14 @@ namespace PofudukFilo.Player
             if (!IsAlive) Died?.Invoke();
         }
 
+        /// <summary>Resume a saved run, with a short grace period while the player finds the ship.</summary>
+        public void RestoreHp(float hp, float graceSeconds = 3f)
+        {
+            CurrentHp = Mathf.Clamp(hp, 1f, MaxHp);
+            _invulnerableUntil = Time.time + graceSeconds;
+            HealthChanged?.Invoke(CurrentHp, MaxHp);
+        }
+
         public void Heal(float amount)
         {
             if (!IsAlive) return;

@@ -158,6 +158,39 @@ namespace PofudukFilo.Enemies
             StageAdvanced?.Invoke(cleared, run.chapterIndex);
         }
 
+        // ---------------------------------------------------------------- Run in flight (run-resume.md)
+
+        public void WriteSnapshot(Meta.RunSnapshot s)
+        {
+            s.stage = _stage;
+            s.elapsed = _elapsed;
+            s.stageStartedAt = _stageStartedAt;
+            s.isEndless = IsEndless;
+            s.endlessBossCycle = _endlessBossCycle;
+            s.bossWasAlive = IsBossAlive;
+            // A living boss is not stored: step back one phase so the boss phase is entered (and the boss spawned) again.
+            s.phaseIndex = IsBossAlive && !IsEndless ? _phaseIndex - 1 : _phaseIndex;
+        }
+
+        /// <summary>
+        /// Continue a saved run after <see cref="StartEndless"/> set the stage up: the clock, phase and endless
+        /// state come back, and a short breather lets the player settle before spawns resume.
+        /// </summary>
+        public void RestoreSnapshot(Meta.RunSnapshot s, float breather = 3f)
+        {
+            _elapsed = s.elapsed;
+            _stageStartedAt = s.stageStartedAt;
+            _phaseIndex = Mathf.Clamp(s.phaseIndex, -1, run.phases.Length - 1);
+            _endlessBossCycle = s.endlessBossCycle;
+            _nextDdaEvaluation = _elapsed + 1f;
+            _breatherUntil = _elapsed + breather;
+            _formationTimer = firstFormationDelay;
+            IsEndless = s.isEndless;
+            if (IsEndless)
+                _nextEndlessBoss = s.bossWasAlive ? _elapsed + breather + 2f : _elapsed + endlessBossEverySeconds * 0.5f;
+            EnemyManager.Instance.RunMinutes = RunMinutes;
+        }
+
         /// <summary>Endless: the chapter's bosses return in rotation, each tougher on the clock and Power Match.</summary>
         private void TickEndlessBoss()
         {

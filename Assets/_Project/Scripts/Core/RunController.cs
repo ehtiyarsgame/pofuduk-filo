@@ -170,8 +170,166 @@ namespace PofudukFilo.Core
 
         private void OnApplicationPause(bool paused)
         {
-            // Backgrounding mid-run pauses instead of letting the run die off-screen.
-            if (paused && State == GameState.Playing) Pause();
+            // Backgrounding mid-run pauses instead of letting the run die off-screen — and saves it, because
+            // the OS may kill a backgrounded app without another callback (run-resume.md).
+            if (!paused) return;
+            if (State == GameState.Playing) Pause();
+            SaveRunSnapshot();
+        }
+
+        private void OnApplicationQuit() => SaveRunSnapshot();
+
+        // ---------------------------------------------------------------- Run in flight (run-resume.md)
+
+        [Header("Resume")]
+        [SerializeField] private float autosaveSeconds = 15f;
+        private float _autosaveTimer;
+        private string _forcedCharacterId;
+        private float _extraRunDamage;
+
+        /// <summary>A saved run is waiting on the menu's DEVAM ET.</summary>
+        public bool HasSavedRun => SaveService.HasRun;
+
+        /// <summary>The saved run's stage (1-based) and minutes, for the menu line; (0, 0) if none.</summary>
+        public (int stage, float minutes) SavedRunInfo()
+        {
+            RunSnapshot s = SaveService.LoadRun();
+            return s == null ? (0, 0f) : (s.stage + 1, s.elapsed / 60f);
+        }
+
+        private bool InRun => State is GameState.Playing or GameState.Paused or GameState.LevelUp;
+
+        private void Update()
+        {
+            if (State != GameState.Playing) return;
+            _autosaveTimer += Time.unscaledDeltaTime;
+            if (_autosaveTimer < autosaveSeconds) return;
+            _autosaveTimer = 0f;
+            SaveRunSnapshot();
+        }
+
+        /// <summary>Stores the run in flight; a no-op outside a run (death is never saved — no save-scumming).</summary>
+        public void SaveRunSnapshot()
+        {
+            if (!InRun || !_endlessFromStart) return;
+            var s = new RunSnapshot
+            {
+                characterId = CurrentCharacter != null ? CurrentCharacter.id : null,
+                hp = player.CurrentHp,
+                level = xpSystem.Level,
+                xp = xpSystem.CurrentXp,
+                // A draft on screen is owed again on resume.
+                pendingLevelUps = xpSystem.PendingLevelUps,
+                extraRunDamage = _extraRunDamage,
+                runGold = pickups != null ? pickups.RunGold : 0,
+                fallbackGold = _fallbackGoldEarned,
+                kills = _kills,
+                revivesLeft = _revivesLeft,
+                freeReviveUsed = _freeReviveUsed,
+                rerollsLeft = _rerollsLeft,
+                banishesLeft = _banishesLeft,
+                stageGold = _stageGold,
+                stageStardust = _stageStardust,
+                highestStageCleared = _highestStageCleared
+            };
+            waveDirector.WriteSnapshot(s);
+            PowerMatch pm = EnemyManager.Instance.Power;
+            s.powerScale = pm.Scale;
+            s.powerAverage = pm.AverageTtk;
+            s.powerBaseline = pm.BaselineTtk;
+            s.powerElapsed = pm.Elapsed;
+            foreach (WeaponBehaviour w in inventory.Weapons)
+                s.weapons.Add(new UpgradeLevelEntry { id = w.Definition.id, level = w.Level });
+            foreach (KeyValuePair<PassiveDefinition, int> p in inventory.Passives)
+                s.passives.Add(new UpgradeLevelEntry { id = p.Key.id, level = p.Value });
+            Fleet fleet = FindAnyObjectByType<Fleet>();
+            if (fleet != null)
+            {
+                s.wingmen = fleet.Count;
+                s.fleetPower = fleet.Power;
+                s.fleetKills = fleet.KillCount;
+                s.fleetMilestone = fleet.MilestoneIndex;
+                s.fleetNextPilot = fleet.NextPilot;
+            }
+            SaveService.SaveRun(s);
+        }
+
+        /// <summary>Pause menu: keep the run for later and go to the menu (no rewards yet, nothing lost).</summary>
+        public void SaveAndQuit()
+        {
+            if (!InRun) return;
+            SaveRunSnapshot();
+            EnterMenu();
+        }
+
+        /// <summary>DEVAM ET: continue the saved run exactly where it was left.</summary>
+        public void ResumeRun()
+        {
+            RunSnapshot s = SaveService.LoadRun();
+            if (s == null)
+            {
+                SaveService.DeleteRun();
+                return;
+            }
+
+            _forcedCharacterId = s.characterId;
+            StartRun(s.stage, true);
+            _forcedCharacterId = null;
+
+            var weapons = new List<(WeaponDefinition, int)>();
+            foreach (UpgradeLevelEntry e in s.weapons)
+                if (FindWeapon(e.id) is WeaponDefinition w) weapons.Add((w, e.level));
+            var passives = new List<(PassiveDefinition, int)>();
+            foreach (UpgradeLevelEntry e in s.passives)
+                if (FindPassive(e.id) is PassiveDefinition p) passives.Add((p, e.level));
+            if (weapons.Count > 0) inventory.RestoreLoadout(weapons, passives);
+            _extraRunDamage = s.extraRunDamage;
+            if (_extraRunDamage > 0f) inventory.Stats.AddRunBonus(StatType.Damage, _extraRunDamage);
+            OnPassivesChanged();
+
+            xpSystem.Restore(s.level, s.xp, s.pendingLevelUps);
+            player.RestoreHp(s.hp);
+            if (pickups != null) pickups.RestoreRunGold(s.runGold);
+            _fallbackGoldEarned = s.fallbackGold;
+            _kills = s.kills;
+            _revivesLeft = s.revivesLeft;
+            _freeReviveUsed = s.freeReviveUsed;
+            _rerollsLeft = s.rerollsLeft;
+            _banishesLeft = s.banishesLeft;
+            _stageGold = s.stageGold;
+            _stageStardust = s.stageStardust;
+            _highestStageCleared = s.highestStageCleared;
+
+            waveDirector.RestoreSnapshot(s);
+            EnemyManager.Instance.Power.Restore(s.powerScale, s.powerAverage, s.powerBaseline, s.powerElapsed);
+            Fleet fleet = FindAnyObjectByType<Fleet>();
+            if (fleet != null) fleet.Restore(s.wingmen, s.fleetPower, s.fleetKills, s.fleetMilestone, s.fleetNextPilot);
+
+            _autosaveTimer = autosaveSeconds; // write the resumed state back on the next frame
+            if (xpSystem.PendingLevelUps > 0) OfferNextDraft();
+        }
+
+        private WeaponDefinition FindWeapon(string id)
+        {
+            foreach (WeaponDefinition w in labWeapons)
+                for (WeaponDefinition e = w; e != null; e = e.evolvesInto)
+                    if (e.id == id) return e;
+            foreach (FusionRecipe f in fusions)
+                for (WeaponDefinition e = f != null ? f.result : null; e != null; e = e.evolvesInto)
+                    if (e.id == id) return e;
+            foreach (CharacterDefinition c in characters)
+                for (WeaponDefinition e = c.startingWeapon; e != null; e = e.evolvesInto)
+                    if (e.id == id) return e;
+            return null;
+        }
+
+        private PassiveDefinition FindPassive(string id)
+        {
+            foreach (PassiveDefinition p in labPassives)
+                if (p != null && p.id == id) return p;
+            foreach (PassiveDefinition p in draft.PassivePool)
+                if (p != null && p.id == id) return p;
+            return null;
         }
 
         // ---------------------------------------------------------------- Menu & run lifecycle
@@ -189,20 +347,15 @@ namespace PofudukFilo.Core
         /// The game's one mode (Ball Blast-style, power-match.md §3.3): every chapter plays back to back as a
         /// stage, then endless waves with returning bosses, until the player falls. OYNA starts it.
         /// </summary>
-        public void StartEndless() => StartEndlessFrom(CheckpointStage);
-
-        /// <summary>
-        /// Kaldığın yerden devam (user, 2026-09-24): a new climb starts at the furthest stage reached — the one after
-        /// the highest chapter ever cleared — like Ball Blast resuming at your level. 0-based.
-        /// </summary>
-        public int CheckpointStage => Mathf.Clamp(Meta.HighestChapterCleared + 1, 0, chapters.Length - 1);
-
-        public void StartEndlessFrom(int stage) => StartRun(stage, true);
+        public void StartEndless() => StartRun(0, true);
 
         public void StartRun(int chapterIndex) => StartRun(chapterIndex, false);
 
         private void StartRun(int chapterIndex, bool endless)
         {
+            SaveService.DeleteRun(); // a new run replaces any saved one (ResumeRun re-saves as it plays)
+            _autosaveTimer = 0f;
+            _extraRunDamage = 0f;
             _endlessFromStart = endless;
             _chapterIndex = Mathf.Clamp(chapterIndex, 0, chapters.Length - 1);
             ClearWorld();
@@ -396,12 +549,17 @@ namespace PofudukFilo.Core
         private void OnWeaponEvolved(WeaponDefinition from, WeaponDefinition to)
         {
             float perEvolution = inventory.Stats.GetBonus(StatType.EvolutionDamage);
-            if (perEvolution > 0f) inventory.Stats.AddRunBonus(StatType.Damage, perEvolution);
+            if (perEvolution > 0f)
+            {
+                inventory.Stats.AddRunBonus(StatType.Damage, perEvolution);
+                _extraRunDamage += perEvolution;
+            }
         }
 
         private void OnWeaponFused(FusionRecipe recipe)
         {
             inventory.Stats.AddRunBonus(StatType.Damage, recipe.damageBonus);
+            _extraRunDamage += recipe.damageBonus;
             if (juice != null) juice.Shake(1f, 0.5f);
         }
 
@@ -417,8 +575,9 @@ namespace PofudukFilo.Core
 
         private CharacterDefinition ResolveCharacter()
         {
+            string want = _forcedCharacterId ?? Meta.SelectedCharacterId;
             foreach (CharacterDefinition c in characters)
-                if (c.id == Meta.SelectedCharacterId && Meta.IsUnlocked(c)) return c;
+                if (c.id == want && (_forcedCharacterId != null || Meta.IsUnlocked(c))) return c;
             return characters.Length > 0 ? characters[0] : null;
         }
 
@@ -443,6 +602,7 @@ namespace PofudukFilo.Core
         private void OnPlayerDied()
         {
             if (State != GameState.Playing) return;
+            SaveService.DeleteRun(); // quitting on the death screen must not bring back a living snapshot
             SetState(GameState.Dead);
             DeathOffered?.Invoke(_revivesLeft);
         }
@@ -464,6 +624,7 @@ namespace PofudukFilo.Core
 
             BulletSystem.Instance.ClearAll();
             player.Revive(reviveHpFraction);
+            _autosaveTimer = autosaveSeconds; // re-save on the next frame
             // Revive shockwave: without it a revive lands in the same crowd that just killed you
             // (QA run 12 died again 4 s after reviving).
             if (EnemyManager.Instance != null) EnemyManager.Instance.DamageAll(reviveShockwaveDamage);
@@ -482,6 +643,7 @@ namespace PofudukFilo.Core
 
         private void EndRun(bool victory)
         {
+            SaveService.DeleteRun();
             waveDirector.StopRun();
 
             int gold = RunGold;

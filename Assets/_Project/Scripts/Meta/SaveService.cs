@@ -39,6 +39,56 @@ namespace PofudukFilo.Meta
         public int bestEndlessKills;
     }
 
+    /// <summary>
+    /// A run in flight (run-resume.md): enough to continue exactly where the player left — stage, clock, loadout,
+    /// level, HP, gold, fleet and the Power Match state. Enemies and bullets are not stored; a resume starts with
+    /// a short breather instead.
+    /// </summary>
+    [Serializable]
+    public sealed class RunSnapshot
+    {
+        public int version = 1;
+        public string characterId;
+        // Timeline
+        public int stage;
+        public float elapsed;
+        public float stageStartedAt;
+        public int phaseIndex;
+        public bool isEndless;
+        public int endlessBossCycle;
+        public bool bossWasAlive;
+        // Power Match
+        public float powerScale = 1f;
+        public float powerAverage = -1f;
+        public float powerBaseline = -1f;
+        public float powerElapsed;
+        // Player & build
+        public float hp;
+        public int level = 1;
+        public int xp;
+        public int pendingLevelUps;
+        public List<UpgradeLevelEntry> weapons = new();
+        public List<UpgradeLevelEntry> passives = new();
+        public float extraRunDamage;
+        // Economy & counters
+        public int runGold;
+        public int fallbackGold;
+        public int kills;
+        public int revivesLeft;
+        public bool freeReviveUsed;
+        public int rerollsLeft;
+        public int banishesLeft;
+        public int stageGold;
+        public int stageStardust;
+        public int highestStageCleared = -1;
+        // Fleet
+        public int wingmen;
+        public float fleetPower = 1f;
+        public int fleetKills;
+        public int fleetMilestone;
+        public int fleetNextPilot;
+    }
+
     [Serializable]
     internal sealed class SignedEnvelope
     {
@@ -78,6 +128,57 @@ namespace PofudukFilo.Meta
             {
                 Debug.LogError($"[SaveService] Load failed: {e}");
                 return new SaveData();
+            }
+        }
+
+        // ---------------------------------------------------------------- Run in flight (run-resume.md)
+
+        private static string RunPath => Path.Combine(Application.persistentDataPath, "run.json");
+
+        public static bool HasRun => File.Exists(RunPath);
+
+        public static RunSnapshot LoadRun()
+        {
+            try
+            {
+                if (!File.Exists(RunPath)) return null;
+                var envelope = JsonUtility.FromJson<SignedEnvelope>(File.ReadAllText(RunPath));
+                if (envelope == null || envelope.signature != Sign(envelope.payload)) return null;
+                return JsonUtility.FromJson<RunSnapshot>(envelope.payload);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[SaveService] Run snapshot unreadable: {e.Message}");
+                return null;
+            }
+        }
+
+        public static void SaveRun(RunSnapshot run)
+        {
+            try
+            {
+                string payload = JsonUtility.ToJson(run);
+                string json = JsonUtility.ToJson(new SignedEnvelope { payload = payload, signature = Sign(payload) });
+                string tmp = RunPath + ".tmp";
+                File.WriteAllText(tmp, json);
+                if (File.Exists(RunPath)) File.Replace(tmp, RunPath, null);
+                else File.Move(tmp, RunPath);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[SaveService] Run snapshot not saved: {e.Message}");
+            }
+        }
+
+        public static void DeleteRun()
+        {
+            try
+            {
+                if (File.Exists(RunPath)) File.Delete(RunPath);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[SaveService] Run snapshot not deleted: {e.Message}");
             }
         }
 

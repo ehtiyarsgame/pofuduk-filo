@@ -379,9 +379,11 @@ namespace PofudukFilo.UI
             GameObject screen = MakeScreen(root, GameState.Paused);
             Text title = _ui.Label(screen.transform, "Mola", 120, Palette.Cream);
             UIFactory.Place(title, 0.1f, 0.62f, 0.9f, 0.72f);
-            UIFactory.Place(_ui.Button(screen.transform, "Devam Et", Palette.HotPink, run.Resume), 0.15f, 0.46f, 0.85f, 0.54f);
-            UIFactory.Place(_ui.Button(screen.transform, "Koşuyu Bitir", Palette.Lavender, run.Abandon, 52), 0.25f, 0.34f, 0.75f, 0.4f);
-            UIFactory.Place(_ui.Button(screen.transform, "Ayarlar", Palette.Mint, OpenSettings, 52), 0.25f, 0.25f, 0.75f, 0.31f);
+            UIFactory.Place(_ui.Button(screen.transform, "Devam Et", Palette.HotPink, run.Resume), 0.15f, 0.48f, 0.85f, 0.56f);
+            // Leave now, continue later exactly here (run-resume.md).
+            UIFactory.Place(_ui.Button(screen.transform, "Kaydet ve Çık", Palette.Honey, run.SaveAndQuit, 52), 0.2f, 0.385f, 0.8f, 0.45f);
+            UIFactory.Place(_ui.Button(screen.transform, "Koşuyu Bitir", Palette.Lavender, run.Abandon, 48), 0.25f, 0.305f, 0.75f, 0.36f);
+            UIFactory.Place(_ui.Button(screen.transform, "Ayarlar", Palette.Mint, OpenSettings, 48), 0.25f, 0.225f, 0.75f, 0.28f);
         }
 
         private void BuildDeath(Transform root)
@@ -527,10 +529,14 @@ namespace PofudukFilo.UI
             UIFactory.Place(_pilotText, 0.1f, 0.5f, 0.9f, 0.535f);
 
             // One way in, Ball Blast-style: OYNA starts the endless climb through every stage (power-match.md §3.3).
-            _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, run.StartEndless, 120);
+            // With a saved run the big button continues it (run-resume.md); "Yeni Oyun" starts over.
+            _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, () =>
+            {
+                if (run.HasSavedRun) run.ResumeRun();
+                else run.StartEndless();
+            }, 120);
             UIFactory.Place(_playButton, 0.12f, 0.37f, 0.88f, 0.48f);
-            // Continue is the default; this restarts the climb from stage 1 (shown once a checkpoint exists).
-            _restartButton = _ui.Button(_menu.transform, "Baştan", Palette.Lavender, () => run.StartEndlessFrom(0), 34);
+            _restartButton = _ui.Button(_menu.transform, "Yeni Oyun", Palette.Lavender, run.StartEndless, 32);
             UIFactory.Place(_restartButton, 0.7f, 0.33f, 0.9f, 0.365f);
             _recordText = _ui.Label(_menu.transform, "", 44, Palette.Honey);
             UIFactory.Place(_recordText, 0.1f, 0.33f, 0.9f, 0.365f);
@@ -566,14 +572,19 @@ namespace PofudukFilo.UI
             SetForge(_forgeSpeedButton, "ATEŞ HIZI", ForgeTrack.Speed, meta);
 
             float best = meta.BestEndlessSeconds;
-            int checkpoint = run.CheckpointStage;
-            string line = checkpoint > 0 ? Loc.T($"Devam: Bölüm {checkpoint + 1}") : "";
-            if (best > 0f)
-                line += (line.Length > 0 ? "   ·   " : "") +
-                        Loc.T($"Rekor: {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}");
+            bool saved = run.HasSavedRun;
+            string line = "";
+            if (saved)
+            {
+                (int stage, float minutes) = run.SavedRunInfo();
+                line = Loc.T($"Kayıt: Bölüm {stage} · {Mathf.FloorToInt(minutes)}:{Mathf.FloorToInt(minutes * 60f % 60f):00}");
+            }
+            else if (best > 0f)
+                line = Loc.T($"Rekor: {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}");
             _recordText.text = line;
-            _restartButton.gameObject.SetActive(checkpoint > 0);
-            UIFactory.Place(_recordText, 0.04f, 0.33f, checkpoint > 0 ? 0.69f : 0.96f, 0.365f);
+            UIFactory.SetText(_playButton, saved ? "DEVAM ET" : "OYNA");
+            _restartButton.gameObject.SetActive(saved);
+            UIFactory.Place(_recordText, 0.04f, 0.33f, saved ? 0.69f : 0.96f, 0.365f);
         }
 
         private static void SetForge(Button b, string title, ForgeTrack track, MetaProgressionService meta)

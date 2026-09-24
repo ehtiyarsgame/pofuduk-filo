@@ -90,6 +90,12 @@ namespace PofudukFilo.Core
                         Weave(gameTime);
                         if (SugarRush.Instance != null && SugarRush.Instance.Ready && SugarRush.Instance.ReadyTimeLeft01 < 0.8f)
                             SugarRush.Instance.Activate(); // a player taps within ~2 s
+                        if (!_resumeTested && gameTime >= ResumeTestAt)
+                        {
+                            _resumeTested = true;
+                            yield return ResumeTest(run);
+                            break;
+                        }
                         if (_shotIndex < ShotTimes.Length && gameTime >= ShotTimes[_shotIndex])
                         {
                             string shot = $"{10 + _shotIndex:00}_t{Mathf.RoundToInt(gameTime):000}";
@@ -138,6 +144,37 @@ namespace PofudukFilo.Core
 
             Telemetry(gameTime, run);
             Finish();
+        }
+
+        private const float ResumeTestAt = 100f;
+        private bool _resumeTested;
+
+        /// <summary>
+        /// run-resume.md acceptance: Kaydet ve Çık mid-run, then DEVAM ET — level, kills, weapons and stage must
+        /// come back unchanged. Logged as [QA] RESUME OK / RESUME MISMATCH.
+        /// </summary>
+        private IEnumerator ResumeTest(RunController run)
+        {
+            string Describe()
+            {
+                var xp = FindAnyObjectByType<XpSystem>();
+                var inv = FindAnyObjectByType<WeaponInventory>();
+                var sb = new StringBuilder();
+                sb.Append($"lvl {(xp != null ? xp.Level : 0)} kills {run.Kills} ");
+                if (inv != null)
+                    foreach (WeaponBehaviour w in inv.Weapons) sb.Append(w.Definition.name).Append(':').Append(w.Level).Append(' ');
+                return sb.ToString();
+            }
+
+            string before = Describe();
+            run.SaveAndQuit();
+            yield return new WaitForSecondsRealtime(1f);
+            yield return Shot("30_menu_saved_run");
+            run.ResumeRun();
+            yield return new WaitForSecondsRealtime(0.5f);
+            string after = Describe();
+            Line(before == after ? $"[QA] RESUME OK: {after}" : $"[QA] RESUME MISMATCH: before [{before}] after [{after}]");
+            yield return Shot("31_resumed");
         }
 
         /// <summary>A lazy figure-eight: a fair stand-in for a casual player who never aims.</summary>

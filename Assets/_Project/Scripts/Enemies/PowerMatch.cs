@@ -28,6 +28,17 @@ namespace PofudukFilo.Enemies
 
         private float _elapsed;
 
+        public float Elapsed => _elapsed;
+
+        /// <summary>Resume a saved run (run-resume.md).</summary>
+        public void Restore(float scale, float average, float baseline, float elapsed)
+        {
+            Scale = scale < 1f ? 1f : scale > MaxScale ? MaxScale : scale;
+            AverageTtk = average;
+            BaselineTtk = baseline;
+            _elapsed = elapsed;
+        }
+
         public void Reset()
         {
             Scale = 1f;

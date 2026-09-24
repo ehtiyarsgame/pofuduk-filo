@@ -45,6 +45,27 @@ namespace PofudukFilo.Weapons
             if (startingWeapon != null) AddOrLevelWeapon(startingWeapon);
         }
 
+        /// <summary>Resume a saved run: exactly these weapons and passives at these levels (run-resume.md).</summary>
+        public void RestoreLoadout(IReadOnlyList<(WeaponDefinition def, int level)> weapons,
+            IReadOnlyList<(PassiveDefinition def, int level)> passives)
+        {
+            for (int i = 0; i < _weapons.Count; i++) Destroy(_weapons[i].gameObject);
+            _weapons.Clear();
+            _passives.Clear();
+            Stats.ClearPassiveBonuses();
+            foreach ((WeaponDefinition def, int level) in weapons)
+            {
+                if (def == null || _weapons.Count >= MaxWeapons) continue;
+                WeaponBehaviour weapon = Instantiate(def.behaviourPrefab, weaponMount != null ? weaponMount : transform);
+                weapon.Initialize(def, Stats, Mathf.Clamp(level, 1, def.MaxLevel));
+                _weapons.Add(weapon);
+            }
+            foreach ((PassiveDefinition def, int level) in passives)
+                if (def != null && _passives.Count < MaxPassives) _passives[def] = Mathf.Clamp(level, 1, def.maxLevel);
+            RecalculatePassiveStats();
+            PassivesChanged?.Invoke();
+        }
+
         public WeaponBehaviour Find(WeaponDefinition definition)
         {
             for (int i = 0; i < _weapons.Count; i++)

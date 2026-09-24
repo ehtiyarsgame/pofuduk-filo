@@ -93,6 +93,31 @@ namespace PofudukFilo.Weapons
             _nextPilot = 0;
         }
 
+        public float Power => _power;
+        public int KillCount => _kills;
+        public int MilestoneIndex => _milestoneIndex;
+        public int NextPilot => _nextPilot;
+
+        /// <summary>Resume a saved run: the same wingmen, power and milestone progress (run-resume.md).</summary>
+        public void Restore(int wingmen, float power, int kills, int milestoneIndex, int nextPilot)
+        {
+            ResetRun();
+            _power = Mathf.Max(1f, power);
+            _kills = kills;
+            _milestoneIndex = milestoneIndex;
+            _nextPilot = nextPilot;
+            PlayerHealth player = PlayerHealth.Instance;
+            Vector2 at = player != null ? (Vector2)player.transform.position : Vector2.zero;
+            for (int i = 0; i < Mathf.Min(wingmen, MaxWingmen) && pilotSprites.Length > 0; i++)
+            {
+                var t = new GameObject("wingman").transform;
+                t.SetParent(transform, false);
+                t.position = at;
+                MakeSprite(t, pilotSprites[i % pilotSprites.Length], 0.62f, 9);
+                _wingmen.Add(new Wingman { Transform = t, Phase = Random.value * 6f, Cooldown = 0.2f });
+            }
+        }
+
         private void OnKilled(Enemy e)
         {
             _kills++;
