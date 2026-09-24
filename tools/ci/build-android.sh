@@ -61,19 +61,43 @@ if [ $ACTIVATED -ne 1 ]; then
 fi
 trap return_seat EXIT
 
-mkdir -p "$(dirname "$APK")"
+LOGS="$PROJECT/build/logs"
+mkdir -p "$(dirname "$APK")" "$LOGS"
+
+# Full editor logs go to files (published with the QA screenshots); the job log gets the
+# errors plus the tail, so it stays readable.
+summarize() {
+  grep -nE "error CS|Exception|\[Smoke\]|\[CiBuild\]|\[Setup\]|No script asset|Could not save|Build (succeeded|failed)" "$1" | head -80
+  echo "… tail of $1:"
+  tail -n 40 "$1"
+}
+
 echo "Building Android APK…"
 unity-editor \
   -batchmode -nographics \
-  -logFile - \
+  -logFile "$LOGS/android.log" \
   -projectPath "$PROJECT" \
   -buildTarget Android \
   -executeMethod PofudukFilo.EditorTools.CiBuild.BuildAndroid \
   -customBuildPath "$APK"
 BUILD_EXIT=$?
+summarize "$LOGS/android.log"
 
 if [ $BUILD_EXIT -ne 0 ] || [ ! -f "$APK" ]; then
   echo "::error::Unity build failed (exit $BUILD_EXIT)."
   exit 1
 fi
 ls -lh "$APK"
+
+# QA player (non-fatal): the workflow runs it under Xvfb for screenshots and telemetry.
+echo "Building Linux QA player…"
+unity-editor \
+  -batchmode -nographics \
+  -logFile "$LOGS/linux.log" \
+  -projectPath "$PROJECT" \
+  -buildTarget Linux64 \
+  -executeMethod PofudukFilo.EditorTools.CiBuild.BuildLinuxQa \
+  -customBuildPath "$PROJECT/build/Linux/PofudukFilo.x86_64" \
+  || echo "::warning::Linux QA player build failed; no screenshots this run."
+summarize "$LOGS/linux.log"
+exit 0

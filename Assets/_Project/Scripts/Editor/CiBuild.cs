@@ -52,6 +52,37 @@ namespace PofudukFilo.EditorTools
             }
         }
 
+        /// <summary>
+        /// Linux64 (Mono) player of the already-generated scene, for the CI QA run: QaAutopilot
+        /// plays it under Xvfb and captures screenshots + telemetry. Run after BuildAndroid.
+        /// </summary>
+        public static void BuildLinuxQa()
+        {
+            try
+            {
+                string path = Arg("-customBuildPath") ?? "build/Linux/PofudukFilo.x86_64";
+                var options = new BuildPlayerOptions
+                {
+                    scenes = new[] { PofudukFiloSetup.ScenePath },
+                    locationPathName = path,
+                    target = BuildTarget.StandaloneLinux64,
+                    options = BuildOptions.None
+                };
+                PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
+                PlayerSettings.resizableWindow = true;
+                PlayerSettings.runInBackground = true;
+
+                BuildReport report = BuildPipeline.BuildPlayer(options);
+                Debug.Log($"[CiBuild] Linux QA player {report.summary.result}: {path}");
+                EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                EditorApplication.Exit(1);
+            }
+        }
+
         private static void ConfigureAndroid()
         {
 #if UNITY_6000_0_OR_NEWER

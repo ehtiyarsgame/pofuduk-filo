@@ -85,3 +85,33 @@ jobs:
           else
             gh release create apk build/Android/PofudukFilo.apk --title "Pofuduk Filo APK" --notes "$notes" --latest
           fi
+
+      - name: QA run — autopilot screenshots and telemetry (Xvfb, software GL)
+        id: qa
+        continue-on-error: true
+        timeout-minutes: 15
+        run: |
+          mkdir -p qa
+          cp -r build/logs qa/ 2>/dev/null || true
+          if [ ! -x build/Linux/PofudukFilo.x86_64 ]; then echo "No QA player."; exit 0; fi
+          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglu1-mesa > /dev/null
+          timeout 600 xvfb-run -a -s "-screen 0 720x1400x24" \
+            build/Linux/PofudukFilo.x86_64 -force-glcore -screen-fullscreen 0 \
+            -screen-width 540 -screen-height 1170 -qa-shots "$PWD/qa" -qa-seconds 300 \
+            -logFile "$PWD/qa/player.log" || echo "Player exited with $?"
+          ls -la qa
+          cat qa/telemetry.txt 2>/dev/null | head -80 || true
+
+      - name: Publish QA evidence to the qa-shots branch
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -d qa ] || exit 0
+          cd qa
+          echo "Run ${{ github.run_number }} · ${GITHUB_SHA::7}" > RUN.txt
+          git init -q -b qa-shots
+          git add -A
+          git -c user.name="ci" -c user.email="ci@users.noreply.github.com" commit -qm "QA evidence: run ${{ github.run_number }} (${GITHUB_SHA::7})"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" qa-shots
