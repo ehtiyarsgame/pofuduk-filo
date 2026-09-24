@@ -394,7 +394,7 @@ namespace PofudukFilo.UI
             _reviveButton = _ui.Button(screen.transform, "Diril", Palette.Mint, () => run.Revive());
             UIFactory.Place(_reviveButton, 0.15f, 0.5f, 0.85f, 0.58f);
             // Optional rewarded-ad continue; never mandatory (game-concept.md §3.5). Hook an ad SDK here.
-            _adReviveButton = _ui.Button(screen.transform, "Reklam İzle, Devam Et", Palette.Honey, () => RewardedAds.Show(earned => { if (earned) run.Revive(free: true); }), 50);
+            _adReviveButton = _ui.Button(screen.transform, "Reklam İzle, Devam Et", Palette.Honey, WatchForRevive, 50);
             UIFactory.Place(_adReviveButton, 0.15f, 0.39f, 0.85f, 0.46f);
             UIFactory.Place(_ui.Button(screen.transform, "Bitir", Palette.Lavender, run.GiveUp, 52), 0.3f, 0.28f, 0.7f, 0.34f);
         }
@@ -416,17 +416,18 @@ namespace PofudukFilo.UI
             _endStats = _ui.Label(screen.transform, "", 52, Palette.White);
             UIFactory.Place(_endStats, 0.08f, 0.6f, 0.92f, 0.75f);
             _endGold = _ui.Label(screen.transform, "", 72, Palette.Honey);
-            UIFactory.Place(_endGold, 0.08f, 0.5f, 0.92f, 0.58f);
+            UIFactory.Place(_endGold, 0.08f, 0.52f, 0.92f, 0.6f);
             _endGoal = _ui.Label(screen.transform, "", 46, Palette.Mint);
-            UIFactory.Place(_endGoal, 0.08f, 0.4f, 0.92f, 0.49f);
+            UIFactory.Place(_endGoal, 0.08f, 0.47f, 0.92f, 0.52f);
 
             // One big call to action (game-concept.md §4.5 step 4).
-            Button again = _ui.Button(screen.transform, "Tekrar Oyna", Palette.HotPink, () => run.StartRun(run.ChapterIndex), 80);
+            Button again = _ui.Button(screen.transform, "Tekrar Oyna", Palette.HotPink, () => AfterRunAd(() => run.StartRun(run.ChapterIndex)), 80);
             UIFactory.Place(again, 0.1f, 0.22f, 0.9f, 0.33f);
             _upgradeButton = _ui.Button(screen.transform, "Geliştir", Palette.Lavender, OpenWorkshopFromEnd, 52);
             UIFactory.Place(_upgradeButton, 0.3f, 0.12f, 0.7f, 0.19f);
             _endlessButton = _ui.Button(screen.transform, "Sonsuz Mod'a Devam (+%50 altın)", Palette.Honey, run.ContinueEndless, 46);
             UIFactory.Place(_endlessButton, 0.12f, 0.345f, 0.88f, 0.395f);
+            BuildAdPlacements(screen.transform);
         }
 
         private void OnRunEnded(RunSummary s)
@@ -445,6 +446,7 @@ namespace PofudukFilo.UI
 
             bool affordable = run.Meta.AnyAffordable(run.Workshop);
             UIFactory.SetText(_upgradeButton, affordable ? "Geliştir  !" : "Geliştir");
+            OnRunEndedAds(s);
         }
 
         /// <summary>"Unfinished business" line (game-concept.md §4.2): the cheapest next upgrade.</summary>

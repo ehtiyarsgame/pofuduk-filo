@@ -58,6 +58,9 @@ jobs:
             && curl -fsSL -o Assets/_Project/Fonts/Fredoka-OFL.txt "$base/OFL.txt" \
             && ls -l Assets/_Project/Fonts
 
+      - name: Add Google Mobile Ads (OpenUPM, latest)
+        run: python3 tools/ci/add-admob.py
+
       - name: Pull Unity image
         run: docker pull "$UNITY_IMAGE"
 

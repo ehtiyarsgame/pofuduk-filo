@@ -20,6 +20,7 @@ namespace PofudukFilo.EditorTools
             {
                 PofudukFiloSetup.BuildEverythingNonInteractive();
                 ConfigureAndroid();
+                AdsBuildSetup.PrepareAndroid();
 
                 int missing = SmokeCheck.CountUnassignedReferences();
                 if (missing > 0)
