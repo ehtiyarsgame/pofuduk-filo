@@ -57,7 +57,7 @@ namespace PofudukFilo.Progression
         [SerializeField] private float heartChance = 0.004f;
         [SerializeField] private float magnetChance = 0.003f;
         [SerializeField] private float bombChance = 0.002f;
-        [SerializeField] private int formationClearGems = 10;
+        [SerializeField] private int formationClearGems = 5;
         [SerializeField] private int mergeThreshold = 250;
 
         [Header("Effects")]

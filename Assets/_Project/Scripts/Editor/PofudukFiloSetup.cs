@@ -97,6 +97,7 @@ namespace PofudukFilo.EditorTools
             cam.transform.position = new Vector3(0f, 0f, -10f);
             cam.transparencySortMode = TransparencySortMode.Orthographic;
             camGo.AddComponent<AudioListener>(); // without it the synthesized audio is silent
+            camGo.AddComponent<CameraFit>(); // tall phones / tablets (design/ux/screen-fit.md)
 
             var bg = new GameObject("Background").AddComponent<BackgroundScroller>();
             bg.transform.position = new Vector3(0f, 0f, 5f);

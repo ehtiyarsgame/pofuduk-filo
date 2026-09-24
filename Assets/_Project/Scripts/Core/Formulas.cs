@@ -9,9 +9,10 @@ namespace PofudukFilo.Core
     /// </summary>
     public static class Formulas
     {
-        // XP(n) = floor(5 + 6n + 0.9 n^1.7)
-        public const float XpBase = 5f;
-        public const float XpLinear = 6f;
+        // XP(n) = floor(10 + 9n + 0.9 n^1.7) — raised from 5 + 6n (device feedback 2026-09-24: level-ups came
+        // almost every few seconds at the start and the build got strong too early).
+        public const float XpBase = 10f;
+        public const float XpLinear = 9f;
         public const float XpCoefficient = 0.9f;
         public const float XpExponent = 1.7f;
 
@@ -86,6 +87,28 @@ namespace PofudukFilo.Core
         /// </summary>
         public static float RushMeterMax(float baseMax, float growthPerMinute, float minutes, float startMinutes = 0f) =>
             baseMax * (1f + growthPerMinute * Math.Max(0f, minutes - startMinutes));
+
+        // ---- Screen fit (design/ux/screen-fit.md)
+
+        /// <summary>Phone reference aspect (1080×2400) the playfield width is designed for.</summary>
+        public const float DesignAspect = 0.45f;
+        /// <summary>Widest aspect shown (9:16); wider screens (tablets) are pillarboxed to a centred column.</summary>
+        public const float MaxAspect = 0.5625f;
+
+        /// <summary>
+        /// Camera fit for any portrait screen: never narrower than the designed playfield width (tall phones see more
+        /// height, same width), never wider than <see cref="MaxAspect"/> (tablets get a centred 9:16 column).
+        /// Returns the orthographic size and the viewport width fraction (1 = full width).
+        /// </summary>
+        public static (float size, float viewportWidth) FitCamera(float screenAspect, float baseSize)
+        {
+            if (screenAspect <= 0f) return (baseSize, 1f);
+            float aspect = Math.Min(screenAspect, MaxAspect);
+            float designWidth = 2f * baseSize * DesignAspect;
+            float size = Math.Max(baseSize, designWidth / (2f * aspect));
+            float viewport = screenAspect > MaxAspect ? MaxAspect / screenAspect : 1f;
+            return (size, viewport);
+        }
 
         // ---- Power Match & Forge (power-match.md §4)
 

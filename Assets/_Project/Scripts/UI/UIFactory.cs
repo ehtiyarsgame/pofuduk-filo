@@ -75,8 +75,12 @@ namespace PofudukFilo.UI
         {
             RectTransform rt = Node("SafeArea", parent);
             Rect safe = Screen.safeArea;
-            rt.anchorMin = new Vector2(safe.xMin / Screen.width, safe.yMin / Screen.height);
-            rt.anchorMax = new Vector2(safe.xMax / Screen.width, safe.yMax / Screen.height);
+            // On wide screens (tablets) the UI lives in the same centred 9:16 column as the playfield,
+            // so buttons and bars keep their phone proportions instead of stretching.
+            float column = Core.Formulas.FitCamera(Screen.height > 0 ? (float)Screen.width / Screen.height : 0f, 10.8f).viewportWidth;
+            float colMin = (1f - column) * 0.5f, colMax = 1f - colMin;
+            rt.anchorMin = new Vector2(Mathf.Max(safe.xMin / Screen.width, colMin), safe.yMin / Screen.height);
+            rt.anchorMax = new Vector2(Mathf.Min(safe.xMax / Screen.width, colMax), safe.yMax / Screen.height);
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             return rt;
         }

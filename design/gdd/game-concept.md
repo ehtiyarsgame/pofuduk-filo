@@ -193,15 +193,17 @@ Sıralama bilinçlidir — önce his, sonra ödül, sonra hedef:
 **XP eşiği** — seviye `n`'den `n+1`'e geçmek için gereken XP:
 
 ```
-XP(n) = floor( 5 + 6·n + 0.9·n^1.7 )
+XP(n) = floor( 10 + 9·n + 0.9·n^1.7 )
 ```
+
+*(2026-09-24: 5 + 6·n'den yükseltildi — cihaz geri bildirimi: başta çok sık seviye atlanıyor, erken çok güçlü olunuyordu. Erken düşmanların XP'si de düşürüldü: Jöle Ayı 5→3, Dondurma Kulesi 8→4, formasyon bonusu 10→5 taş; başta sadece mavi taş düşer.)*
 
 | n | 1 | 2 | 3 | 5 | 10 | 15 | 20 | 25 |
 |---|---|---|---|---|----|----|----|----|
-| XP | 11 | 19 | 28 | 48 | 110 | 184 | 271 | 369 |
-| Kümülatif | 11 | 30 | 58 | 144 | 563 | 1330 | 2508 | 4152 |
+| XP | 19 | 30 | 42 | 68 | 145 | 234 | 336 | 449 |
+| Kümülatif | 19 | 49 | 91 | 214 | 778 | 1765 | 3238 | 5252 |
 
-İlk 60 sn'de ~60 civciv (1 XP) → seviye 4. Seviye 25 için ~4150 XP gerekir; bu da 8 dakikada
+İlk 60 sn'de ~60 civciv (1 XP) → seviye 3. Seviye 25 için ~4150 XP gerekir; bu da 8 dakikada
 ortalama **~8.6 XP/sn** demektir. Gem değerleri ve spawn bütçesi bu hedefe göre ayarlanır.
 
 Hedef: 8 dakikalık tipik koşuda seviye **24–28** (≈ 25 kart seçimi; 8 slot × maks 5 seviye

@@ -7,12 +7,12 @@ namespace PofudukFilo.Tests
     public sealed class FormulasTests
     {
         // Expected values are the table in design/gdd/game-concept.md §5.
-        [TestCase(1, 11)]
-        [TestCase(2, 19)]
-        [TestCase(3, 28)]
-        [TestCase(5, 48)]
-        [TestCase(10, 110)]
-        [TestCase(25, 369)]
+        [TestCase(1, 19)]
+        [TestCase(2, 30)]
+        [TestCase(3, 42)]
+        [TestCase(5, 68)]
+        [TestCase(10, 145)]
+        [TestCase(25, 449)]
         public void XpToNextLevel_MatchesGddTable(int level, int expected)
         {
             Assert.That(Formulas.XpToNextLevel(level), Is.EqualTo(expected));
@@ -113,6 +113,30 @@ namespace PofudukFilo.Tests
             Assert.That(Formulas.ForgePowerMultiplier(20), Is.EqualTo(2f).Within(1e-5f));
             Assert.That(Formulas.ForgeSpeedMultiplier(40), Is.EqualTo(2f).Within(1e-5f));
             Assert.That(Formulas.ForgeSpeedMultiplier(99), Is.EqualTo(2f).Within(1e-5f));
+        }
+
+        [Test]
+        public void test_fit_camera_tall_phone_keeps_design_width()
+        {
+            (float size, float vw) = Formulas.FitCamera(0.42f, 10.8f);
+            Assert.That(2f * size * 0.42f, Is.EqualTo(2f * 10.8f * Formulas.DesignAspect).Within(1e-3f));
+            Assert.That(vw, Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void test_fit_camera_tablet_is_pillarboxed()
+        {
+            (float size, float vw) = Formulas.FitCamera(0.75f, 10.8f);
+            Assert.That(size, Is.EqualTo(10.8f).Within(1e-4f));
+            Assert.That(vw, Is.EqualTo(Formulas.MaxAspect / 0.75f).Within(1e-4f));
+        }
+
+        [Test]
+        public void test_fit_camera_reference_phone_unchanged()
+        {
+            (float size, float vw) = Formulas.FitCamera(Formulas.DesignAspect, 10.8f);
+            Assert.That(size, Is.EqualTo(10.8f).Within(1e-4f));
+            Assert.That(vw, Is.EqualTo(1f));
         }
     }
 }
