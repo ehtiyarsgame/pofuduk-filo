@@ -57,6 +57,7 @@ namespace PofudukFilo.Enemies
         private float _fireTimer;
         private float _age;
         private float _flashTimer;
+        private float _flashCooldown; // under constant fire the flash must blink, not stay white
         private float _originX;
         private bool _hasSlot;
         private Vector2 _slot;
@@ -151,6 +152,7 @@ namespace PofudukFilo.Enemies
             else TickSwarm(moveDt);
 
             AnimateScale(dt);
+            _flashCooldown -= dt;
             if (_flashTimer > 0f)
             {
                 _flashTimer -= dt;
@@ -229,9 +231,13 @@ namespace PofudukFilo.Enemies
         {
             if (IsDead) return false;
             _hp -= amount;
-            _flashTimer = 0.06f; // one-frame-ish white flash (art-bible §5.1)
-            SetFlash(1f);
-            _punch = 1f;
+            if (_flashCooldown <= 0f)
+            {
+                _flashTimer = 0.06f; // one-frame-ish white flash (art-bible §5.1)
+                _flashCooldown = 0.16f;
+                SetFlash(1f);
+                _punch = 1f;
+            }
             return IsDead;
         }
 
