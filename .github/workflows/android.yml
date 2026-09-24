@@ -1,6 +1,6 @@
 # Builds an installable Android APK in the cloud.
 # Needs repository secrets UNITY_EMAIL and UNITY_PASSWORD (Unity Personal account, no 2FA).
-# Download the APK from the run's "Artifacts" section.
+# Phone download: the "apk" release — releases/latest/download/PofudukFilo.apk (also a run artifact).
 name: Android APK
 
 on:
@@ -18,6 +18,9 @@ concurrency:
   # One build at a time: each holds the account's single Personal seat.
   group: android-build
   cancel-in-progress: false
+
+permissions:
+  contents: write # publish the APK to the "apk" release
 
 env:
   UNITY_IMAGE: unityci/editor:ubuntu-6000.3.24f1-android-3
@@ -70,3 +73,15 @@ jobs:
           name: PofudukFilo-apk
           path: build/Android/*.apk
           if-no-files-found: error
+
+      - name: Publish APK to the "apk" release (direct phone download)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Build ${{ github.run_number }} · ${GITHUB_SHA::7}. Eski sürümü kaldırıp bu APK'yı kurun."
+          if gh release view apk >/dev/null 2>&1; then
+            gh release upload apk build/Android/PofudukFilo.apk --clobber
+            gh release edit apk --notes "$notes" --latest
+          else
+            gh release create apk build/Android/PofudukFilo.apk --title "Pofuduk Filo APK" --notes "$notes" --latest
+          fi
