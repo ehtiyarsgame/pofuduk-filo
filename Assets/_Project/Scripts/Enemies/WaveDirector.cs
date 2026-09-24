@@ -92,10 +92,13 @@ namespace PofudukFilo.Enemies
         /// Sonsuz Mod (power-match.md §3.3): the chapters play back to back as stages; each final boss opens
         /// the next stage, and after the last one the waves repeat forever with returning bosses.
         /// </summary>
-        public void StartEndless(IReadOnlyList<RunDefinition> stages)
+        /// <param name="startStage">Checkpoint: the stage to begin at (0 = the first chapter).</param>
+        public void StartEndless(IReadOnlyList<RunDefinition> stages, int startStage = 0)
         {
+            startStage = Mathf.Clamp(startStage, 0, stages.Count - 1);
+            StartRun(stages[startStage], true);
             _stages = stages;
-            StartRun(stages[0], true);
+            _stage = startStage;
         }
 
         /// <param name="endlessMode">The final boss does not end the run; the waves roll on.</param>

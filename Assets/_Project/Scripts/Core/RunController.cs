@@ -189,7 +189,15 @@ namespace PofudukFilo.Core
         /// The game's one mode (Ball Blast-style, power-match.md §3.3): every chapter plays back to back as a
         /// stage, then endless waves with returning bosses, until the player falls. OYNA starts it.
         /// </summary>
-        public void StartEndless() => StartRun(0, true);
+        public void StartEndless() => StartEndlessFrom(CheckpointStage);
+
+        /// <summary>
+        /// Kaldığın yerden devam (user, 2026-09-24): a new climb starts at the furthest stage reached — the one after
+        /// the highest chapter ever cleared — like Ball Blast resuming at your level. 0-based.
+        /// </summary>
+        public int CheckpointStage => Mathf.Clamp(Meta.HighestChapterCleared + 1, 0, chapters.Length - 1);
+
+        public void StartEndlessFrom(int stage) => StartRun(stage, true);
 
         public void StartRun(int chapterIndex) => StartRun(chapterIndex, false);
 
@@ -246,7 +254,7 @@ namespace PofudukFilo.Core
             _stageGold = 0;
             _stageStardust = 0;
             _highestStageCleared = -1;
-            if (endless) waveDirector.StartEndless(chapters);
+            if (endless) waveDirector.StartEndless(chapters, _chapterIndex);
             else waveDirector.StartRun(chapters[_chapterIndex]);
             SetState(GameState.Playing);
         }

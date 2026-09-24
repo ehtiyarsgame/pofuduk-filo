@@ -529,6 +529,9 @@ namespace PofudukFilo.UI
             // One way in, Ball Blast-style: OYNA starts the endless climb through every stage (power-match.md §3.3).
             _playButton = _ui.Button(_menu.transform, "OYNA", Palette.HotPink, run.StartEndless, 120);
             UIFactory.Place(_playButton, 0.12f, 0.37f, 0.88f, 0.48f);
+            // Continue is the default; this restarts the climb from stage 1 (shown once a checkpoint exists).
+            _restartButton = _ui.Button(_menu.transform, "Baştan", Palette.Lavender, () => run.StartEndlessFrom(0), 34);
+            UIFactory.Place(_restartButton, 0.7f, 0.33f, 0.9f, 0.365f);
             _recordText = _ui.Label(_menu.transform, "", 44, Palette.Honey);
             UIFactory.Place(_recordText, 0.1f, 0.33f, 0.9f, 0.365f);
 
@@ -546,6 +549,7 @@ namespace PofudukFilo.UI
         }
 
         private Text _recordText;
+        private Button _restartButton;
         private Button _forgePowerButton;
         private Button _forgeSpeedButton;
 
@@ -562,9 +566,14 @@ namespace PofudukFilo.UI
             SetForge(_forgeSpeedButton, "ATEŞ HIZI", ForgeTrack.Speed, meta);
 
             float best = meta.BestEndlessSeconds;
-            _recordText.text = best > 0f
-                ? Loc.T($"Rekor: {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}")
-                : "";
+            int checkpoint = run.CheckpointStage;
+            string line = checkpoint > 0 ? Loc.T($"Devam: Bölüm {checkpoint + 1}") : "";
+            if (best > 0f)
+                line += (line.Length > 0 ? "   ·   " : "") +
+                        Loc.T($"Rekor: {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}");
+            _recordText.text = line;
+            _restartButton.gameObject.SetActive(checkpoint > 0);
+            UIFactory.Place(_recordText, 0.04f, 0.33f, checkpoint > 0 ? 0.69f : 0.96f, 0.365f);
         }
 
         private static void SetForge(Button b, string title, ForgeTrack track, MetaProgressionService meta)

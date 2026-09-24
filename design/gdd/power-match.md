@@ -33,6 +33,14 @@ Device feedback on 2026-09-24: *"sonuna doğru çok basitleşiyor"* (it gets too
 - **Stage rewards.** Clearing a stage banks what a chapter victory used to pay, `ExpectedRunGold(c) · victoryGoldBonusFraction` gold plus `victoryStardustBase + c` stardust. The bank is paid at the run end, along with the run's gold. The highest cleared stage is recorded, so pilot unlocks tied to chapters still work.
 - **End and record.** The run ends only on death, after revives or a give-up. The time survived is compared with `bestEndlessSeconds`. A new best shows **YENİ REKOR!**; otherwise the title is "Güzel uçuş!" ("Nice flight!"). The menu shows "Rekor: m:ss" under OYNA, and the run-end screen shows "Bölüm N · Rekor: m:ss". **Tekrar Oyna** starts a new climb.
 
+### 3.3b Checkpoint — continue where you left off
+*(2026-09-24, user: "kaldığı yerden devam edebilir mi" (can it continue from where it left off?).)*
+- **OYNA starts at a checkpoint.** A new climb begins at the stage after the highest chapter ever cleared (`RunController.CheckpointStage` = `min(highestChapterCleared + 1, last)`), the way Ball Blast resumes at your level.
+- **Menu line.** The menu shows "Devam: Bölüm N" ("Continue: Stage N") next to the record, plus a small **Baştan** ("Restart") button that starts from stage 1. Both appear only once a checkpoint exists.
+- **Starting at stage N.** The run starts with level 1, the starting weapon and the run clock at 0. Stage N's chapter HP factor (`1.22^c`) and roster apply from the first spawn, so the Forge upgrades carry the player.
+- **Restarting from stage 1** never lowers the checkpoint.
+- **No mid-run save.** A run is not saved mid-flight. Leaving the app pauses it, but if the OS kills the app the run is lost and only the checkpoint remains.
+
 ### 3.4 Ocak (Forge)
 - **Ateş Gücü:** all weapon and wingman damage × `ForgePowerMultiplier(L)`. No cap.
 - **Ateş Hızı:** all weapon and wingman cooldowns tick × `ForgeSpeedMultiplier(L)` (stacks with the rush). Capped at level `MaxForgeSpeedLevel`, where the button reads MAKS.

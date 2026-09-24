@@ -226,6 +226,7 @@ namespace PofudukFilo.Core
             ["ATEŞ GÜCÜ"] = "FIREPOWER",
             ["ATEŞ HIZI"] = "FIRE RATE",
             ["YENİ REKOR!"] = "NEW RECORD!",
+            ["Baştan"] = "Restart",
             ["Güzel uçuş!"] = "Nice flight!",
             ["Reklam hazır değil, biraz sonra dene."] = "Ad not ready, try again soon."
         };
@@ -234,6 +235,7 @@ namespace PofudukFilo.Core
         {
             ["Sv. {0}"] = "Lv. {0}",
             ["Bölüm {0} başladı!"] = "Stage {0} begins!",
+            ["Devam: Bölüm {0}"] = "Continue: Stage {0}",
             ["Rekor: {0}"] = "Best: {0}",
             ["{0}\nSv.{1}  ·  {2} altın"] = "{0}\nLv.{1}  ·  {2} gold",
             ["{0}\nSv.{1}  ·  MAKS"] = "{0}\nLv.{1}  ·  MAX",

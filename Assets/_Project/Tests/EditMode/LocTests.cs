@@ -24,6 +24,7 @@ namespace PofudukFilo.Tests
             Assert.That(Loc.ToEnglish("ATEŞ HIZI\nSv.40  ·  MAKS"), Is.EqualTo("FIRE RATE\nLv.40  ·  MAX"));
             Assert.That(Loc.ToEnglish("Rekor: 4:05"), Is.EqualTo("Best: 4:05"));
             Assert.That(Loc.ToEnglish("Bölüm 2 başladı!"), Is.EqualTo("Stage 2 begins!"));
+            Assert.That(Loc.ToEnglish("Devam: Bölüm 3"), Is.EqualTo("Continue: Stage 3"));
         }
 
         [Test]
