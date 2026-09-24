@@ -167,7 +167,10 @@ namespace PofudukFilo.Enemies
             // Nothing shoots from off-screen (fairness, and it cannot be shot back yet).
             if (EnemyManager.Instance != null && !EnemyManager.Instance.IsOnScreen(this)) return;
 
-            _fireTimer -= dt;
+            // Aggression ramp: enemies fire more often as the run goes on (+8 %/min, max ×1.8),
+            // so a strong late build still has to dodge (device feedback: late game too easy).
+            float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f;
+            _fireTimer -= dt * Mathf.Min(1f + 0.08f * minutes, 1.8f);
             if (_fireTimer <= 0f)
             {
                 _fireTimer = fireInterval;
