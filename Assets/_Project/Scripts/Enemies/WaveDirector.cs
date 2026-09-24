@@ -83,11 +83,32 @@ namespace PofudukFilo.Enemies
             _liveFormations = 0;
             _breatherUntil = 0f;
             _currentBoss = null;
+            IsEndless = false;
             _dda.Reset(0f);
             EnemyManager.Instance.ChapterIndex = run.chapterIndex;
         }
 
         public void StopRun() => _running = false;
+
+        public bool IsEndless { get; private set; }
+
+        /// <summary>
+        /// Endless mode after the final boss (game-concept.md §3.2): the last wave phase repeats
+        /// forever while HP and spawn budget keep scaling with the clock.
+        /// </summary>
+        public void ContinueEndless()
+        {
+            IsEndless = true;
+            for (int i = run.phases.Length - 1; i >= 0; i--)
+            {
+                if (run.phases[i].kind != PhaseKind.Waves) continue;
+                _phaseIndex = i;
+                break;
+            }
+            _currentBoss = null;
+            _breatherUntil = _elapsed + run.breatherSeconds;
+            _running = true;
+        }
 
         private void Update()
         {
@@ -117,7 +138,7 @@ namespace PofudukFilo.Enemies
         private void AdvancePhases()
         {
             // The timeline waits for a living boss, so two bosses never overlap.
-            if (IsBossAlive) return;
+            if (IsBossAlive || IsEndless) return;
 
             int target = run.PhaseIndexAt(RunMinutes);
             while (_phaseIndex < target && !IsBossAlive)

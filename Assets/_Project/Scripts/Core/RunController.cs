@@ -30,9 +30,12 @@ namespace PofudukFilo.Core
         public readonly int Kills;
         public readonly float Minutes;
         public readonly int ChapterIndex;
+        public readonly bool Endless;
 
-        public RunSummary(bool victory, int gold, int stardust, int level, int kills, float minutes, int chapterIndex)
+        public RunSummary(bool victory, int gold, int stardust, int level, int kills, float minutes, int chapterIndex,
+            bool endless = false)
         {
+            Endless = endless;
             Victory = victory;
             Gold = gold;
             Stardust = stardust;
@@ -68,6 +71,7 @@ namespace PofudukFilo.Core
         [SerializeField] private MetaUpgradeDefinition[] workshop = Array.Empty<MetaUpgradeDefinition>();
         [SerializeField] private CharacterDefinition[] characters = Array.Empty<CharacterDefinition>();
         [SerializeField] private ConstellationDefinition constellation;
+        [SerializeField] private FusionRecipe[] fusions = Array.Empty<FusionRecipe>();
         [Tooltip("Weapons and passives shown in the Weapon Lab (the draft pool).")]
         [SerializeField] private WeaponDefinition[] labWeapons = Array.Empty<WeaponDefinition>();
         [SerializeField] private PassiveDefinition[] labPassives = Array.Empty<PassiveDefinition>();
@@ -80,6 +84,7 @@ namespace PofudukFilo.Core
         [SerializeField] private float reviveHpFraction = 0.5f;
         [SerializeField] private int victoryStardustBase = 3;
         [SerializeField, Range(0f, 1f)] private float victoryGoldBonusFraction = 0.4f;
+        [SerializeField] private float endlessGoldMultiplier = 1.5f;
 
         public event Action<GameState> StateChanged;
         /// <summary>The cards on offer; rerolls and banishes left.</summary>
@@ -98,6 +103,9 @@ namespace PofudukFilo.Core
         private int _kills;
         private int _fallbackGoldEarned;
         private bool _freeReviveUsed;
+        private bool _endless;
+        private int _goldAlreadyGranted;
+        private bool _lastRunWasVictory;
 
         public GameState State { get; private set; } = GameState.MainMenu;
         public MetaProgressionService Meta { get; private set; }
@@ -116,6 +124,8 @@ namespace PofudukFilo.Core
         /// <summary>The once-per-run rewarded-ad continue is still available.</summary>
         public bool FreeReviveAvailable => !_freeReviveUsed;
         public int RevivesLeft => _revivesLeft;
+        /// <summary>After a victory the run can continue in Endless mode (once).</summary>
+        public bool CanContinueEndless => State == GameState.RunEnd && _lastRunWasVictory && !_endless;
         public int RunGold => (pickups != null ? pickups.RunGold : 0) + _fallbackGoldEarned;
 
         private void Awake()
@@ -135,6 +145,7 @@ namespace PofudukFilo.Core
             EnemyManager.Instance.EnemyKilled += OnEnemyKilled;
             inventory.PassivesChanged += OnPassivesChanged;
             inventory.WeaponEvolved += OnWeaponEvolved;
+            inventory.WeaponFused += OnWeaponFused;
             // Owned weapons stay offered even if locked in the Lab (a character's starting weapon).
             draft.WeaponFilter = w => Meta.IsUnlocked(w) || inventory.Find(w) != null;
             draft.PassiveFilter = p => Meta.IsUnlocked(p);
@@ -198,6 +209,9 @@ namespace PofudukFilo.Core
             _kills = 0;
             _fallbackGoldEarned = 0;
             _freeReviveUsed = false;
+            _endless = false;
+            _goldAlreadyGranted = 0;
+            _lastRunWasVictory = false;
 
             waveDirector.StartRun(chapters[_chapterIndex]);
             SetState(GameState.Playing);
@@ -320,6 +334,7 @@ namespace PofudukFilo.Core
                 int bonusLevels = Mathf.RoundToInt(inventory.Stats.GetBonus(StatType.EvolutionChestLevels));
                 for (int i = 0; i < bonusLevels; i++) LevelRandomOwnedPassive();
             }
+            evolved += inventory.FuseAllEligible(fusions);
             if (evolved > 0 && juice != null) juice.Shake(0.8f, 0.4f);
             ChestOpened?.Invoke(evolved);
         }
@@ -331,6 +346,22 @@ namespace PofudukFilo.Core
         {
             float perEvolution = inventory.Stats.GetBonus(StatType.EvolutionDamage);
             if (perEvolution > 0f) inventory.Stats.AddRunBonus(StatType.Damage, perEvolution);
+        }
+
+        private void OnWeaponFused(FusionRecipe recipe)
+        {
+            inventory.Stats.AddRunBonus(StatType.Damage, recipe.damageBonus);
+            if (juice != null) juice.Shake(1f, 0.5f);
+        }
+
+        /// <summary>Continue the won run with endless waves; rewards from here on are multiplied.</summary>
+        public void ContinueEndless()
+        {
+            if (!CanContinueEndless) return;
+            _endless = true;
+            _goldAlreadyGranted = RunGold;
+            waveDirector.ContinueEndless();
+            SetState(GameState.Playing);
         }
 
         private CharacterDefinition ResolveCharacter()
@@ -398,7 +429,12 @@ namespace PofudukFilo.Core
 
             int gold = RunGold;
             int stardust = 0;
-            if (victory)
+            if (_endless)
+            {
+                // Only what was earned after the victory, with the endless bonus.
+                gold = Mathf.RoundToInt((RunGold - _goldAlreadyGranted) * endlessGoldMultiplier);
+            }
+            else if (victory)
             {
                 gold += Mathf.RoundToInt(Formulas.ExpectedRunGold(_chapterIndex) * victoryGoldBonusFraction);
                 stardust = victoryStardustBase + _chapterIndex;
@@ -406,9 +442,10 @@ namespace PofudukFilo.Core
 
             // Gold is always kept, even on death (game-concept.md §3.5).
             Meta.GrantRunRewards(gold, stardust, victory ? _chapterIndex : -1);
+            _lastRunWasVictory = victory;
 
             var summary = new RunSummary(victory, gold, stardust, xpSystem.Level, _kills,
-                waveDirector.RunMinutes, _chapterIndex);
+                waveDirector.RunMinutes, _chapterIndex, _endless);
             SetState(GameState.RunEnd);
             RunEnded?.Invoke(summary);
         }

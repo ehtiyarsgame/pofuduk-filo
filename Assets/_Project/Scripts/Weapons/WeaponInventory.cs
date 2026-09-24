@@ -21,6 +21,7 @@ namespace PofudukFilo.Weapons
 
         public event Action<WeaponDefinition, WeaponDefinition> WeaponEvolved; // from, to
         public event Action PassivesChanged;
+        public event Action<FusionRecipe> WeaponFused;
 
         public PlayerStats Stats { get; } = new();
         public IReadOnlyList<WeaponBehaviour> Weapons => _weapons;
@@ -117,6 +118,31 @@ namespace PofudukFilo.Weapons
                 WeaponEvolved?.Invoke(from, to);
             }
             return evolved;
+        }
+
+        /// <summary>Fuses every recipe whose two evolved weapons are both owned. Returns the count.</summary>
+        public int FuseAllEligible(IReadOnlyList<FusionRecipe> recipes)
+        {
+            int fused = 0;
+            for (int r = 0; r < recipes.Count; r++)
+            {
+                FusionRecipe recipe = recipes[r];
+                WeaponBehaviour a = Find(recipe.a);
+                WeaponBehaviour b = Find(recipe.b);
+                if (a == null || b == null) continue;
+
+                _weapons.Remove(a);
+                _weapons.Remove(b);
+                Destroy(a.gameObject);
+                Destroy(b.gameObject);
+
+                WeaponBehaviour fusion = Instantiate(recipe.result.behaviourPrefab, weaponMount != null ? weaponMount : transform);
+                fusion.Initialize(recipe.result, Stats);
+                _weapons.Add(fusion);
+                fused++;
+                WeaponFused?.Invoke(recipe);
+            }
+            return fused;
         }
 
         private void RecalculatePassiveStats()
