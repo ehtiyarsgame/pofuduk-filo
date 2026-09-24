@@ -59,8 +59,8 @@ namespace PofudukFilo.Feel
             }
 
             AddTiles(nebula, nebulaSpeed, -190, nebulaTint, width);
-            AddTiles(farStars, farSpeed, -180, Color.white, width);
-            _near = AddTiles(nearStars, nearSpeed, -170, Color.white, width);
+            AddTiles(farStars, farSpeed, -180, new Color(1f, 1f, 1f, 0.75f), width);
+            _near = AddTiles(nearStars, nearSpeed, -170, new Color(1f, 1f, 1f, 0.7f), width);
             _nextProp = Random.Range(0f, 3f);
         }
 
@@ -123,7 +123,7 @@ namespace PofudukFilo.Feel
 
             if (_near != null)
             {
-                float a = 0.8f + 0.2f * Mathf.Sin(Time.time * 2.3f);
+                float a = 0.55f + 0.15f * Mathf.Sin(Time.time * 2.3f);
                 foreach (Transform t in _near.Tiles) t.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, a);
             }
 

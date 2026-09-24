@@ -196,8 +196,9 @@ namespace PofudukFilo.EditorTools
             // Index = PickupKind.
             PickupVisuals = new[]
             {
-                V("p_gem_blue", 0.28f), V("p_gem_green", 0.34f), V("p_gem_pink", 0.42f),
-                V("p_coin", 0.34f), V("p_magnet", 0.5f), V("p_heart", 0.5f), V("p_bomb", 0.5f)
+                // Larger than before (device feedback: gems blended into the star field).
+                V("p_gem_blue", 0.44f), V("p_gem_green", 0.52f), V("p_gem_pink", 0.62f),
+                V("p_coin", 0.44f), V("p_magnet", 0.5f), V("p_heart", 0.5f), V("p_bomb", 0.5f)
             };
         }
 

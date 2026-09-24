@@ -210,14 +210,18 @@ Hedef: 8 dakikalık tipik koşuda seviye **24–28** (≈ 25 kart seçimi; 8 slo
 **Düşman HP ölçeklemesi** (koşu içi, `t` = dakika, `c` = bölüm indeksi 0'dan):
 
 ```
-HP(t, c) = HP_base · (1 + 0.18·t + 0.012·t²) · (1.22)^c
+HP(t, c) = HP_base · (1 + 0.25·t + 0.035·t²) · (1.22)^c
 ```
 
 **Spawn bütçesi** (saniye başına "tehdit puanı"):
 
 ```
-Budget(t) = 2.0 + 0.9·t + 0.08·t² ,  DDA ile ×[0.75 … 1.15]
+Budget(t) = 1.5 + 0.9·t + 0.08·t² ,  DDA ile ×[0.75 … 1.15]
 ```
+
+> 2026-09-24 ayarı (QA koşuları 12–15 ve cihaz testi): bütçe 2.0 → 1.5 (açılış çok ölümcüldü);
+> HP ölçeği 0.18·t + 0.012·t² → 0.25·t + 0.035·t² (geç oyunda düşmanlar ekrana girmeden eriyordu).
+> Ekran dışındaki düşmanlar vurulamaz ve ateş edemez.
 
 **Kart ağırlığı:** Her kart için `w = rarityWeight × (sahipse 1.6 : 1.0) × (evrim yolundaysa 1.4 : 1.0)`.
 Nadirlik ağırlıkları: Yaygın 60, Nadir 28, Epik 10, Efsane 2. Aynı teklifte aynı kart iki kez

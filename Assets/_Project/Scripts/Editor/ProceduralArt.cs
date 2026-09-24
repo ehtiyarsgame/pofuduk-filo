@@ -781,19 +781,23 @@ namespace PofudukFilo.EditorTools
             return p;
         }
 
+        /// <summary>
+        /// XP gem: chunky faceted crystal with a dark outline AND a white rim — no background star
+        /// has either, so gems read as "pick me up" at a glance.
+        /// </summary>
         public static Painter GemSprite(Color c)
         {
             var p = new Painter(64, 64);
-            p.Glow(32, 32, 31, WithAlpha(c, 0.5f), 2f);
-            p.Diamond(32, 32, 25, Painter.Outline);
-            // Four facets: light upper-left, dark lower-right.
+            p.Glow(32, 32, 31, WithAlpha(c, 0.55f), 1.8f);
+            p.Diamond(32, 32, 27, Painter.Outline);
+            p.Diamond(32, 32, 23, Color.white);
             p.Fill((x, y) => (Mathf.Abs(x - 32) + Mathf.Abs(y - 32) - 20f) * 0.707f, (x, y) =>
             {
                 bool up = y >= 32, left = x <= 32;
-                float k = up && left ? 0.55f : up ? 0.25f : left ? 0f : -0.3f;
+                float k = up && left ? 0.55f : up ? 0.25f : left ? 0f : -0.35f;
                 return k >= 0f ? Painter.Light(c, k) : Painter.Deep(c, -k);
             });
-            p.Diamond(26, 38, 5, new Color(1f, 1f, 1f, 0.85f));
+            p.Diamond(26, 38, 5, new Color(1f, 1f, 1f, 0.9f));
             return p;
         }
 
@@ -909,8 +913,8 @@ namespace PofudukFilo.EditorTools
             const int w = 512, h = 1024;
             var p = new Painter(w, h);
             var rng = new System.Random(near ? 91 : 17);
-            int count = near ? 70 : 420;
-            Color[] tints = { Color.white, Hex(0xFFE8A3), Hex(0xC8B6FF), Hex(0x9FF2E4), Hex(0xFFB3D1) };
+            int count = near ? 45 : 380;
+            Color[] tints = { Color.white, Hex(0xFFF3D6), Hex(0xE6DDFF) }; // neutral: coloured stars read as pickups
             for (int i = 0; i < count; i++)
             {
                 float x = (float)rng.NextDouble() * w, y = (float)rng.NextDouble() * h;
@@ -918,10 +922,10 @@ namespace PofudukFilo.EditorTools
                 Color c = tints[rng.Next(tints.Length)];
                 if (near)
                 {
-                    float r = 1.6f + big * 2.2f;
-                    c.a = 0.95f;
-                    p.Dot(x, y, r, c, r * 4f);
-                    if (big > 0.8f) // a few four-point sparkles
+                    float r = 1.2f + big * 1.6f;
+                    c.a = 0.7f;
+                    p.Dot(x, y, r, c, r * 3f);
+                    if (big > 0.93f) // rare, faint four-point sparkles
                     {
                         for (int k = 0; k < 2; k++)
                         {
@@ -935,7 +939,7 @@ namespace PofudukFilo.EditorTools
                 }
                 else
                 {
-                    c.a = 0.35f + big * 0.5f;
+                    c.a = 0.2f + big * 0.4f;
                     p.Dot(x, y, 0.6f + big * 1.1f, c, big > 0.85f ? 3f : 0f);
                 }
             }

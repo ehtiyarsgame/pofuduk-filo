@@ -164,6 +164,9 @@ namespace PofudukFilo.Enemies
                 return;
             }
 
+            // Nothing shoots from off-screen (fairness, and it cannot be shot back yet).
+            if (EnemyManager.Instance != null && !EnemyManager.Instance.IsOnScreen(this)) return;
+
             _fireTimer -= dt;
             if (_fireTimer <= 0f)
             {

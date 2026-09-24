@@ -22,10 +22,10 @@ namespace PofudukFilo.Core
             return (int)Math.Floor(XpBase + XpLinear * level + XpCoefficient * Math.Pow(level, XpExponent));
         }
 
-        /// <summary>HP(t, c) = HP_base · (1 + 0.18t + 0.012t²) · 1.22^c</summary>
+        /// <summary>HP(t, c) = HP_base · (1 + 0.25t + 0.035t²) · 1.22^c</summary>
         public static float EnemyHp(float baseHp, float minutes, int chapterIndex)
         {
-            float timeScale = 1f + 0.18f * minutes + 0.012f * minutes * minutes;
+            float timeScale = 1f + 0.25f * minutes + 0.035f * minutes * minutes; // device feedback: late game melted (was 0.18m + 0.012m²)
             return baseHp * timeScale * (float)Math.Pow(1.22, chapterIndex);
         }
 

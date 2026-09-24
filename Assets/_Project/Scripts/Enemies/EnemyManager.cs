@@ -85,7 +85,7 @@ namespace PofudukFilo.Enemies
         /// <returns>True if the hit killed the enemy.</returns>
         public bool DamageEnemy(Enemy enemy, float damage)
         {
-            if (enemy == null || enemy.IsDead) return false;
+            if (enemy == null || enemy.IsDead || !IsOnScreen(enemy)) return false;
             bool killed = enemy.TakeDamage(damage);
             EnemyDamaged?.Invoke(enemy, damage);
             if (!killed) return false;
@@ -103,7 +103,7 @@ namespace PofudukFilo.Enemies
             for (int i = 0; i < _active.Count; i++)
             {
                 Enemy e = _active[i];
-                if (e.IsDead) continue;
+                if (e.IsDead || !IsOnScreen(e)) continue;
                 float r = radius + e.HitRadius;
                 if (((Vector2)e.transform.position - center).sqrMagnitude <= r * r) results.Add(e);
             }
@@ -118,7 +118,7 @@ namespace PofudukFilo.Enemies
             for (int i = 0; i < _active.Count; i++)
             {
                 Enemy e = _active[i];
-                if (e.IsDead || (exclude != null && exclude.Contains(e))) continue;
+                if (e.IsDead || !IsOnScreen(e) || (exclude != null && exclude.Contains(e))) continue;
                 float sq = ((Vector2)e.transform.position - position).sqrMagnitude;
                 if (sq < bestSq)
                 {
@@ -127,6 +127,35 @@ namespace PofudukFilo.Enemies
                 }
             }
             return best;
+        }
+
+        private Camera _camera;
+        private Vector2 _screenMin, _screenMax;
+
+        /// <summary>
+        /// Enemies can only be hit (and only shoot) once they are inside the visible playfield —
+        /// device feedback: long-range builds were killing spawns before the player ever saw them.
+        /// </summary>
+        public bool IsOnScreen(Enemy e)
+        {
+            Vector2 p = e.transform.position;
+            return p.y < _screenMax.y && p.y > _screenMin.y && p.x > _screenMin.x && p.x < _screenMax.x;
+        }
+
+        private void UpdateScreenBounds()
+        {
+            if (_camera == null) _camera = Camera.main;
+            if (_camera == null)
+            {
+                _screenMin = new Vector2(-999f, -999f);
+                _screenMax = new Vector2(999f, 999f);
+                return;
+            }
+            Vector2 c = _camera.transform.position;
+            float h = _camera.orthographicSize, w = h * _camera.aspect;
+            // A small inset: the enemy must be visibly on screen, not just its edge.
+            _screenMin = new Vector2(c.x - w - 0.3f, c.y - h - 2f);
+            _screenMax = new Vector2(c.x + w + 0.3f, c.y + h - 0.4f);
         }
 
         /// <summary>Returns every enemy to its pool without kill events (new run / back to menu).</summary>
@@ -149,6 +178,7 @@ namespace PofudukFilo.Enemies
         private void Update()
         {
             FlushDespawns();
+            UpdateScreenBounds();
 
             float dt = Time.deltaTime;
             Vector2 playerPos = PlayerHealth.Instance != null
@@ -170,10 +200,12 @@ namespace PofudukFilo.Enemies
             for (int i = 0; i < Count; i++)
             {
                 Enemy e = _active[i];
+                bool visible = IsOnScreen(e);
                 _proxies[i] = new EnemyProxy
                 {
-                    Position = (Vector2)e.transform.position,
-                    Radius = e.HitRadius,
+                    // Off-screen enemies are parked far away so no bullet can reach them.
+                    Position = visible ? (Vector2)e.transform.position : new Vector2(1e5f + i * 10f, 1e5f),
+                    Radius = visible ? e.HitRadius : 0f,
                     Id = e.Id
                 };
             }
