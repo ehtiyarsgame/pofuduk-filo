@@ -48,6 +48,9 @@ namespace PofudukFilo.UI
         {
             if (UnityEngine.Object.FindAnyObjectByType<EventSystem>() != null) return;
             var go = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            // Added from code, the module has no actions asset and ignores every touch; the defaults
+            // (point/click/tap) are what makes the buttons respond on a phone.
+            go.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
             UnityEngine.Object.DontDestroyOnLoad(go);
         }
 

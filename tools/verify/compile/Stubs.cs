@@ -76,6 +76,6 @@ namespace UnityEngine.InputSystem
     }
     public enum TouchPhase { None, Began, Moved, Ended, Canceled, Stationary }
     public struct ReadOnlyArray<T> { public int Count => 0; public T this[int i] => default; }
-    namespace UI { public class InputSystemUIInputModule : UnityEngine.EventSystems.BaseInputModule { public override void Process() { } } }
+    namespace UI { public class InputSystemUIInputModule : UnityEngine.EventSystems.BaseInputModule { public override void Process() { } public void AssignDefaultActions() { } } }
 }
 namespace UnityEngine { public static class Handheld { public static void Vibrate() { } } } // missing from the 2021.3 reference pack; exists in Unity 6

@@ -66,8 +66,30 @@ namespace PofudukFilo.Player
                 return true;
             }
 
+            return TryLegacyTouch(out delta);
+        }
+
+        private static bool s_legacyInputUnavailable;
+
+        /// <summary>
+        /// Fallback for builds where the Input System backend is not active (Player Settings ▸ Active
+        /// Input Handling = Input Manager). Throws when only the new system is enabled, so it disables itself.
+        /// </summary>
+        private static bool TryLegacyTouch(out Vector2 delta)
+        {
             delta = Vector2.zero;
-            return false;
+            if (s_legacyInputUnavailable) return false;
+            try
+            {
+                if (UnityEngine.Input.touchCount == 0) return false;
+                delta = UnityEngine.Input.GetTouch(0).deltaPosition;
+                return true;
+            }
+            catch (System.InvalidOperationException)
+            {
+                s_legacyInputUnavailable = true;
+                return false;
+            }
         }
 
         private Vector3 Clamp(Vector3 p)
