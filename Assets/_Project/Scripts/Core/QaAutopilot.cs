@@ -99,7 +99,7 @@ namespace PofudukFilo.Core
             // Pengu + Yarn Ball trial to cover the new weapons; StartTrial(pilot, weapon) still does that.)
             run.StartEndless();
             float gameTime = 0f, nextTelemetry = 0f;
-            Line("t(s)\tlvl\tkills\thp\tenemies\tfps\tcombo(best)\trushes\tfleet\tpw(ttk)\tstate\tweapons");
+            Line("t(s)\tlvl\tkills\thp\tenemies\tfps\tcombo(best)\trushes\tfleet\tpw(ttk)\tleakHp\tstate\tweapons");
             if (SugarRush.Instance != null) SugarRush.Instance.RushStarted += () => _rushes++;
 
             while (gameTime < _runSeconds)
@@ -247,7 +247,7 @@ namespace PofudukFilo.Core
             Line($"{t:0}\t{(xp != null ? xp.Level : 0)}\t{run.Kills}\t{(hp != null ? hp.CurrentHp : 0):0}/{(hp != null ? hp.MaxHp : 0):0}\t" +
                  $"{(EnemyManager.Instance != null ? EnemyManager.Instance.ActiveCount : 0)}\t{fps:0}\t" +
                  $"{(rush != null ? rush.Combo : 0)}({(rush != null ? rush.BestCombo : 0)})\t{_rushes}\t{(fleet != null ? fleet.Count : 0)}\t" +
-                 $"{PowerText()}\t" +
+                 $"{PowerText()}\t{(hp != null ? hp.LeakedTotal : 0):0}\t" +
                  $"{run.State}\t{weapons}");
         }
 

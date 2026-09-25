@@ -44,6 +44,21 @@ namespace PofudukFilo.Core
             return 1f + 0.25f * m + 0.04f * m * m; // humans dodge far better than the QA bot (threat.md §3.1)
         }
 
+        // ---------------------------------------------------------------- Leaks (threat.md §3.4)
+
+        /// <summary>
+        /// Share of the player's max HP lost when an enemy escapes off the bottom:
+        /// clamp(2 % + 0.1 %·baseHp, 3 %, 10 %) (×2 for elites) × max(0.2, hpLeft).
+        /// Chick 3 %, Cookie Robot 4.5 %, Jelly Bear 6.5 %, Ice Cream Tower 9 %, elite ≤ 20 %.
+        /// This is the DPS wall (Ball Blast): dodging alone no longer keeps a run alive — only damage does, so
+        /// upgrades decide how far a run goes. A nearly dead leaker costs a fifth of a full one.
+        /// </summary>
+        public static float LeakDamageFraction(float enemyBaseHp, float hpLeftFraction, bool elite)
+        {
+            float size = Math.Clamp(0.02f + 0.001f * Math.Max(0f, enemyBaseHp), 0.03f, 0.10f) * (elite ? 2f : 1f);
+            return size * Math.Max(0.2f, Math.Clamp(hpLeftFraction, 0f, 1f));
+        }
+
         /// <summary>Enemy fire-rate multiplier: 1 + 0.1t, capped at ×2.2 (reached at 12 min).</summary>
         public static float EnemyFireRateScale(float minutes) => Math.Min(1f + 0.1f * Math.Max(0f, minutes), 2.2f);
 

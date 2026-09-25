@@ -16,6 +16,11 @@ namespace PofudukFilo.Player
         public event Action Died;
         /// <summary>Damage actually taken (after armour and i-frames). Feeds the DifficultyDirector.</summary>
         public event Action<float> Damaged;
+        /// <summary>HP lost to an enemy escaping off the bottom (threat.md §3.4). Separate from <see cref="Damaged"/>:
+        /// it ignores armour and i-frames, grants none, and does not feed the DifficultyDirector.</summary>
+        public event Action<float> Leaked;
+        /// <summary>Total HP lost to leaks this run (QA telemetry).</summary>
+        public float LeakedTotal { get; private set; }
 
         private float _invulnerableUntil;
 
@@ -42,6 +47,7 @@ namespace PofudukFilo.Player
         /// <summary>Applies meta/passive HP bonuses at run start.</summary>
         public void SetMaxHp(float maxHp)
         {
+            LeakedTotal = 0f;
             MaxHp = maxHp;
             CurrentHp = maxHp;
             HealthChanged?.Invoke(CurrentHp, MaxHp);
@@ -66,6 +72,18 @@ namespace PofudukFilo.Player
             Damaged?.Invoke(taken);
             HealthChanged?.Invoke(CurrentHp, MaxHp);
 
+            if (!IsAlive) Died?.Invoke();
+        }
+
+        /// <summary>Leak damage as a share of max HP (see <see cref="PofudukFilo.Core.Formulas.LeakDamageFraction"/>).</summary>
+        public void TakeLeak(float maxHpFraction)
+        {
+            if (!IsAlive || maxHpFraction <= 0f) return;
+            float taken = MaxHp * maxHpFraction;
+            CurrentHp = Mathf.Max(0f, CurrentHp - taken);
+            LeakedTotal += taken;
+            Leaked?.Invoke(taken);
+            HealthChanged?.Invoke(CurrentHp, MaxHp);
             if (!IsAlive) Died?.Invoke();
         }
 

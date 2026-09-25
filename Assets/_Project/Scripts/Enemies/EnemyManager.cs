@@ -53,6 +53,8 @@ namespace PofudukFilo.Enemies
         [SerializeField] private float contactDamage = 14f;
         [Tooltip("Ship body radius for enemy contact (the bullet hitbox is much smaller on purpose).")]
         [SerializeField] private float contactRadius = 0.4f;
+        [Tooltip("Enemies escaping off the bottom cost HP (threat.md §3.4, Formulas.LeakDamageFraction).")]
+        [SerializeField] private bool leaksHurt = true;
 
         /// <summary>Power Match's adaptive HP (off since 2026-09-25: upgrades must be felt).</summary>
         public bool AdaptiveHp { get; set; }
@@ -245,6 +247,9 @@ namespace PofudukFilo.Enemies
                 }
                 if (e.transform.position.y < despawnBelowY)
                 {
+                    // An enemy that got past the fleet hurts (threat.md §3.4) — bosses never fall, dead ones are gone.
+                    if (leaksHurt && player != null && !e.IsDead && e is not BossEnemy)
+                        player.TakeLeak(Formulas.LeakDamageFraction(e.BaseHp, e.HpFraction, e.IsElite));
                     e.Group?.OnMemberLost();
                     _toDespawn.Add(e);
                 }

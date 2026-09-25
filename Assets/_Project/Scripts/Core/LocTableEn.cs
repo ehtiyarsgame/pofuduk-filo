@@ -461,6 +461,7 @@ namespace PofudukFilo.Core
             ["{0} hayatta kal, sandığı aç!"] = "Survive {0} to open the chest!",
             ["Sonraki sandık: {0} hayatta kal"] = "Next chest: survive {0}",
             ["GÜN {0}/7"] = "DAY {0}/7",
+            ["Kaçtı! -{0}"] = "Escaped! -{0}",
             ["BOSS  %{0}"] = "BOSS  {0}%",
             ["Seviye {0}: {1}"] = "Level {0}: {1}",
             ["EVRİM: Maks. seviye + {0} » {1}"] = "EVOLVE: max level + {0} » {1}",

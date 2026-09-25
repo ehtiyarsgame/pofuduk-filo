@@ -16,6 +16,9 @@ namespace PofudukFilo.UI
         private Image _edgeGlow;
         private float _comboPunch;
         private float _hurtFlash;
+        private Image _leakGlow;
+        private Text _leakText;
+        private float _leakFlash;
         private Button _rushButton;
         private Image _rushButtonTimer;
         private GameObject _bossBanner;
@@ -46,6 +49,18 @@ namespace PofudukFilo.UI
             _edgeGlow.raycastTarget = false;
             _edgeGlow.gameObject.SetActive(false);
 
+            // Leak warning (threat.md §3.4): a red band along the bottom edge and the HP lost, where the enemy escaped.
+            _leakGlow = Img(canvasRoot, vignetteSprite, "LeakGlow");
+            _leakGlow.enabled = true;
+            _leakGlow.preserveAspect = false;
+            _leakGlow.rectTransform.SetSiblingIndex(1);
+            UIFactory.Place(_leakGlow, 0f, 0f, 1f, 0.16f);
+            _leakGlow.rectTransform.localScale = new Vector3(1f, -1f, 1f);
+            _leakGlow.gameObject.SetActive(false);
+            _leakText = _ui.Label(hud, "", 46, Palette.Coral);
+            UIFactory.Place(_leakText, 0.35f, 0.13f, 0.65f, 0.17f);
+            _leakText.gameObject.SetActive(false);
+
             // Sugar Bomb button: bottom-left corner, appears when the meter is full.
             _rushButton = _ui.Button(hud, "ŞEKER!", Palette.HotPink, () => { if (_rush != null) _rush.Activate(); }, 50);
             UIFactory.Place(_rushButton, 0.03f, 0.03f, 0.33f, 0.12f);
@@ -75,7 +90,11 @@ namespace PofudukFilo.UI
                 };
                 _rush.RushEnded += () => _edgeGlow.gameObject.SetActive(false);
             }
-            if (player != null) player.Damaged += _ => _hurtFlash = 1f;
+            if (player != null)
+            {
+                player.Damaged += _ => _hurtFlash = 1f;
+                player.Leaked += OnLeak;
+            }
             if (fleet != null)
                 fleet.WingmanJoined += n => Toast(n >= Fleet.MaxWingmen ? "Filo güçlendi!" : $"Filoya katıldı! ({n}/{Fleet.MaxWingmen})");
         }
@@ -139,6 +158,20 @@ namespace PofudukFilo.UI
                     Color.HSVToRGB(Mathf.Repeat(Time.unscaledTime * 0.5f, 1f), 0.45f, 1f);
             }
 
+            _leakFlash = Mathf.MoveTowards(_leakFlash, 0f, dt * 1.6f);
+            if (_leakGlow != null)
+            {
+                bool on = _leakFlash > 0.01f;
+                if (_leakGlow.gameObject.activeSelf != on) _leakGlow.gameObject.SetActive(on);
+                if (_leakText.gameObject.activeSelf != on) _leakText.gameObject.SetActive(on);
+                if (on)
+                {
+                    _leakGlow.color = new Color(1f, 0.1f, 0.15f, 0.85f * _leakFlash);
+                    Color c = _leakText.color;
+                    _leakText.color = new Color(c.r, c.g, c.b, Mathf.Clamp01(_leakFlash * 1.5f));
+                }
+            }
+
             _hurtFlash = Mathf.MoveTowards(_hurtFlash, 0f, dt * 2.8f);
             if (_hurtFlash > 0f && !_rush.Active)
             {
@@ -171,6 +204,19 @@ namespace PofudukFilo.UI
                 cc.a = 0.5f + 0.5f * _rush.ComboTimeLeft01;
                 _comboText.color = cc;
             }
+        }
+
+        private float _leakSum;
+        private float _leakSumUntil;
+
+        private void OnLeak(float hp)
+        {
+            // Leaks close together add up in one number, so a stream of escapes reads as one growing wound.
+            _leakSum = Time.unscaledTime < _leakSumUntil ? _leakSum + hp : hp;
+            _leakSumUntil = Time.unscaledTime + 1.2f;
+            _leakFlash = 1f;
+            _leakText.text = Loc.T($"Kaçtı! -{Mathf.CeilToInt(_leakSum)}");
+            Feel.Juice.PunchUI(_leakText.rectTransform);
         }
     }
 }

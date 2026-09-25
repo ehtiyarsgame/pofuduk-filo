@@ -156,6 +156,17 @@ namespace PofudukFilo.Tests
         }
 
         [Test]
+        public void test_leak_damage_scales_with_size_and_hp_left()
+        {
+            Assert.That(Formulas.LeakDamageFraction(10f, 1f, false), Is.EqualTo(0.03f).Within(1e-5f));
+            Assert.That(Formulas.LeakDamageFraction(45f, 1f, false), Is.EqualTo(0.065f).Within(1e-5f));
+            Assert.That(Formulas.LeakDamageFraction(500f, 1f, false), Is.EqualTo(0.10f).Within(1e-5f));
+            Assert.That(Formulas.LeakDamageFraction(500f, 1f, true), Is.EqualTo(0.20f).Within(1e-5f));
+            // A nearly dead leaker still costs a fifth of a full one.
+            Assert.That(Formulas.LeakDamageFraction(10f, 0.01f, false), Is.EqualTo(0.006f).Within(1e-5f));
+        }
+
+        [Test]
         public void test_enemy_fire_rate_scale_is_capped()
         {
             Assert.That(Formulas.EnemyFireRateScale(0f), Is.EqualTo(1f).Within(1e-5f));

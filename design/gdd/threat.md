@@ -62,6 +62,36 @@ The wall is now a **DPS race**, which dodging alone cannot beat:
 With these settings the QA bot is expected to fall at about 90–150 s. A human without upgrades should fall at
 about 3–5 minutes. The owner's playtest, not the bot, is the calibration target.
 
+### 3.5 Leaks: the DPS race finally binds (2026-09-25, second revision)
+
+Device feedback: *"ilk oynayışımda geliştirince ikinci oynayışımda istersem yanmam"* ("after upgrading in my
+first run, in the second one I don't die if I don't want to").
+
+**Root cause.** An enemy that fell off the bottom of the screen simply vanished. The HP curve in §3.4 raced the
+player's damage, but losing that race cost nothing: a player who dodged well let the swarm pass and never died.
+Upgrades made this worse, because they bought HP and armour against bullets, which a good dodger barely needed.
+Modelling one run's gold (≈ 500–1 000) through the Forge and workshop gives about ×1.2–1.3 net DPS after the √P
+enemy-HP scaling. That is a modest gain. The meta curve was not the problem; the missing penalty was.
+
+**Rule.** An enemy that escapes off the bottom alive costs the player a share of max HP
+(`Formulas.LeakDamageFraction`):
+
+- Size share: clamp(2 % + 0.1 % × base HP, 3 %, 10 %), doubled for elites.
+  - Examples: Chick 3 %, Cookie Robot 4.5 %, Jelly Bear 6.5 %, Ice Cream Tower 9 %, elite up to 20 %.
+- The share is multiplied by the enemy's HP left, with a floor of 0.2. A nearly killed leaker costs a fifth.
+- Leak damage ignores armour and i-frames, and grants none.
+- Leak damage does not feed the DifficultyDirector, so the wall does not soften itself.
+- Bosses never leak.
+- The HUD shows a red band along the bottom edge and "Kaçtı! −N" ("Escaped! −N"). Leaks within 1.2 s add
+  up into one number.
+
+**Effect.**
+- Leak damage is a share of max HP, so HP upgrades do not dilute it. Only damage (Forge, weapons, passives)
+  holds the line.
+- Dodging is still the answer to bullets.
+- The player now faces a real positioning trade-off: stay low and safe, or move up and across to cut the
+  swarm before it passes.
+
 ## 4. Formulas
 
 - `EnemyDamageScale(t) = 1 + 0.15t + 0.025t²` (0.2t in run 49; run 51, with every enemy type spawning, died at 155 s). Examples: ×1 at 0, ×1.7 at 3 min, ×2.4 at 5 min, ×3.3 at 7 min.
