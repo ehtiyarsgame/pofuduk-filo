@@ -30,6 +30,20 @@ namespace PofudukFilo.Core
             return baseHp * timeScale * (float)Math.Pow(1.22, chapterIndex);
         }
 
+        /// <summary>
+        /// Enemy bullet damage × (1 + 0.3t + 0.03t²), t in run minutes (threat.md §3.1). The un-upgraded player
+        /// must eventually fall behind — Ball Blast's wall — so Forge levels and ads decide how far a run goes.
+        /// ×1 at start, ×2.2 at 3 min, ×3.25 at 5 min, ×4.6 at 7 min.
+        /// </summary>
+        public static float EnemyDamageScale(float minutes)
+        {
+            float m = Math.Max(0f, minutes);
+            return 1f + 0.3f * m + 0.03f * m * m;
+        }
+
+        /// <summary>Enemy fire-rate multiplier: 1 + 0.1t, capped at ×2.2 (reached at 12 min).</summary>
+        public static float EnemyFireRateScale(float minutes) => Math.Min(1f + 0.1f * Math.Max(0f, minutes), 2.2f);
+
         /// <summary>Threat points per second the spawner may spend. Budget(t) = 1.5 + 0.9t + 0.08t², scaled by DDA (QA run 12 at 2 + 0.9t: dead at 12 s; run 13 at 1.2 + 0.75t: never below 70 % HP).</summary>
         public static float SpawnBudget(float minutes, float ddaMultiplier)
         {

@@ -260,11 +260,20 @@ namespace PofudukFilo.EditorTools
             ["stretchy_gum"] = "Yörünge ve alan silahlarını genişletir.",
             ["battery_collar"] = "Tüm silahlar daha sık ateş eder.",
             ["carrot_shield"] = "Maksimum canını artırır.",
-            ["magnet_ears"] = "Taş ve altınları daha uzaktan çeker.",
+            ["sharp_claws"] = "Mermiler bir düşmanı delip arkasındakine de çarpar.",
+            ["double_barrel"] = "Tüm silahlar +1 mermi / top / sekme atar; ama her biri biraz daha az acıtır.",
+            ["tiger_eye"] = "Kritik vuruşlar çok daha fazla hasar verir.",
+            ["glass_cannon"] = "Büyük hasar artışı; bedeli maksimum canın.",
+            ["last_stand"] = "Canın %40'ın altındayken çok daha sert vurursun.",
+            ["sugar_heart"] = "Şeker barı daha hızlı dolar.",
+            ["golden_paw"] = "Daha çok altın toplarsın: oyun dışı gelişime yatırım.",
+            ["wise_owl"] = "Taşlardan daha çok tecrübe: daha sık kart seçersin.",
+            ["turtle_shell"] = "Her darbe 2 daha az acıtır; ama silahlar biraz yavaşlar.",
             ["lucky_clover"] = "Nadir kart ve daha iyi ödül şansı.",
         };
 
-        private PassiveDefinition Passive(string id, string name, StatType stat, float value, Rarity rarity)
+        private PassiveDefinition Passive(string id, string name, StatType stat, float value, Rarity rarity,
+            int maxLevel = 5, StatType drawbackStat = StatType.Damage, float drawback = 0f)
         {
             var p = ScriptableObject.CreateInstance<PassiveDefinition>();
             p.id = id;
@@ -272,7 +281,9 @@ namespace PofudukFilo.EditorTools
             p.description = Descriptions.TryGetValue(id, out string pd) ? pd : "";
             p.stat = stat;
             p.valuePerLevel = value;
-            p.maxLevel = 5;
+            p.maxLevel = maxLevel;
+            p.drawbackStat = drawbackStat;
+            p.drawbackPerLevel = drawback;
             p.rarity = rarity;
             p.icon = IconFor(id);
             p = SaveAsset(p, "Data/Passives", id);
@@ -330,7 +341,20 @@ namespace PofudukFilo.EditorTools
             PassiveDefinition gum = Passive("stretchy_gum", "Esnek Sakız", StatType.Area, 0.10f, Rarity.Common);
             PassiveDefinition battery = Passive("battery_collar", "Pil Tasması", StatType.CooldownReduction, 0.07f, Rarity.Rare);
             PassiveDefinition carrot = Passive("carrot_shield", "Havuç Kalkan", StatType.MaxHp, 0.15f, Rarity.Common);
-            PassiveDefinition magnetEars = Passive("magnet_ears", "Mıknatıs Kulak", StatType.MagnetRadius, 0.25f, Rarity.Common);
+            // The magnet card was removed on device feedback (2026-09-25): pickups fly to the ship by themselves.
+            // Build cards (passives.md §3.2) — each pushes a different strategy, some at a price.
+            PassiveDefinition sharpClaws = Passive("sharp_claws", "Delici Pençe", StatType.Pierce, 1f, Rarity.Rare, maxLevel: 3);
+            Passive("double_barrel", "Çift Namlu", StatType.ExtraProjectiles, 1f, Rarity.Epic, maxLevel: 2,
+                drawbackStat: StatType.Damage, drawback: -0.08f);
+            Passive("tiger_eye", "Kaplan Gözü", StatType.CritDamage, 0.35f, Rarity.Rare);
+            Passive("glass_cannon", "Cam Top", StatType.Damage, 0.2f, Rarity.Epic, maxLevel: 3,
+                drawbackStat: StatType.MaxHp, drawback: -0.12f);
+            Passive("last_stand", "Son Direniş", StatType.LowHpDamage, 0.25f, Rarity.Rare, maxLevel: 4);
+            Passive("sugar_heart", "Şeker Kalbi", StatType.RushGain, 0.15f, Rarity.Common);
+            Passive("golden_paw", "Altın Pati", StatType.GoldGain, 0.15f, Rarity.Common);
+            Passive("wise_owl", "Bilge Baykuş", StatType.Experience, 0.12f, Rarity.Common);
+            Passive("turtle_shell", "Kaplumbağa Kabuğu", StatType.Armor, 2f, Rarity.Rare, maxLevel: 4,
+                drawbackStat: StatType.CooldownReduction, drawback: -0.04f);
             Passive("lucky_clover", "Şans Yoncası", StatType.Luck, 0.10f, Rarity.Epic);
 
             // 1) Feather Blaster → Feather Storm. The Rainbow Prism Beam evolution was removed on device feedback
@@ -444,7 +468,7 @@ namespace PofudukFilo.EditorTools
                 L(14f, 1.1f, 3, 0, 9f, 0, 0.8f, 3f, "Çarpınca küçük patlama"),
                 L(14f, 0.95f, 4, 0, 10f, 0, 0.8f, 3f, "4 balık, daha sık"),
                 L(16f, 0.95f, 5, 0, 10f, 1, 1.0f, 3f, "5 balık; her biri 2 düşmana çarpar")
-            }, magnetEars, sharkDef));
+            }, sharpClaws, sharkDef));
 
             // 7) Yarn Ball → Cosmic Yarn (Ball Blast's bouncing ball)
             var cosmicPrefab = WeaponPrefab<YarnBall>("CosmicYarn", b =>
@@ -485,7 +509,8 @@ namespace PofudukFilo.EditorTools
             var costs = new Dictionary<string, int>
             {
                 ["star_boomerang"] = 400, ["bubble_orbit"] = 700, ["fish_missile"] = 1200, ["yarn_ball"] = 1600,
-                ["moon_dust"] = 300, ["stretchy_gum"] = 300, ["magnet_ears"] = 250, ["lucky_clover"] = 500
+                ["moon_dust"] = 300, ["stretchy_gum"] = 300, ["lucky_clover"] = 500,
+                ["double_barrel"] = 900, ["glass_cannon"] = 600, ["last_stand"] = 450
             };
             var ads = new Dictionary<string, int>
             {
@@ -626,13 +651,13 @@ namespace PofudukFilo.EditorTools
             {
                 ("Pamuk", "+%5 maks. can", StatType.MaxHp, 0.05f),
                 ("Kabuk", "Alınan hasar -1", StatType.Armor, 1f),
-                ("Çekim", "+%10 mıknatıs", StatType.MagnetRadius, 0.10f),
+                ("Tatlı Diş", "+%10 şeker dolumu", StatType.RushGain, 0.10f),
                 ("Yastık", "+%5 maks. can", StatType.MaxHp, 0.05f),
                 ("Kıl Payı", "Kıl payı XP'si 2 kat", StatType.GrazeXp, 1f),
                 ("Zırh", "Alınan hasar -1", StatType.Armor, 1f),
                 ("Kalp", "+%8 maks. can", StatType.MaxHp, 0.08f),
                 ("Anka", "+1 diriliş", StatType.Revives, 1f),
-                ("Büyük Çekim", "+%15 mıknatıs", StatType.MagnetRadius, 0.15f),
+                ("Şeker Ustası", "+%15 şeker dolumu", StatType.RushGain, 0.15f),
                 ("Kale", "Alınan hasar -2", StatType.Armor, 2f)
             });
             Branch(2, "luck", new[]
@@ -854,7 +879,7 @@ namespace PofudukFilo.EditorTools
             U("health", "Can", StatType.MaxHp, 0.08f, 10, 80, 1.32f);
             U("damage", "Hasar", StatType.Damage, 0.05f, 10, 100, 1.35f);
             U("fire_rate", "Atış Hızı", StatType.CooldownReduction, 0.03f, 10, 120, 1.36f);
-            U("magnet", "Mıknatıs", StatType.MagnetRadius, 0.15f, 5, 60, 1.30f);
+            U("gold", "Altın Kazancı", StatType.GoldGain, 0.10f, 10, 80, 1.35f); // replaced Mıknatıs (2026-09-25)
             U("armor", "Zırh", StatType.Armor, 1f, 5, 150, 1.40f);
             U("luck", "Şans", StatType.Luck, 0.05f, 5, 200, 1.40f);
             U("experience", "Tecrübe", StatType.Experience, 0.04f, 5, 250, 1.45f);

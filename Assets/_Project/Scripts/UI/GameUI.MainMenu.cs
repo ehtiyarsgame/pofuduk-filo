@@ -50,6 +50,7 @@ namespace PofudukFilo.UI
         private Image _recordIcon;
         private GameObject _recordCapsule;
         private Button _restartButton;
+        private Text _credit;
         private Text _endDust;
         private GameObject _endDustIcon;
         private GameObject _endDustGap;
@@ -122,13 +123,18 @@ namespace PofudukFilo.UI
                 if (run.HasSavedRun) run.ResumeRun();
                 else run.StartEndless();
             }, 112);
-            UIFactory.Place(_playButton, 0.08f, 0.235f, 0.92f, 0.368f);
+            UIFactory.Place(_playButton, 0.08f, 0.25f, 0.92f, 0.378f);
             Transform playFace = _playButton.transform.Find("Face");
             playFace.gameObject.AddComponent<RectMask2D>();
             Image play = Img(playFace, playIcon, "PlayIcon");
             UIFactory.Place(play, 0.16f, 0.22f, 0.3f, 0.78f);
             Text playText = _playButton.GetComponentInChildren<Text>();
-            UIFactory.Place(playText, 0.26f, 0f, 0.9f, 1f);
+            // Right of the icon, shrinking to fit: "DEVAM ET" / "CONTINUE" are wider than "OYNA" and ran into the icon.
+            UIFactory.Place(playText, 0.32f, 0.08f, 0.94f, 0.92f);
+            playText.resizeTextForBestFit = true;
+            playText.resizeTextMinSize = 48;
+            playText.resizeTextMaxSize = 112;
+            playText.horizontalOverflow = HorizontalWrapMode.Wrap;
             Image shine = Img(playFace, shineSprite, "Shine");
             _shine = shine.rectTransform;
             _shine.anchorMin = new Vector2(0f, -0.2f);
@@ -136,7 +142,7 @@ namespace PofudukFilo.UI
             _shine.sizeDelta = new Vector2(120f, 0f);
 
             _restartButton = _ui.Button(m, "Yeni Oyun", Palette.Lavender, run.StartEndless, 32);
-            UIFactory.Place(_restartButton, 0.32f, 0.19f, 0.68f, 0.228f);
+            UIFactory.Place(_restartButton, 0.3f, 0.2f, 0.7f, 0.238f);
 
             // --- Bottom tab bar.
             Image nav = Img(m, navBarSprite, "NavBar");
@@ -147,8 +153,8 @@ namespace PofudukFilo.UI
             _armoryTile = NavTab(nav.transform, "SİLAHLAR", weaponsIcon, 1f / 3f, OpenLab);
             _pilotsTile = NavTab(nav.transform, "PİLOTLAR", null, 2f / 3f, OpenHangar);
 
-            Text credit = _ui.Label(m, $"© {StudioIntro.StudioName}", 22, new Color(0.78f, 0.71f, 1f, 0.55f));
-            UIFactory.Place(credit, 0.1f, 0.176f, 0.9f, 0.19f);
+            _credit = _ui.Label(m, $"© {StudioIntro.StudioName}", 22, new Color(0.78f, 0.71f, 1f, 0.55f));
+            UIFactory.Place(_credit, 0.1f, 0.176f, 0.9f, 0.19f);
 
             BuildRewards(m, root);
         }
@@ -287,6 +293,7 @@ namespace PofudukFilo.UI
             _recordCapsule.SetActive(line.Length > 0);
             UIFactory.SetText(_playButton, saved ? "DEVAM ET" : "OYNA");
             _restartButton.gameObject.SetActive(saved);
+            _credit.gameObject.SetActive(!saved); // the Yeni Oyun button sits where the credit line is
             RefreshGift();
         }
 

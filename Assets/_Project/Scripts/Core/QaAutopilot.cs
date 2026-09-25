@@ -94,15 +94,10 @@ namespace PofudukFilo.Core
                 yield break;
             }
 
-            // The Ball Blast-style main mode; pw = Power Match HP scale. Played as an ad trial (ad-rewards.md §3.2)
-            // with the newest pilot and weapon, so both new weapons fire in every QA run.
-            CharacterDefinition pengu = null;
-            foreach (CharacterDefinition c in run.Characters)
-                if (c.id == "pengu") pengu = c;
-            WeaponDefinition yarn = run.WeaponById("yarn_ball");
-            if (pengu != null || yarn != null) run.StartTrial(pengu, yarn);
-            else run.StartEndless();
-            Line($"[QA] trial: {run.TrialName ?? "-"}");
+            // The Ball Blast-style main mode; pw = Power Match HP scale. A fresh save with the starter pilot and no
+            // upgrades: threat.md's acceptance is that this player falls within a few minutes. (Run 42 played the
+            // Pengu + Yarn Ball trial to cover the new weapons; StartTrial(pilot, weapon) still does that.)
+            run.StartEndless();
             float gameTime = 0f, nextTelemetry = 0f;
             Line("t(s)\tlvl\tkills\thp\tenemies\tfps\tcombo(best)\trushes\tfleet\tpw(ttk)\tstate\tweapons");
             if (SugarRush.Instance != null) SugarRush.Instance.RushStarted += () => _rushes++;
@@ -119,6 +114,15 @@ namespace PofudukFilo.Core
                         Weave(gameTime);
                         if (SugarRush.Instance != null && SugarRush.Instance.Ready && SugarRush.Instance.ReadyTimeLeft01 < 0.8f)
                             SugarRush.Instance.Activate(); // a player taps within ~2 s
+                        if (!_pauseShot && gameTime >= 150f)
+                        {
+                            _pauseShot = true;
+                            run.Pause();
+                            yield return new WaitForSecondsRealtime(0.4f);
+                            yield return Shot("32_pause");
+                            run.Resume();
+                            break;
+                        }
                         if (!_resumeTested && gameTime >= ResumeTestAt)
                         {
                             _resumeTested = true;
@@ -172,8 +176,18 @@ namespace PofudukFilo.Core
             }
 
             Telemetry(gameTime, run);
+            // Still alive at the end: quit from the pause menu so the run-end screen is captured too.
+            if (run.State == GameState.Playing)
+            {
+                run.Pause();
+                run.Abandon();
+                yield return new WaitForSecondsRealtime(1.2f);
+                yield return Shot("95_run_end");
+            }
             Finish();
         }
+
+        private bool _pauseShot;
 
         private const float ResumeTestAt = 100f;
         private bool _resumeTested;

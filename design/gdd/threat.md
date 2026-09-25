@@ -1,0 +1,91 @@
+# Threat Curve: the Wall an Un-upgraded Player Hits
+
+> Status: implemented 2026-09-25 · Related: `power-match.md`, `sugar-rush.md`, `ad-rewards.md`, `meta-economy.md`
+
+## 1. Overview
+
+Ball Blast's loop only works if a run *ends*. The player dies, spends the gold on upgrades and goes further next
+time. Device feedback on 2026-09-25 said the opposite was happening: "kaç dakikadır oynuyorum, geliştirmesiz… ölmek
+imkansız gibi" ("I've been playing for minutes without any upgrades… it feels impossible to die"). QA run 42 backs
+this up. A fresh save with no upgrades played the full 7 minutes without dying, and its HP stayed near full.
+
+The threat curve fixes this by making enemy fire hit harder and more often as the run clock rises. Healing is
+cut back at the same time. A player with no Forge levels now meets a wall. Upgrades, the ad revive and a good
+build move that wall further out.
+
+## 2. Player Fantasy
+
+"I got further than last time, and I can see exactly which upgrade would push me past minute 5."
+
+## 3. Detailed Rules
+
+### 3.1 Enemy fire
+
+- **Damage:** every enemy bullet, from troops and bosses alike, deals `base × EnemyDamageScale(t)`.
+  This is applied in `BulletSystem.SpawnEnemyBullet`.
+- **Fire rate:** every troop's fire timer runs `EnemyFireRateScale(t)` times faster (`Enemy.Tick`). This replaces
+  the old +8 %/min ramp, which was capped at ×1.8.
+
+### 3.2 Healing and mercy
+
+| Knob | Was | Now |
+|---|---|---|
+| Heart drop chance per kill | 0.4 % | 0.12 % |
+| Heart heal | 20 % max HP | 15 % |
+| "Şeker Molası" fallback heal | 30 | 20 |
+| Invulnerability after a hit | 1.2 s | 0.9 s |
+| Magnet pickup | 0.3 % | removed (pickups auto-fly after 1.2 s) |
+
+### 3.3 Sugar Rush
+
+- The meter is 200 at the start (was 120).
+- From minute 1 it grows +50 % of that base per minute (was +35 % from minute 2).
+- A hit keeps only 30 % of the meter (was 50 %).
+- A rush lasts 5 s (was 6).
+
+QA run 42 had a rush roughly every 45 s. The target is one every 90–120 s.
+
+## 4. Formulas
+
+- `EnemyDamageScale(t) = 1 + 0.3t + 0.03t²`. Examples: ×1 at 0, ×2.2 at 3 min, ×3.25 at 5 min, ×4.6 at 7 min.
+  So a 10-damage bullet hits for 22 at 3 min and 33 at 5 min, against a 100–150 HP ship.
+- `EnemyFireRateScale(t) = min(1 + 0.1t, 2.2)`.
+- Enemy HP (`EnemyHp`) and Power Match are unchanged.
+
+## 5. Edge Cases
+
+- **Resumed run:** the scale reads `EnemyManager.RunMinutes`, so a resumed run continues at the threat level it
+  was saved at.
+- **Bullets already in flight:** damage is fixed when a bullet spawns. Bullets already on screen are not
+  rescaled.
+- **Armour:** armour subtracts a flat amount after scaling (`PlayerHealth.TakeDamage`, minimum 1). Kaplumbağa
+  Kabuğu and the workshop's armour therefore lose value as the run goes on. This is intended: they help the
+  early and middle game, not the wall.
+
+## 6. Dependencies
+
+- `BulletSystem`
+- `Enemy`
+- `EnemyManager.RunMinutes`
+- `PickupSystem`
+- `PlayerHealth`
+- `SugarRush`
+- `RunController`
+
+The meta economy (Forge, workshop) and ad revive are the counters to the wall.
+
+## 7. Tuning Knobs
+
+| Knob | Where | Safe range | Effect |
+|---|---|---|---|
+| Damage curve coefficients (0.3, 0.03) | `Formulas.EnemyDamageScale` | 0.15–0.5 / 0–0.06 | When the wall arrives |
+| Fire-rate slope and cap | `Formulas.EnemyFireRateScale` | 0.05–0.15 / 1.5–3 | Bullet density |
+| Heart chance / heal | `PickupSystem` | 0.0005–0.003 / 0.1–0.25 | Recovery |
+| Invulnerability | `PlayerHealth` | 0.6–1.2 s | Forgiveness after a hit |
+
+## 8. Acceptance Criteria
+
+- `test_enemy_damage_scale_grows_with_run_time` and `test_enemy_fire_rate_scale_is_capped` pass.
+- **Wall timing:** in the QA autopilot (fresh save, starter pilot, no upgrades, a figure-eight that never aims),
+  the first death happens between 3 and 6 minutes (`[QA] Died at`). If it lands outside that window, retune §7.
+- **Sugar pacing:** QA telemetry shows at most one rush per 90 s on average (`rushes` column).

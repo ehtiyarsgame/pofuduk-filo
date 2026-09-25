@@ -52,6 +52,9 @@ namespace PofudukFilo.Weapons
             WeaponLevelStats s = CurrentStats;
             _cooldownTimer = Stats.FinalCooldown(s.cooldown);
             ShotCounter++;
+            // Build cards (passives.md §3.2): Çift Namlu adds a shot/ball/bounce, Delici Pençe adds pierce.
+            if (s.projectileCount > 0) s.projectileCount += Mathf.RoundToInt(Stats.GetBonus(StatType.ExtraProjectiles));
+            s.pierce += Mathf.RoundToInt(Stats.GetBonus(StatType.Pierce));
             Fire(s);
             AnyFired?.Invoke(this);
         }
@@ -77,8 +80,15 @@ namespace PofudukFilo.Weapons
         protected float RollDamage(float baseDamage)
         {
             float damage = baseDamage * Stats.DamageMultiplier * WeaponMastery.Multiplier(Definition) * Forge.DamageMultiplier;
-            return Random.value < Stats.CritChance ? damage * 2f : damage;
+            // Son Direniş: hits harder while the ship is below the low-HP line.
+            Player.PlayerHealth hp = Player.PlayerHealth.Instance;
+            if (hp != null && hp.MaxHp > 0f && hp.CurrentHp < hp.MaxHp * LowHpLine)
+                damage *= 1f + Stats.GetBonus(StatType.LowHpDamage);
+            return Random.value < Stats.CritChance ? damage * (2f + Stats.GetBonus(StatType.CritDamage)) : damage;
         }
+
+        /// <summary>HP fraction under which Son Direniş (LowHpDamage) applies.</summary>
+        public const float LowHpLine = 0.4f;
 
         protected abstract void Fire(in WeaponLevelStats stats);
 

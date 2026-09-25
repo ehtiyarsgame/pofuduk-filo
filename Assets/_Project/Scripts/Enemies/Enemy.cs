@@ -1,5 +1,6 @@
 using PofudukFilo.Bullets;
 using PofudukFilo.Pooling;
+using PofudukFilo.Core;
 using UnityEngine;
 
 namespace PofudukFilo.Enemies
@@ -173,10 +174,10 @@ namespace PofudukFilo.Enemies
             // Nothing shoots from off-screen (fairness, and it cannot be shot back yet).
             if (EnemyManager.Instance != null && !EnemyManager.Instance.IsOnScreen(this)) return;
 
-            // Aggression ramp: enemies fire more often as the run goes on (+8 %/min, max ×1.8),
+            // Aggression ramp: enemies fire more often as the run goes on (threat.md §3.1),
             // so a strong late build still has to dodge (device feedback: late game too easy).
             float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f;
-            _fireTimer -= dt * Mathf.Min(1f + 0.08f * minutes, 1.8f);
+            _fireTimer -= dt * Formulas.EnemyFireRateScale(minutes);
             if (_fireTimer <= 0f)
             {
                 _fireTimer = fireInterval;

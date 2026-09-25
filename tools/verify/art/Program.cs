@@ -77,7 +77,8 @@ internal static class Program
         {
             foreach (string id in new[] { "feather_blaster", "egg_mortar", "star_boomerang", "bubble_orbit", "spark_cat", "prism_beam", "feather_storm",
                          "rainbow_storm", "galaxy_vortex", "crystal_glasses", "hot_pan", "moon_dust", "stretchy_gum",
-                         "battery_collar", "carrot_shield", "magnet_ears", "lucky_clover", "fish_missile", "shark_swarm", "yarn_ball", "cosmic_yarn" })
+                         "battery_collar", "carrot_shield", "lucky_clover", "sharp_claws", "double_barrel", "tiger_eye", "glass_cannon",
+                         "last_stand", "sugar_heart", "golden_paw", "wise_owl", "turtle_shell", "fish_missile", "shark_swarm", "yarn_ball", "cosmic_yarn" })
                 yield return new object[] { id };
             yield break;
         }

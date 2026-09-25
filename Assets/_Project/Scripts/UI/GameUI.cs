@@ -388,9 +388,9 @@ namespace PofudukFilo.UI
                     PassiveDefinition p = option.Passive;
                     int next = inventory.GetPassiveLevel(p) + 1;
                     title = next == 1 ? $"{p.displayName}  YENİ!" : $"{p.displayName}  Sv.{next}";
-                    int per = Mathf.RoundToInt(p.valuePerLevel * 100f);
                     body = (string.IsNullOrEmpty(p.description) ? "" : Loc.T(p.description) + "\n") +
-                           Loc.T($"+%{per} {Loc.T(StatName(p.stat))} (toplam +%{per * next})");
+                           StatLine(p.stat, p.valuePerLevel, next);
+                    if (p.drawbackPerLevel != 0f) body += "\n" + StatLine(p.drawbackStat, p.drawbackPerLevel, next);
                     // Say which owned weapon this passive can evolve.
                     foreach (WeaponBehaviour owned in inventory.Weapons)
                         if (owned.Definition.evolutionPassive == p && owned.Definition.evolvesInto != null)
@@ -406,6 +406,18 @@ namespace PofudukFilo.UI
             }
         }
 
+        /// <summary>"+%15 maks. can (toplam +%30)" — or "+1 mermi (toplam +2)" for flat stats, "−%12 …" for drawbacks.</summary>
+        private static string StatLine(StatType stat, float perLevel, int level)
+        {
+            string name = Loc.T(StatName(stat));
+            bool flat = stat is StatType.Armor or StatType.ExtraProjectiles or StatType.Pierce;
+            int per = Mathf.RoundToInt(Mathf.Abs(perLevel) * (flat ? 1f : 100f));
+            string sign = perLevel < 0f ? "-" : "+";
+            return flat
+                ? Loc.T($"{sign}{per} {name} (toplam {sign}{per * level})")
+                : Loc.T($"{sign}%{per} {name} (toplam {sign}%{per * level})");
+        }
+
         private static string StatName(StatType stat) => stat switch
         {
             StatType.Damage => "hasar",
@@ -416,6 +428,14 @@ namespace PofudukFilo.UI
             StatType.CritChance => "kritik şansı",
             StatType.MaxHp => "maks. can",
             StatType.MagnetRadius => "mıknatıs",
+            StatType.Armor => "zırh",
+            StatType.ExtraProjectiles => "mermi",
+            StatType.Pierce => "delme",
+            StatType.CritDamage => "kritik hasarı",
+            StatType.LowHpDamage => "düşük canda hasar",
+            StatType.RushGain => "şeker dolumu",
+            StatType.GoldGain => "altın",
+            StatType.Experience => "tecrübe",
             StatType.Luck => "şans",
             _ => stat.ToString()
         };

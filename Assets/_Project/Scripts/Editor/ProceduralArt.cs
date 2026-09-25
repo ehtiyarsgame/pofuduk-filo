@@ -1095,7 +1095,15 @@ namespace PofudukFilo.EditorTools
                 "stretchy_gum" => (Mint, Bubble(), 1.3f),
                 "battery_collar" => (Mint, MiniStar(Honey), 1.4f),
                 "carrot_shield" => (Mint, HeartPickup(), 1.3f),
-                "magnet_ears" => (Sky, MagnetPickup(), 1.3f),
+                "sharp_claws" => (Coral, PawPrint(), 0.62f),
+                "double_barrel" => (Sky, IconWeapons(), 0.36f),
+                "tiger_eye" => (Honey, GemSprite(Coral), 1.3f),
+                "glass_cannon" => (Lilac, Bubble(), 1.35f),
+                "last_stand" => (Coral, HeartPickup(), 1.3f),
+                "sugar_heart" => (Pink, GemSprite(Gem), 1.3f),
+                "golden_paw" => (Honey, Coin(), 1.3f),
+                "wise_owl" => (Leaf, StardustIcon(), 0.8f),
+                "turtle_shell" => (Leaf, Egg(), 1.3f),
                 "lucky_clover" => (Leaf, GemSprite(Leaf), 1.3f),
                 _ => (Lilac, MiniStar(Color.white), 1.4f)
             };

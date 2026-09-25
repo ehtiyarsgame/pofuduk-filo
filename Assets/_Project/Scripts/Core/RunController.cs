@@ -82,7 +82,7 @@ namespace PofudukFilo.Core
 
         [Header("Rules")]
         [SerializeField] private float baseMaxHp = 100f;
-        [SerializeField] private int fallbackHeal = 30;
+        [SerializeField] private int fallbackHeal = 20;
         [SerializeField] private int fallbackGold = 50;
         [SerializeField] private float reviveHpFraction = 0.5f;
         [SerializeField] private float reviveShockwaveDamage = 60f;
@@ -444,6 +444,7 @@ namespace PofudukFilo.Core
             player.Armor = stats.GetBonus(StatType.Armor);
             xpSystem.ResetRun();
             xpSystem.XpBonus = stats.GetBonus(StatType.Experience);
+            if (SugarRush.Instance != null) SugarRush.Instance.GainBonus = stats.GetBonus(StatType.RushGain);
             draft.ClearBanished();
             draft.Luck = stats.GetBonus(StatType.Luck);
 
@@ -547,8 +548,13 @@ namespace PofudukFilo.Core
         private void OnPassivesChanged()
         {
             PlayerStats stats = inventory.Stats;
-            player.SetMaxHpKeepRatio(baseMaxHp * (1f + stats.GetBonus(StatType.MaxHp)));
+            // Cam Top can push max HP down; never below 30 % of the base.
+            player.SetMaxHpKeepRatio(baseMaxHp * Mathf.Max(0.3f, 1f + stats.GetBonus(StatType.MaxHp)));
             draft.Luck = stats.GetBonus(StatType.Luck);
+            // Build cards that change run-wide systems (passives.md §3.2).
+            player.Armor = stats.GetBonus(StatType.Armor);
+            xpSystem.XpBonus = stats.GetBonus(StatType.Experience);
+            if (SugarRush.Instance != null) SugarRush.Instance.GainBonus = stats.GetBonus(StatType.RushGain);
         }
 
         // ---------------------------------------------------------------- Combat events

@@ -10,7 +10,7 @@ namespace PofudukFilo.Player
         [SerializeField] private float baseMaxHp = 100f;
         [Tooltip("Real hitbox — much smaller than the sprite, shown as the glowing heart.")]
         [SerializeField] private float hitRadius = 0.18f;
-        [SerializeField] private float invulnerabilitySeconds = 1.2f;
+        [SerializeField] private float invulnerabilitySeconds = 0.9f;
 
         public event Action<float, float> HealthChanged; // current, max
         public event Action Died;

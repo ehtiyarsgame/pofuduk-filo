@@ -46,7 +46,7 @@ namespace PofudukFilo.UI
             Section(_research.List, "SAVUNMA");
             WorkshopRows(meta, "health", "armor", "revive");
             Section(_research.List, "YARDIMCI");
-            WorkshopRows(meta, "magnet", "experience", "luck", "reroll", "banish");
+            WorkshopRows(meta, "gold", "experience", "luck", "reroll", "banish");
 
             Section(_research.List, "YILDIZ HARİTASI");
             Image row = Row(_research.List, "Constellation", 150f);
@@ -157,7 +157,7 @@ namespace PofudukFilo.UI
             StatType.MaxHp => "Oyuna daha fazla maksimum canla başlarsın.",
             StatType.Armor => "Aldığın her darbe biraz daha az acıtır.",
             StatType.Revives => "Ölünce olduğun yerde dirilme hakkı (her oyun).",
-            StatType.MagnetRadius => "Taşları ve altınları daha uzaktan toplarsın.",
+            StatType.GoldGain => "Her oyunda daha çok altın: gelişim daha hızlı.",
             StatType.Experience => "Taşlardan daha çok tecrübe: daha hızlı seviye atlarsın.",
             StatType.Luck => "Nadir ve efsanevi kartların çıkma şansı artar.",
             StatType.Rerolls => "Seviye atlayınca kartları yeniden çekme hakkı.",

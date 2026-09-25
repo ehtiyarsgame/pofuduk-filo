@@ -103,7 +103,9 @@ namespace PofudukFilo.Bullets
         public void SpawnEnemyBullet(int typeIndex, Vector2 position, Vector2 velocity, float damage,
             float lifetime = 8f, bool absorbable = true)
         {
-            BulletData b = Create(typeIndex, position, velocity, damage, 0, lifetime);
+            // Every enemy shot (troops and bosses) hits harder as the run goes on (threat.md §3.1).
+            float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f;
+            BulletData b = Create(typeIndex, position, velocity, damage * Formulas.EnemyDamageScale(minutes), 0, lifetime);
             b.Absorbable = absorbable;
             _pendingEnemy.Add(b);
         }

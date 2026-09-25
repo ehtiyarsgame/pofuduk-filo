@@ -54,14 +54,14 @@ namespace PofudukFilo.Progression
         [Header("Drops")]
         [SerializeField] private float coinChance = 0.12f;
         [SerializeField] private int goldPerCoinValue = 5;
-        [SerializeField] private float heartChance = 0.004f;
-        [SerializeField] private float magnetChance = 0.003f;
+        [SerializeField] private float heartChance = 0.0012f; // device feedback 2026-09-25: "ölmek imkansız" at 0.004
+        [SerializeField] private float magnetChance = 0f; // removed: pickups already fly to the ship on their own
         [SerializeField] private float bombChance = 0.002f;
         [SerializeField] private int formationClearGems = 5;
         [SerializeField] private int mergeThreshold = 250;
 
         [Header("Effects")]
-        [SerializeField] private float heartHealFraction = 0.2f;
+        [SerializeField] private float heartHealFraction = 0.15f;
         [SerializeField] private float magnetSeconds = 1.5f;
         [SerializeField] private float bombDamage = 200f;
         [SerializeField] private int grazeXp = 1;

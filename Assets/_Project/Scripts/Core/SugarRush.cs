@@ -23,18 +23,21 @@ namespace PofudukFilo.Core
         public static bool RushActive => Instance != null && Instance.Active;
         public static float XpMultiplier => Instance != null && Instance.Active ? Instance.rushXpMultiplier : 1f;
 
+        /// <summary>Extra meter gain from the "Şeker Kalbi" card and Constellation (StatType.RushGain), set by RunController.</summary>
+        public float GainBonus { get; set; }
+
         [SerializeField] private float comboWindow = 1.6f;
-        [SerializeField] private float meterMax = 120f; // QA run 13: a rush every ~20 s at 70 — too routine
+        [SerializeField] private float meterMax = 200f; // QA run 13: a rush every ~20 s at 70; device feedback 2026-09-25: still "sürekli" at 120
         [Tooltip("The bar grows this fraction of meterMax per run minute after meterGrowthStartMinutes: kill rate climbs all run " +
                  "(QA run 24: a rush every ~15 s by minute 4 with no growth; runs 25/26 growing from minute 0: first rush at 100–140 s).")]
-        [SerializeField] private float meterGrowthPerMinute = 0.35f;
-        [SerializeField] private float meterGrowthStartMinutes = 2f;
+        [SerializeField] private float meterGrowthPerMinute = 0.5f;
+        [SerializeField] private float meterGrowthStartMinutes = 1f;
         [Tooltip("Meter per kill = killValue × (1 + combo × comboBonus).")]
         [SerializeField] private float comboBonus = 0.03f;
         [SerializeField] private float eliteKillValue = 10f;
         [SerializeField] private float bossKillValue = 35f;
-        [SerializeField, Range(0f, 1f)] private float meterKeptOnHit = 0.5f;
-        [SerializeField] private float rushSeconds = 6f;
+        [SerializeField, Range(0f, 1f)] private float meterKeptOnHit = 0.3f;
+        [SerializeField] private float rushSeconds = 5f;
         [SerializeField] private float rushFireRate = 1.7f;
         [SerializeField] private float rushXpMultiplier = 2f;
         [Header("Sugar Bomb (player-triggered)")]
@@ -109,7 +112,7 @@ namespace PofudukFilo.Core
             if (Active || Ready) return;
 
             float value = e is BossEnemy ? bossKillValue : e.IsElite ? eliteKillValue : 1f;
-            _meter += Formulas.RushMeterGain(value, Combo, comboBonus);
+            _meter += Formulas.RushMeterGain(value, Combo, comboBonus) * (1f + GainBonus);
             float max = CurrentMax;
             if (_meter >= max)
             {

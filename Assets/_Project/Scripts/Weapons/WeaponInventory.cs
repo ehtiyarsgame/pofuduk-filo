@@ -182,7 +182,10 @@ namespace PofudukFilo.Weapons
         {
             Stats.ClearPassiveBonuses();
             foreach (KeyValuePair<PassiveDefinition, int> pair in _passives)
+            {
                 Stats.AddPassiveBonus(pair.Key.stat, pair.Key.valuePerLevel * pair.Value);
+                if (pair.Key.drawbackPerLevel != 0f) Stats.AddPassiveBonus(pair.Key.drawbackStat, pair.Key.drawbackPerLevel * pair.Value);
+            }
         }
     }
 }

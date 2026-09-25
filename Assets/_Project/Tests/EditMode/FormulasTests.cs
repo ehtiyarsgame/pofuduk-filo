@@ -146,5 +146,21 @@ namespace PofudukFilo.Tests
             Assert.That(Formulas.GiftGold(10, 10), Is.EqualTo(Formulas.ForgeCost(10)));
             Assert.That(Formulas.GiftGold(30, 10), Is.EqualTo(Formulas.ForgeCost(20)));
         }
+
+        [Test]
+        public void test_enemy_damage_scale_grows_with_run_time()
+        {
+            Assert.That(Formulas.EnemyDamageScale(0f), Is.EqualTo(1f).Within(1e-5f));
+            Assert.That(Formulas.EnemyDamageScale(5f), Is.EqualTo(3.25f).Within(1e-4f));
+            Assert.That(Formulas.EnemyDamageScale(-1f), Is.EqualTo(1f).Within(1e-5f));
+        }
+
+        [Test]
+        public void test_enemy_fire_rate_scale_is_capped()
+        {
+            Assert.That(Formulas.EnemyFireRateScale(0f), Is.EqualTo(1f).Within(1e-5f));
+            Assert.That(Formulas.EnemyFireRateScale(5f), Is.EqualTo(1.5f).Within(1e-5f));
+            Assert.That(Formulas.EnemyFireRateScale(60f), Is.EqualTo(2.2f).Within(1e-5f));
+        }
     }
 }

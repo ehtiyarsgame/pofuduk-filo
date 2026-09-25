@@ -138,8 +138,28 @@ Yumak oyun alanının kenarlarından (üstte HUD çizgisinin altından) seker; d
 | Esnek Sakız | Yörünge/menzil +%10 | Sakız Balonu |
 | Pil Tasması | Bekleme −%7 | Kıvılcım Kedi |
 | Havuç Kalkan | Maks can +%15, saniyede 0.3 can yenile | — |
-| Mıknatıs Kulak | Toplama yarıçapı +%25 | — |
+| ~~Mıknatıs Kulak~~ | *Kaldırıldı (2026-09-25): toplananlar zaten gemiye uçuyor* | — |
 | Şans Yoncası | Kart nadirlik şansı +, altın +%10 | — |
+
+### 3.3b Yapı kartları (2026-09-25 — "oyun içi seçenek yok, strateji olmalı")
+
+Her kart farklı bir oyun tarzını öne çıkarır; bazılarının bedeli vardır (kart üstünde kırmızı satır).
+
+| Kart | Etki / seviye | Maks | Bedel / seviye | Kilit |
+|------|---------------|------|----------------|-------|
+| Delici Pençe | +1 delme | 3 | — | ücretsiz · **Balık Füzesi evrim anahtarı** |
+| Çift Namlu | Tüm silahlar +1 mermi/top/sekme | 2 | −%8 hasar | Lab 900 |
+| Kaplan Gözü | Kritik çarpanı +0.35 (2× → 2.35×) | 5 | — | ücretsiz |
+| Cam Top | +%20 hasar | 3 | −%12 maks. can | Lab 600 |
+| Son Direniş | Can < %40 iken +%25 hasar | 4 | — | Lab 450 |
+| Şeker Kalbi | +%15 şeker dolumu | 5 | — | ücretsiz |
+| Altın Pati | +%15 altın (oyun dışı gelişime yatırım) | 5 | — | ücretsiz |
+| Bilge Baykuş | +%12 tecrübe | 5 | — | ücretsiz |
+| Kaplumbağa Kabuğu | +2 zırh (her darbe 2 az) | 4 | −%4 atış hızı | ücretsiz |
+
+Uygulama: `PassiveDefinition.drawbackStat/drawbackPerLevel`; `ExtraProjectiles` ve `Pierce` her atışta
+`WeaponBehaviour` içinde eklenir (mermi sayısı 0 olan silahlara değil); `CritDamage` ve `LowHpDamage`
+`RollDamage` içinde; `RushGain`, `Armor`, `Experience` pasif değişince `RunController` tarafından yeniden uygulanır.
 
 ### 3.4 Füzyon (★★) — iki evrimden tek efsane
 
