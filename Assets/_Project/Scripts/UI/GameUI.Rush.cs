@@ -28,11 +28,11 @@ namespace PofudukFilo.UI
             var fleet = FindAnyObjectByType<Fleet>();
 
             _rushBar = HudBar.Create(_ui, hud, barTrackSprite, barFillSprite, Palette.Pink, sugarIcon, 26);
-            UIFactory.Place(_rushBar, 0.27f, 0.858f, 0.78f, 0.884f);
+            UIFactory.Place(_rushBar, 0.56f, 0.902f, 0.97f, 0.93f); // row 2 of the top panel, beside XP
             _rushBar.Snap(0f);
 
             _comboText = _ui.Label(hud, "", 52, Palette.Cream, TextAnchor.MiddleRight);
-            UIFactory.Place(_comboText, 0.45f, 0.765f, 0.95f, 0.81f); // below the boss bar
+            UIFactory.Place(_comboText, 0.45f, 0.79f, 0.95f, 0.835f); // below the boss bar
             _comboText.rectTransform.pivot = new Vector2(1f, 0.5f); // punch grows leftwards, never off-screen
             _comboText.gameObject.SetActive(false);
 

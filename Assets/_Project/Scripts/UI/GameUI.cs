@@ -111,8 +111,24 @@ namespace PofudukFilo.UI
             OnStateChanged(run.State);
         }
 
+        private RectTransform _topPanel;
+        private static readonly Vector3[] s_corners = new Vector3[4];
+
+        /// <summary>Keeps the world's hittable line on the HUD panel's bottom edge (Playfield.TopInset).</summary>
+        private void MeasurePlayfield()
+        {
+            if (_topPanel == null) return;
+            Camera cam = Camera.main;
+            if (cam == null) return;
+            _topPanel.GetWorldCorners(s_corners); // screen pixels on an overlay canvas
+            Rect view = cam.pixelRect;
+            if (view.height <= 0f) return;
+            Core.Playfield.TopInset = Mathf.Clamp((view.yMax - s_corners[0].y) / view.height, 0.02f, 0.3f);
+        }
+
         private void Update()
         {
+            MeasurePlayfield();
             UpdateRushHud();
             UpdateMenuAnim();
             UpdateRewards();
@@ -154,10 +170,36 @@ namespace PofudukFilo.UI
         {
             _hud = _ui.Node("HUD", root).gameObject;
 
-            // Top plate (design/ux/hud.md): HP + gold + pause on row 1, XP + level on row 2, all out of the thumb zone.
-            Image plate = _ui.Panel(_hud.transform, new Color(0.12f, 0.08f, 0.2f, 0.55f), "TopPlate");
-            UIFactory.Place(plate, 0.015f, 0.892f, 0.985f, 0.99f);
+            // Top panel (design/ux/hud.md §2): HP + gold + pause on row 1, XP + sugar on row 2. Opaque and edge to
+            // edge (up through any notch): enemies emerge from behind it, and become hittable the moment they show
+            // (Playfield.TopInset follows its bottom edge).
+            Image plate = _ui.Panel(_hud.transform, Palette.Hex(0x221733), "TopPanel");
+            plate.type = Image.Type.Simple;
+            plate.sprite = null;
+            UIFactory.Place(plate, 0f, 0.892f, 1f, 1f);
+            plate.rectTransform.offsetMin = new Vector2(-60f, 0f);
+            plate.rectTransform.offsetMax = new Vector2(60f, 400f);
             plate.raycastTarget = false;
+            _topPanel = plate.rectTransform;
+            // A lit rim and a soft shadow under it, like a cockpit dashboard the enemies fly out from under.
+            Image rim = _ui.Panel(plate.transform, Palette.Hex(0x9C7BFF), "Rim");
+            rim.type = Image.Type.Simple;
+            rim.sprite = null;
+            rim.raycastTarget = false;
+            rim.rectTransform.anchorMin = new Vector2(0f, 0f);
+            rim.rectTransform.anchorMax = new Vector2(1f, 0f);
+            rim.rectTransform.offsetMin = new Vector2(0f, 0f);
+            rim.rectTransform.offsetMax = new Vector2(0f, 5f);
+            if (vignetteSprite != null)
+            {
+                Image shade = _ui.Node("Shade", _hud.transform).gameObject.AddComponent<Image>();
+                shade.sprite = vignetteSprite;
+                shade.color = new Color(1f, 1f, 1f, 0.6f);
+                shade.raycastTarget = false;
+                UIFactory.Place(shade, 0f, 0.872f, 1f, 0.892f);
+                shade.rectTransform.offsetMin = new Vector2(-60f, 0f);
+                shade.rectTransform.offsetMax = new Vector2(60f, 0f);
+            }
 
             _hpBar = HudBar.Create(_ui, _hud.transform, barTrackSprite, barFillSprite, Palette.HotPink, heartIcon, 32);
             UIFactory.Place(_hpBar, 0.085f, 0.943f, 0.47f, 0.975f);
@@ -179,11 +221,11 @@ namespace PofudukFilo.UI
             UIFactory.Place(pause, 0.845f, 0.93f, 0.97f, 0.982f);
 
             _xpBar = HudBar.Create(_ui, _hud.transform, barTrackSprite, barFillSprite, Palette.Sky, xpIcon, 28);
-            UIFactory.Place(_xpBar, 0.085f, 0.902f, 0.81f, 0.93f);
+            UIFactory.Place(_xpBar, 0.085f, 0.902f, 0.53f, 0.93f);
             _xpBar.Snap(0f);
 
             _bossBar = _ui.Node("BossBar", _hud.transform).gameObject;
-            UIFactory.Place(_bossBar.GetComponent<RectTransform>(), 0.1f, 0.818f, 0.94f, 0.848f); // below the sugar meter
+            UIFactory.Place(_bossBar.GetComponent<RectTransform>(), 0.1f, 0.84f, 0.94f, 0.868f); // just under the panel
             _bossHp = HudBar.Create(_ui, _bossBar.transform, barTrackSprite, barFillSprite, Palette.Coral, null, 30);
             UIFactory.Place(_bossHp, 0f, 0f, 1f, 1f);
             _bossBar.SetActive(false);

@@ -14,7 +14,6 @@ namespace PofudukFilo.Weapons
         [SerializeField] private Sprite yarnSprite;
         [SerializeField] private Color yarnColor = Color.white;
         [SerializeField] private float perEnemyHitCooldown = 0.25f;
-        [SerializeField] private float hudFraction = 0.24f;
         [SerializeField] private int bounceBonusFromLevel = 5;
         [SerializeField] private float bounceBonus = 0.1f;
         [SerializeField] private int maxBounceBonuses = 5;
@@ -70,7 +69,7 @@ namespace PofudukFilo.Weapons
             Vector2 c = cam != null ? (Vector2)cam.transform.position : Vector2.zero;
             float h = cam != null ? cam.orthographicSize : 10f;
             float w = cam != null ? h * cam.aspect : 5f;
-            float top = c.y + h - h * hudFraction;
+            float top = cam != null ? Core.Playfield.TopY(cam) : c.y + h;
             if (_nextHitTime.Count > 512) _nextHitTime.Clear();
 
             int minis = 0;
