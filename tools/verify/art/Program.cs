@@ -17,15 +17,25 @@ internal static class Program
         var names = new HashSet<string>(args[2..]);
 
         var painters = new List<Painter>();
+        var labels = new List<string>();
         foreach (MethodInfo m in typeof(ArtRecipes).GetMethods(BindingFlags.Public | BindingFlags.Static))
         {
             if (m.ReturnType != typeof(Painter)) continue;
             if (names.Count > 0 && !names.Contains(m.Name)) continue;
             foreach (object[] a in Variants(m))
             {
-                try { painters.Add((Painter)m.Invoke(null, a)); }
+                try { painters.Add((Painter)m.Invoke(null, a)); labels.Add(m.Name + (a.Length > 0 && a[0] is bool b && b ? "_true" : a.Length > 0 && a[0] is string id ? "_" + id : "")); }
                 catch (Exception e) { Console.Error.WriteLine($"{m.Name}: {e.InnerException?.Message ?? e.Message}"); }
             }
+        }
+
+        // "<dir>/" as the output: one transparent full-size PNG per sprite (UI mockups).
+        if (outPath.EndsWith("/"))
+        {
+            Directory.CreateDirectory(outPath);
+            for (int k = 0; k < painters.Count; k++) WritePngRgba(Path.Combine(outPath, labels[k] + ".png"), painters[k]);
+            Console.WriteLine($"{painters.Count} sprites -> {outPath}");
+            return 0;
         }
 
         int cols = Math.Min(6, Math.Max(1, painters.Count));
@@ -104,6 +114,33 @@ internal static class Program
         fs.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 });
         var ihdr = new byte[13];
         BE(ihdr, 0, w); BE(ihdr, 4, h); ihdr[8] = 8; ihdr[9] = 2;
+        Chunk(fs, "IHDR", ihdr);
+        using (var ms = new MemoryStream())
+        {
+            using (var z = new ZLibStream(ms, System.IO.Compression.CompressionLevel.Optimal, true)) z.Write(raw);
+            Chunk(fs, "IDAT", ms.ToArray());
+        }
+        Chunk(fs, "IEND", Array.Empty<byte>());
+    }
+
+    private static void WritePngRgba(string path, Painter p)
+    {
+        int w = p.Width, h = p.Height;
+        var raw = new byte[h * (w * 4 + 1)];
+        for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+        {
+            Color c = p.Pixels[(h - 1 - y) * w + x];
+            int i = y * (w * 4 + 1) + 1 + x * 4;
+            raw[i] = (byte)Math.Clamp((int)(c.r * 255 + 0.5f), 0, 255);
+            raw[i + 1] = (byte)Math.Clamp((int)(c.g * 255 + 0.5f), 0, 255);
+            raw[i + 2] = (byte)Math.Clamp((int)(c.b * 255 + 0.5f), 0, 255);
+            raw[i + 3] = (byte)Math.Clamp((int)(c.a * 255 + 0.5f), 0, 255);
+        }
+        using var fs = File.Create(path);
+        fs.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 });
+        var ihdr = new byte[13];
+        BE(ihdr, 0, w); BE(ihdr, 4, h); ihdr[8] = 8; ihdr[9] = 6;
         Chunk(fs, "IHDR", ihdr);
         using (var ms = new MemoryStream())
         {
