@@ -21,7 +21,7 @@ namespace PofudukFilo.EditorTools
     public static class PofudukFiloSetup
     {
         public const string ScenePath = "Assets/_Project/Scenes/Main.unity";
-        public const string UiFontPath = "Assets/_Project/Fonts/Fredoka.ttf";
+        public const string UiFontPath = "Assets/_Project/Fonts/PaytoneOne.ttf";
 
         [MenuItem("Pofuduk Filo/Oynanabilir Sahneyi Kur", priority = 0)]
         public static void BuildEverything()
@@ -237,8 +237,14 @@ namespace PofudukFilo.EditorTools
                          ("pauseIcon", "icon_pause"), ("trophyIcon", "icon_trophy"), ("pedestalSprite", "menu_pedestal"),
                          ("raysSprite", "menu_rays"), ("capsuleSprite", "ui_capsule"), ("navBarSprite", "ui_navbar"),
                          ("ribbonSprite", "menu_ribbon"), ("pawSprite", "icon_paw"), ("shineSprite", "ui_shine"), ("vignetteSprite", "ui_vignette"),
-                         ("stageCardSprite", "stage_card"), ("chestClosedSprite", "chest_closed"), ("chestOpenSprite", "chest_open"),
-                         ("homeBubbleSprite", "home_bubble"), ("homeIcon", "icon_home")
+                         ("chestClosedSprite", "chest_closed"), ("chestOpenSprite", "chest_open"), ("homeIcon", "icon_home"),
+                         ("kitYellow", "kit_btn_yellow"), ("kitPink", "kit_btn_pink"), ("kitBlue", "kit_btn_blue"),
+                         ("kitPurple", "kit_btn_purple"), ("kitOrange", "kit_btn_orange"), ("kitGreen", "kit_btn_green"),
+                         ("kitLavender", "kit_btn_lavender"), ("kitViolet", "kit_btn_violet"), ("kitPill", "kit_pill"),
+                         ("kitPanel", "kit_panel"), ("kitDotRed", "kit_dot_red"), ("kitDotGold", "kit_dot_gold"),
+                         ("kitBarInk", "kit_bar_ink"), ("kitBarGold", "kit_bar_gold"), ("kitBarGreen", "kit_bar_green"),
+                         ("kitPlatform", "kit_platform"), ("kitSpot", "kit_spot"), ("kitBackdrop", "kit_backdrop"),
+                         ("kitTabBar", "kit_tabbar"), ("kitPower", "kit_power")
                      })
                 Set(ui, field, c.Sprites[key]);
             // Rounded display font, fetched by CI (tools/ci, OFL licence); built-in font otherwise.

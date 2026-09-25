@@ -3,59 +3,163 @@ using UnityEngine;
 namespace PofudukFilo.EditorTools
 {
     /// <summary>
-    /// Menu v4 lobby art (design/ux/main-menu.md §3), after the market-standard lobby of Archero / Survivor.io /
-    /// Capybara Go: an illustrated stage card, record chests for the chest track, a round frame for the side event
-    /// icons and the raised home bubble of the bottom bar.
+    /// Lobby art for menu v5 (design/ux/main-menu.md §4, mockup design/ux/mockups/menu-v5-mockup.png): the "casual
+    /// kit" every top mobile lobby shares — bevelled candy buttons with a thick ink outline, a bottom lip and a top
+    /// gloss; dark ink pills and panels; red notification dots; a glowing hero platform and a calm radial backdrop.
     /// </summary>
     public static partial class ArtRecipes
     {
-        /// <summary>Stage card: a framed window onto a candy nebula with a ringed planet, a moon and stars.</summary>
-        public static Painter StageCard()
+        /// <summary>Ink colour of every lobby outline (#1D1440).</summary>
+        public static readonly Color Ink = Hex(0x1D1440);
+
+        /// <summary>
+        /// Candy button face, 160×160, 9-sliced at 56: ink outline (8 px) and drop (14 px), a vertical
+        /// <paramref name="top"/>→<paramref name="bottom"/> gradient, a darker <paramref name="lip"/> along the bottom and a
+        /// glossy band plus a highlight line along the top.
+        /// </summary>
+        public static Painter CandyButton(Color top, Color bottom, Color lip)
         {
-            const int w = 512, h = 360;
+            const int s = 160;
+            var p = new Painter(s, s);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 1, 1, s - 1, s - 1, 46), Ink, 1.2f);
+            Painter.Sdf face = (x, y) => Painter.RoundRectSdf(x, y, 9, 15, s - 9, s - 9, 38);
+            p.Fill((x, y) => face(x, y), (x, y) => Color.Lerp(bottom, top, Mathf.Clamp01((y - 30f) / (s - 50f))));
+            p.Fill((x, y) => Mathf.Max(face(x, y), y - 37f), lip, 1.5f);
+            p.Fill((x, y) => Mathf.Max(face(x, y), (s - 16f) - y), new Color(1f, 1f, 1f, 0.45f), 1.5f);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 22, 110, s - 22, 138, 14), new Color(1f, 1f, 1f, 0.32f), 1.5f);
+            return p;
+        }
+
+        public static Painter ButtonYellow() => CandyButton(Hex(0xFFE86B), Hex(0xFFA60D), Hex(0xE07A00));
+        public static Painter ButtonPink() => CandyButton(Hex(0xFF9ED2), Hex(0xF0529C), Hex(0xC8367E));
+        public static Painter ButtonBlue() => CandyButton(Hex(0x7FD1FF), Hex(0x3B7BEA), Hex(0x2B5DC0));
+        public static Painter ButtonPurple() => CandyButton(Hex(0xC3A6FF), Hex(0x7B55E6), Hex(0x5E3CC4));
+        public static Painter ButtonOrange() => CandyButton(Hex(0xFFCF6B), Hex(0xFF8A1F), Hex(0xD96A0A));
+        public static Painter ButtonGreen() => CandyButton(Hex(0xB8F36B), Hex(0x43B02A), Hex(0x2F8C1C));
+        public static Painter ButtonLavender() => CandyButton(Hex(0x9D8CF0), Hex(0x6A55D6), Hex(0x5140B4));
+        public static Painter ButtonViolet() => CandyButton(Hex(0x9A86FF), Hex(0x5A3FD6), Hex(0x4630B0));
+
+        /// <summary>Dark ink capsule for currencies and tags, 160×160 sliced at 78 (a full half-circle each end).</summary>
+        public static Painter InkPill()
+        {
+            const int s = 160;
+            var p = new Painter(s, s);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 1, 1, s - 1, s - 1, 78), Ink, 1.2f);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 7, 7, s - 7, s - 7, 72), WithAlpha(Hex(0x2A1F63), 0.6f), 1.2f);
+            return p;
+        }
+
+        /// <summary>Dark ink panel with a soft inner fill, 160×160 sliced at 56 (record road, info boxes).</summary>
+        public static Painter InkPanel()
+        {
+            const int s = 160;
+            var p = new Painter(s, s);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 1, 1, s - 1, s - 1, 46), Ink, 1.2f);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 7, 7, s - 7, s - 7, 40), WithAlpha(Hex(0x241A55), 0.55f), 1.2f);
+            return p;
+        }
+
+        /// <summary>Notification dot / level badge: a glossy disc with an ink rim, 64×64.</summary>
+        public static Painter Dot(Color top, Color bottom)
+        {
+            var p = new Painter(64, 64);
+            p.Circle(32, 32, 31, Ink);
+            p.Fill((x, y) => Painter.CircleSdf(x, y, 32, 32, 25), (x, y) => Color.Lerp(bottom, top, Mathf.Clamp01((y - 8f) / 48f)));
+            p.Fill((x, y) => Painter.EllipseSdf(x, y, 32, 46, 15, 6), new Color(1f, 1f, 1f, 0.4f), 1.5f);
+            return p;
+        }
+
+        public static Painter DotRed() => Dot(Hex(0xFF6A6A), Hex(0xE0202E));
+        public static Painter DotGold() => Dot(Hex(0xFFE45C), Hex(0xFFB300));
+
+        /// <summary>Thin track and fill for bars (record road, level bar), 64×28 sliced at 13.</summary>
+        public static Painter BarInk()
+        {
+            var p = new Painter(64, 28);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 0, 0, 64, 28, 14), Hex(0x0D0826), 1.2f);
+            return p;
+        }
+
+        public static Painter BarGold() => BarGradient(Hex(0xFFE45C), Hex(0xFFA800));
+        public static Painter BarGreen() => BarGradient(Hex(0xB8F36B), Hex(0x5FCF2D));
+
+        private static Painter BarGradient(Color top, Color bottom)
+        {
+            var p = new Painter(64, 28);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 0, 0, 64, 28, 14), (x, y) => Color.Lerp(bottom, top, y / 28f), 1.2f);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 8, 17, 56, 24, 4), new Color(1f, 1f, 1f, 0.35f), 1.2f);
+            return p;
+        }
+
+        /// <summary>Glowing hero platform: a cyan disc seen from the side with a bright inner ring, 512×150.</summary>
+        public static Painter HeroPlatform()
+        {
+            const int w = 512, h = 150;
             var p = new Painter(w, h);
-            Painter.Sdf frame = (x, y) => Painter.RoundRectSdf(x, y, 4, 4, w - 4, h - 4, 44);
-            p.Fill((x, y) => frame(x, y) - 6f, Painter.Outline);
-            // Nebula sky.
-            p.Fill((x, y) => frame(x, y), (x, y) =>
+            p.Fill((x, y) => Painter.EllipseSdf(x, y, w / 2f, h / 2f, 250, 72), (x, y) =>
             {
-                float t = y / h;
-                Color c = Color.Lerp(Hex(0x2A1B5E), Hex(0x5B2E8A), t);
-                float n = Painter.TileFbm(x, y, w, h, 4, 3, 11);
-                c = Color.Lerp(c, Hex(0xFF7AC2), Mathf.Clamp01((n - 0.52f) * 2.2f) * 0.55f * (1f - t * 0.4f));
-                c = Color.Lerp(c, Hex(0x6EC6FF), Mathf.Clamp01((0.42f - n) * 2.4f) * 0.35f);
+                float d = Mathf.Sqrt(Mathf.Pow((x - w / 2f) / 250f, 2) + Mathf.Pow((y - h / 2f) / 72f, 2));
+                Color c = d < 0.45f ? Color.Lerp(Hex(0x8FF0FF), Hex(0x46B6FF), d / 0.45f)
+                    : d < 0.8f ? Color.Lerp(Hex(0x46B6FF), Hex(0x2A4FC0), (d - 0.45f) / 0.35f)
+                    : Color.Lerp(Hex(0x2A4FC0), WithAlpha(Hex(0x2A4FC0), 0f), (d - 0.8f) / 0.2f);
                 return c;
+            }, 1f);
+            p.Fill((x, y) => Mathf.Abs(Painter.EllipseSdf(x, y, w / 2f, h / 2f, 170, 42)) - 3.5f, new Color(0.85f, 0.98f, 1f, 0.85f), 1.5f);
+            return p;
+        }
+
+        /// <summary>Soft lavender spotlight behind the hero, 256×256.</summary>
+        public static Painter Spotlight()
+        {
+            var p = new Painter(256, 256);
+            p.Glow(128, 128, 127, new Color(0.67f, 0.59f, 1f, 0.6f), 1.6f);
+            return p;
+        }
+
+        /// <summary>Lobby backdrop: a calm radial violet night with sparse stars, 432×936 (stretched full screen).</summary>
+        public static Painter LobbyBackdrop()
+        {
+            const int w = 432, h = 936;
+            var p = new Painter(w, h);
+            p.Fill((x, y) => -1000f, (x, y) =>
+            {
+                float dx = (x - w * 0.5f) / (w * 1.2f), dy = (y - h * 0.62f) / (h * 0.7f);
+                float d = Mathf.Sqrt(dx * dx + dy * dy);
+                return d < 0.45f ? Color.Lerp(Hex(0x4B3AA8), Hex(0x2A1F6E), d / 0.45f)
+                    : Color.Lerp(Hex(0x2A1F6E), Hex(0x140F3A), Mathf.Clamp01((d - 0.45f) / 0.55f));
             });
-            var rng = new System.Random(5);
-            for (int i = 0; i < 60; i++)
+            var rng = new System.Random(21);
+            for (int i = 0; i < 70; i++)
             {
-                float sx = 20 + (float)rng.NextDouble() * (w - 40), sy = 20 + (float)rng.NextDouble() * (h - 40);
-                float r = 0.8f + (float)rng.NextDouble() * 2.2f;
-                p.Fill((x, y) => Mathf.Max(Painter.CircleSdf(x, y, sx, sy, r), frame(x, y)), new Color(1f, 0.97f, 0.9f, 0.9f), 1f);
+                float sx = (float)rng.NextDouble() * w, sy = (float)rng.NextDouble() * h;
+                float r = 0.6f + (float)rng.NextDouble() * 1.3f;
+                p.Circle(sx, sy, r, new Color(1f, 0.98f, 0.92f, 0.35f + 0.5f * (float)rng.NextDouble()));
             }
-            for (int i = 0; i < 5; i++)
-            {
-                float sx = 40 + (float)rng.NextDouble() * (w - 80), sy = 60 + (float)rng.NextDouble() * (h - 100);
-                p.Star(sx, sy, 7f, 2.4f, new Color(1f, 0.96f, 0.8f, 0.95f), 4);
-            }
-            // Big ringed candy planet (lower right) and a small moon (upper left), clipped to the card.
-            Painter.Sdf planet = (x, y) => Painter.CircleSdf(x, y, 400, 90, 92);
-            p.Fill((x, y) => Mathf.Max(planet(x, y), frame(x, y)), (x, y) =>
-            {
-                float stripe = Mathf.Sin((y - 90) * 0.11f + (x - 400) * 0.02f);
-                Color c = Color.Lerp(Hex(0xFF9FCF), Hex(0xFFD0E6), stripe * 0.5f + 0.5f);
-                float shade = Mathf.Clamp01(((x - 400) + (y - 90)) / 180f + 0.5f);
-                return Color.Lerp(c, Painter.Deep(c, 0.5f), 1f - shade);
-            });
-            p.Fill((x, y) => Mathf.Max(Mathf.Max(Mathf.Abs(Painter.RotEllipseSdf(x, y, 400, 90, 150, 30, -0.25f)) - 5f, -(y - 70f + (x - 400) * 0.25f)), frame(x, y)),
-                new Color(1f, 0.9f, 0.55f, 0.95f), 1.5f);
-            p.Fill((x, y) => Mathf.Max(Painter.CircleSdf(x, y, 92, 290, 30), frame(x, y)), (x, y) =>
-                Color.Lerp(Hex(0xB9A8F0), Hex(0xE8E0FF), Mathf.Clamp01((y - 270f) / 40f)));
-            // Soft floor glow where the hero floats, and a glassy top highlight.
-            p.Fill((x, y) => Mathf.Max(Painter.EllipseSdf(x, y, 256, 40, 190, 70), frame(x, y)), (x, y) =>
-                new Color(0.78f, 0.62f, 1f, 0.35f * Mathf.Clamp01(1f - Mathf.Abs(y - 40f) / 70f)), 1f);
-            p.Fill((x, y) => Mathf.Max(frame(x, y), (h - 60f) - y), new Color(1f, 1f, 1f, 0.08f), 1f);
-            p.Fill((x, y) => Mathf.Abs(frame(x, y) + 5f) - 1.5f, new Color(1f, 0.85f, 0.95f, 0.45f), 1.2f);
+            return p;
+        }
+
+        /// <summary>Bottom tab bar: dark violet gradient with an ink top edge and a faint highlight, 128×128 sliced 24.</summary>
+        public static Painter TabBar()
+        {
+            var p = new Painter(128, 128);
+            p.Fill((x, y) => -1000f, (x, y) => Color.Lerp(Hex(0x1B1447), Hex(0x2C2168), y / 128f));
+            p.Fill((x, y) => 120f - y, Hex(0x0D0826), 1f);
+            p.Fill((x, y) => Mathf.Max(114f - y, y - 120f), new Color(1f, 1f, 1f, 0.12f), 1f);
+            return p;
+        }
+
+        /// <summary>Power icon: a red candy tile with a golden lightning bolt, 64×64.</summary>
+        public static Painter IconPower()
+        {
+            var p = new Painter(64, 64);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 1, 1, 63, 63, 14), Ink, 1.2f);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 6, 6, 58, 58, 10), (x, y) => Color.Lerp(Hex(0xE0202E), Hex(0xFF6A6A), y / 64f));
+            Color gold = Hex(0xFFE45C);
+            p.Triangle(new Vector2(38, 56), new Vector2(18, 28), new Vector2(34, 30), Ink, 3f);
+            p.Triangle(new Vector2(28, 8), new Vector2(48, 36), new Vector2(30, 34), Ink, 3f);
+            p.Triangle(new Vector2(38, 56), new Vector2(18, 28), new Vector2(34, 30), gold);
+            p.Triangle(new Vector2(28, 8), new Vector2(48, 36), new Vector2(30, 34), gold);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 22, 28, 40, 36, 2), gold);
             return p;
         }
 
@@ -75,16 +179,6 @@ namespace PofudukFilo.EditorTools
             p.Circle(64, 70, 9, Painter.Outline);
             p.Circle(64, 70, 6, open ? Color.white : Honey);
             if (open) for (int i = 0; i < 3; i++) p.Star(40 + i * 24, 104 + (i % 2) * 8, 7, 2.6f, Color.white, 4);
-            return p;
-        }
-
-        /// <summary>Raised home bubble of the bottom bar: a glossy pink disc with a rim, drawn behind the centre tab.</summary>
-        public static Painter HomeBubble()
-        {
-            var p = new Painter(200, 200);
-            p.Glow(100, 100, 98, WithAlpha(HotPink, 0.45f), 1.6f);
-            p.Volume((x, y) => Painter.CircleSdf(x, y, 100, 100, 78), 100, 100, 78, 78, HotPink, 7f, shadow: false, gloss: 0.8f);
-            p.Fill((x, y) => Mathf.Abs(Painter.CircleSdf(x, y, 100, 100, 68)) - 2f, new Color(1f, 1f, 1f, 0.35f), 1.2f);
             return p;
         }
 

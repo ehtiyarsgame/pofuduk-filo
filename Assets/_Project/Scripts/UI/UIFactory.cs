@@ -120,7 +120,7 @@ namespace PofudukFilo.UI
             t.font = _font;
             t.text = Core.Loc.T(text);
             t.fontSize = size;
-            t.fontStyle = FontStyle.Bold;
+            t.fontStyle = FontStyle.Normal; // the UI face (Paytone One) is already heavy; faux bold would smear it
             t.color = color;
             t.alignment = align;
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -128,7 +128,7 @@ namespace PofudukFilo.UI
             t.raycastTarget = false;
 
             var outline = rt.gameObject.AddComponent<Outline>();
-            outline.effectColor = Palette.Outline;
+            outline.effectColor = Palette.Hex(0x1D1440); // lobby ink (main-menu.md §4)
             outline.effectDistance = new Vector2(3f, -3f);
             return t;
         }

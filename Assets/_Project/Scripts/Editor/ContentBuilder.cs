@@ -104,12 +104,31 @@ namespace PofudukFilo.EditorTools
             // Rewarded-ad placements (ad-rewards.md).
             Add("icon_ad", ArtRecipes.IconAd(), 128);
             Add("icon_gift", ArtRecipes.GiftBox(), 256);
-            // Menu v4 lobby (main-menu.md §3).
-            Add("stage_card", ArtRecipes.StageCard(), 100);
+            // Lobby v5 casual kit (main-menu.md §4).
             Add("chest_closed", ArtRecipes.Chest(false), 128);
             Add("chest_open", ArtRecipes.Chest(true), 128);
-            Add("home_bubble", ArtRecipes.HomeBubble(), 200);
             Add("icon_home", ArtRecipes.IconHome(), 128);
+            var button = new Vector4(56, 56, 56, 56);
+            Add("kit_btn_yellow", ArtRecipes.ButtonYellow(), 100, button);
+            Add("kit_btn_pink", ArtRecipes.ButtonPink(), 100, button);
+            Add("kit_btn_blue", ArtRecipes.ButtonBlue(), 100, button);
+            Add("kit_btn_purple", ArtRecipes.ButtonPurple(), 100, button);
+            Add("kit_btn_orange", ArtRecipes.ButtonOrange(), 100, button);
+            Add("kit_btn_green", ArtRecipes.ButtonGreen(), 100, button);
+            Add("kit_btn_lavender", ArtRecipes.ButtonLavender(), 100, button);
+            Add("kit_btn_violet", ArtRecipes.ButtonViolet(), 100, button);
+            Add("kit_pill", ArtRecipes.InkPill(), 100, new Vector4(78, 78, 78, 78));
+            Add("kit_panel", ArtRecipes.InkPanel(), 100, button);
+            Add("kit_dot_red", ArtRecipes.DotRed(), 100);
+            Add("kit_dot_gold", ArtRecipes.DotGold(), 100);
+            Add("kit_bar_ink", ArtRecipes.BarInk(), 100, new Vector4(13, 13, 13, 13));
+            Add("kit_bar_gold", ArtRecipes.BarGold(), 100, new Vector4(13, 13, 13, 13));
+            Add("kit_bar_green", ArtRecipes.BarGreen(), 100, new Vector4(13, 13, 13, 13));
+            Add("kit_platform", ArtRecipes.HeroPlatform(), 100);
+            Add("kit_spot", ArtRecipes.Spotlight(), 100);
+            Add("kit_backdrop", ArtRecipes.LobbyBackdrop(), 100);
+            Add("kit_tabbar", ArtRecipes.TabBar(), 100, new Vector4(8, 8, 8, 20));
+            Add("kit_power", ArtRecipes.IconPower(), 100);
 
             Add("b_feather", ArtRecipes.Feather(false), 64);
             Add("b_feather_giant", ArtRecipes.Feather(true), 64);

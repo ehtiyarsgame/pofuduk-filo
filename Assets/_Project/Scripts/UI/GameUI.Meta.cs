@@ -164,14 +164,7 @@ namespace PofudukFilo.UI
             CharacterDefinition pilot = run.Characters.Count > 0 ? run.Characters[0] : null;
             foreach (CharacterDefinition c in run.Characters)
                 if (c.id == id && run.Meta.IsUnlocked(c)) pilot = c;
-            if (_pilotText != null) _pilotText.text = Loc.T(pilot != null ? $"Pilot: {pilot.displayName}" : "");
-            if (_avatar != null && pilot != null) _avatar.sprite = pilot.sprite;
-            if (_pilotsTile != null && pilot != null) _pilotsTile.Icon.sprite = pilot.sprite;
-            if (_heroShip != null && pilot != null)
-            {
-                _heroShip.sprite = pilot.shipSprite != null ? pilot.shipSprite : pilot.sprite;
-                Feel.Juice.PopIn(_heroShip.transform);
-            }
+            if (pilot != null) RefreshLobbyPilot(pilot);
         }
 
         private void RefreshHangar()

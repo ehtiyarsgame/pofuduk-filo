@@ -44,7 +44,7 @@ namespace PofudukFilo.UI
             long now = Now;
             bool ready = meta.CanClaimGift(now);
             string label;
-            if (ready) label = Loc.T("HEDİYE");
+            if (ready) label = Loc.T("HAZIR");
             else if (meta.GiftsLeftToday(now) == 0) label = Loc.T("Yarın");
             else
             {
@@ -53,14 +53,20 @@ namespace PofudukFilo.UI
             }
             _giftText.text = label;
             if (_powerText != null) _powerText.text = Loc.T($"GÜÇ ×{meta.PowerRating(meta.SelectedCharacterId):0.00}");
-            _giftText.color = ready ? Palette.Honey : Palette.Lavender;
-            _giftButton.interactable = ready;
+            _giftText.color = ready ? Palette.Hex(0xFFE45C) : Palette.White;
+            // The lobby tile stays pressable (a tap while waiting says when); the red dot marks a ready gift.
+            if (_giftDot != null) _giftDot.SetActive(ready);
             foreach (Button b in _walletAdButtons) b.interactable = ready;
         }
 
         private void ClaimGift()
         {
-            if (!run.Meta.CanClaimGift(Now)) return;
+            if (!run.Meta.CanClaimGift(Now))
+            {
+                MenuToast(run.Meta.GiftsLeftToday(Now) == 0 ? Loc.T("Bugünkü hediyeler bitti, yarın gel!")
+                    : Loc.T($"Sonraki hediye: {_giftText.text}"));
+                return;
+            }
             WatchAd(() =>
             {
                 int gold = run.Meta.ClaimGift(Now);
