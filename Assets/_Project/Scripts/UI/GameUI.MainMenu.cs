@@ -7,13 +7,14 @@ using UnityEngine.UI;
 namespace PofudukFilo.UI
 {
     /// <summary>
-    /// Main menu (design/ux/main-menu.md). Device feedback 2026-09-24 called the flat version
-    /// "çok basit, profesyonel değil", so the menu is dressed like a store-quality mobile title:
-    /// - a candy logo (gradient letters, thick outline, bobbing wave, pink ribbon, twinkling stars);
-    /// - the hero ship floating over a glowing pedestal in front of slowly turning light rays;
-    /// - currency capsules and a gear button at the top;
-    /// - a glossy PLAY button with a play icon and a shine sweep;
-    /// - a docked bottom tab bar (Ar-Ge / Silahlar / Pilotlar) with drawn icons and "!" badges.
+    /// Main menu v4 — a market-style lobby (design/ux/main-menu.md §3). Device feedback 2026-09-25: "menü çok
+    /// basit, oynayası gelmez". Built on the pattern the top mobile shooters and survivor-likes share:
+    /// - top bar: pilot avatar with the power tag, currency capsules with an ad "+", gear;
+    /// - an illustrated stage card with the hero ship and the best time;
+    /// - a chest track under it — one-time rewards for record times, always showing the next goal;
+    /// - side event icons (gift, stars / next pilot, login streak) with timers and badges;
+    /// - a big golden pulsing PLAY;
+    /// - a 5-tab bottom bar with a raised centre Home tab.
     /// </summary>
     public sealed partial class GameUI
     {
@@ -32,11 +33,17 @@ namespace PofudukFilo.UI
         [SerializeField] private Sprite pawSprite;
         [SerializeField] private Sprite shineSprite;
         [SerializeField] private Sprite vignetteSprite;
+        [SerializeField] private Sprite stageCardSprite;
+        [SerializeField] private Sprite chestClosedSprite;
+        [SerializeField] private Sprite chestOpenSprite;
+        [SerializeField] private Sprite homeBubbleSprite;
+        [SerializeField] private Sprite homeIcon;
 
         private sealed class Tile
         {
             public Button Button;
             public Image Icon;
+            public Text Label;
             public GameObject Badge;
         }
 
@@ -50,7 +57,6 @@ namespace PofudukFilo.UI
         private Image _recordIcon;
         private GameObject _recordCapsule;
         private Button _restartButton;
-        private Text _credit;
         private Text _endDust;
         private GameObject _endDustIcon;
         private GameObject _endDustGap;
@@ -58,6 +64,15 @@ namespace PofudukFilo.UI
         private Tile _armoryTile;
         private Tile _pilotsTile;
         private Tile _missionsTile;
+        private Tile _homeTile;
+        private Image _avatar;
+        private Tile _giftTile;
+        private Tile _starsTile;
+        private Tile _nextPilotTile;
+        private Tile _streakTile;
+        private Image _chestFill;
+        private Image[] _chests;
+        private Text _chestHint;
 
         private void BuildMenu(Transform root)
         {
@@ -68,55 +83,59 @@ namespace PofudukFilo.UI
             Vignette(m, 0.8f, 1f, false);
             Vignette(m, 0f, 0.3f, true);
 
-            // --- Top: currency capsules + gear.
+            // --- Top bar: avatar (tap → Pilotlar) with the power tag, wallet with an ad "+", gear.
+            Button avatar = IconButton(m, null, Palette.Hex(0x5B3C99), OpenHangar);
+            UIFactory.Place(avatar, 0.02f, 0.935f, 0.15f, 0.99f);
+            _avatar = avatar.transform.Find("Face/Icon").GetComponent<Image>();
+            _avatar.enabled = true;
+            Image powerCap = Capsule(m, 0f, 0.905f, 0.2f, 0.932f);
+            _powerText = _ui.Label(powerCap.transform, "", 22, Palette.Honey);
+            UIFactory.Place(_powerText, 0.04f, 0f, 0.96f, 1f);
             _wallet = new WalletView
             {
-                Gold = CurrencyCapsule(m, coinIcon, 0.03f, 0.33f, Palette.Honey),
-                Dust = CurrencyCapsule(m, stardustIcon, 0.36f, 0.58f, Palette.Hex(0xDCCFFF))
+                Gold = CurrencyCapsule(m, coinIcon, 0.21f, 0.48f, Palette.Honey),
+                Dust = CurrencyCapsule(m, stardustIcon, 0.52f, 0.72f, Palette.Hex(0xDCCFFF))
             };
+            // Same "[TV] +" as the meta screens: an ad pays gold and Stardust (ad-rewards.md, the gift).
+            Button more = AdButton(m, "", "+", Palette.Mint, ClaimGift, 30);
+            UIFactory.Place(more, 0.735f, 0.938f, 0.845f, 0.972f);
+            _walletAdButtons.Add(more);
             Button gear = IconButton(m, gearIcon, Palette.Lavender, OpenSettings);
-            UIFactory.Place(gear, 0.84f, 0.925f, 0.97f, 0.985f);
+            UIFactory.Place(gear, 0.86f, 0.93f, 0.98f, 0.985f);
 
-            // --- Logo: ribbon behind line 2, gradient + wave letters, twinkles.
+            // --- Logo, smaller than v3: the stage card is the hero of the screen now.
             Image ribbon = Img(m, ribbonSprite, "Ribbon");
-            UIFactory.Place(ribbon, 0.06f, 0.736f, 0.94f, 0.83f);
-            _titleTop = LogoLine(m, "GALAXY", 140, Palette.Hex(0xE6D9FF), Palette.Hex(0x9C7BFF), 0.815f, 0.9f);
-            _titleBottom = LogoLine(m, "PAWS", 124, Palette.Hex(0xFFF6C8), Palette.Honey, 0.742f, 0.822f);
-            _twinkles = new Image[5];
-            Vector2[] spots = { new(0.1f, 0.9f), new(0.9f, 0.88f), new(0.16f, 0.76f), new(0.86f, 0.74f), new(0.5f, 0.915f) };
+            UIFactory.Place(ribbon, 0.16f, 0.816f, 0.84f, 0.868f);
+            _titleTop = LogoLine(m, "GALAXY", 100, Palette.Hex(0xE6D9FF), Palette.Hex(0x9C7BFF), 0.862f, 0.91f);
+            _titleBottom = LogoLine(m, "PAWS", 90, Palette.Hex(0xFFF6C8), Palette.Honey, 0.818f, 0.864f);
+            _twinkles = new Image[4];
+            Vector2[] spots = { new(0.24f, 0.9f), new(0.78f, 0.89f), new(0.2f, 0.83f), new(0.8f, 0.826f) };
             for (int i = 0; i < _twinkles.Length; i++)
             {
-                // Two of the accents are paw prints — the new name, Galaxy Paws.
-                _twinkles[i] = Img(m, i == 2 || i == 3 ? pawSprite ?? stardustIcon : stardustIcon, "Twinkle");
+                _twinkles[i] = Img(m, i >= 2 ? pawSprite ?? stardustIcon : stardustIcon, "Twinkle");
                 Vector2 c = spots[i];
-                UIFactory.Place(_twinkles[i], c.x - 0.035f, c.y - 0.017f, c.x + 0.035f, c.y + 0.017f);
+                UIFactory.Place(_twinkles[i], c.x - 0.03f, c.y - 0.014f, c.x + 0.03f, c.y + 0.014f);
             }
 
-            // --- Hero: rays, pedestal, ship, pilot name capsule.
+            // --- Stage card: rays peek around it, the ship floats on a pedestal inside, best time at its foot.
             Image rays = Img(m, raysSprite, "Rays");
-            UIFactory.Place(rays, 0.0f, 0.43f, 1f, 0.75f);
-            rays.preserveAspect = true;
+            UIFactory.Place(rays, 0f, 0.5f, 1f, 0.82f);
+            rays.color = new Color(1f, 1f, 1f, 0.55f);
             _rays = rays.rectTransform;
+            Image card = Img(m, stageCardSprite, "StageCard");
+            card.enabled = true;
+            if (stageCardSprite == null) card.color = Palette.Hex(0x3E2C63);
+            UIFactory.Place(card, 0.17f, 0.54f, 0.83f, 0.785f);
+            Image titleCap = Capsule(m, 0.24f, 0.768f, 0.76f, 0.8f);
+            titleCap.color = Palette.Hex(0xFF7FB0);
+            Text title = _ui.Label(titleCap.transform, "SONSUZ GALAKSİ", 34, Palette.White);
+            UIFactory.Place(title, 0.04f, 0f, 0.96f, 1f);
             Image pedestal = Img(m, pedestalSprite, "Pedestal");
-            UIFactory.Place(pedestal, 0.1f, 0.468f, 0.9f, 0.548f);
+            UIFactory.Place(pedestal, 0.28f, 0.585f, 0.72f, 0.625f);
             _heroShip = Img(m, null, "HeroShip");
-            UIFactory.Place(_heroShip, 0.25f, 0.5f, 0.75f, 0.725f);
-            // One info chip under the hero: pilot on the left, Güç Katsayısı on the right (tap → Ar-Ge).
-            Image pilotCap = Capsule(m, 0.14f, 0.443f, 0.86f, 0.479f);
-            _pilotText = _ui.Label(pilotCap.transform, "", 34, Palette.Pink);
-            UIFactory.Place(_pilotText, 0.04f, 0f, 0.56f, 1f);
-            _powerText = _ui.Label(pilotCap.transform, "", 34, Palette.Honey);
-            UIFactory.Place(_powerText, 0.56f, 0f, 0.96f, 1f);
-            Image divider = _ui.Panel(pilotCap.transform, new Color(1f, 1f, 1f, 0.25f), "Divider");
-            divider.sprite = null;
-            divider.raycastTarget = false;
-            UIFactory.Place(divider, 0.555f, 0.2f, 0.56f, 0.8f);
-            Button powerHit = pilotCap.gameObject.AddComponent<Button>();
-            pilotCap.raycastTarget = true;
-            powerHit.onClick.AddListener(OpenResearch);
+            UIFactory.Place(_heroShip, 0.34f, 0.6f, 0.66f, 0.755f);
 
-            // --- Record / saved-run capsule with a trophy.
-            Image recordCap = Capsule(m, 0.22f, 0.388f, 0.78f, 0.426f);
+            Image recordCap = Capsule(m, 0.28f, 0.548f, 0.72f, 0.58f);
             _recordCapsule = recordCap.gameObject;
             RectTransform recordRow = CurrencyRow(recordCap.transform, TextAnchor.MiddleCenter);
             UIFactory.Place(recordRow, 0.04f, 0.08f, 0.96f, 0.92f);
@@ -124,24 +143,36 @@ namespace PofudukFilo.UI
             _recordIcon.sprite = trophyIcon;
             _recordIcon.preserveAspect = true;
             var le = _recordIcon.gameObject.AddComponent<LayoutElement>();
-            le.preferredWidth = le.preferredHeight = 48f;
-            _recordText = _ui.Label(recordRow, "", 38, Palette.Honey);
+            le.preferredWidth = le.preferredHeight = 40f;
+            _recordText = _ui.Label(recordRow, "", 30, Palette.Honey);
             _recordText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
-            // --- PLAY: glossy, play icon, shine sweep, gradient label.
-            _playButton = _ui.Button(m, "OYNA", Palette.HotPink, () =>
+            // --- Side event icons: left = gift + stars, right = next pilot + login streak.
+            _giftTile = SideIcon(m, giftIcon, 0.02f, 0.69f, ClaimGift);
+            _giftButton = _giftTile.Button;
+            _giftText = _giftTile.Label;
+            _starsTile = SideIcon(m, stardustIcon, 0.02f, 0.585f, OpenConstellation);
+            _starsTile.Label.text = Loc.T("YILDIZLAR");
+            _nextPilotTile = SideIcon(m, null, 0.85f, 0.69f, OpenHangar);
+            _streakTile = SideIcon(m, pawSprite, 0.85f, 0.585f, () => OpenMeta(_missions));
+
+            // --- Chest track: record-time rewards, the next goal always in sight.
+            BuildChestTrack(m);
+
+            // --- PLAY: golden, glossy, play icon, shine sweep.
+            _playButton = _ui.Button(m, "OYNA", Palette.Honey, () =>
             {
                 if (run.HasSavedRun) run.ResumeRun();
                 else run.StartEndless();
             }, 112);
-            UIFactory.Place(_playButton, 0.08f, 0.25f, 0.92f, 0.378f);
+            UIFactory.Place(_playButton, 0.1f, 0.28f, 0.9f, 0.39f);
             Transform playFace = _playButton.transform.Find("Face");
             playFace.gameObject.AddComponent<RectMask2D>();
             Image play = Img(playFace, playIcon, "PlayIcon");
-            UIFactory.Place(play, 0.16f, 0.22f, 0.3f, 0.78f);
+            UIFactory.Place(play, 0.14f, 0.22f, 0.28f, 0.78f);
             Text playText = _playButton.GetComponentInChildren<Text>();
-            // Right of the icon, shrinking to fit: "DEVAM ET" / "CONTINUE" are wider than "OYNA" and ran into the icon.
-            UIFactory.Place(playText, 0.32f, 0.08f, 0.94f, 0.92f);
+            // Right of the icon, shrinking to fit: "DEVAM ET" / "CONTINUE" are wider than "OYNA".
+            UIFactory.Place(playText, 0.3f, 0.08f, 0.94f, 0.92f);
             playText.resizeTextForBestFit = true;
             playText.resizeTextMinSize = 48;
             playText.resizeTextMaxSize = 112;
@@ -153,24 +184,110 @@ namespace PofudukFilo.UI
             _shine.sizeDelta = new Vector2(120f, 0f);
 
             _restartButton = _ui.Button(m, "Yeni Oyun", Palette.Lavender, run.StartEndless, 32);
-            UIFactory.Place(_restartButton, 0.3f, 0.2f, 0.7f, 0.238f);
+            UIFactory.Place(_restartButton, 0.3f, 0.222f, 0.7f, 0.262f);
 
-            // --- Bottom tab bar.
+            // --- Bottom bar: five tabs, Home raised in the middle.
             Image nav = Img(m, navBarSprite, "NavBar");
             nav.type = navBarSprite != null ? Image.Type.Sliced : Image.Type.Simple;
             nav.raycastTarget = true;
-            UIFactory.Place(nav, -0.01f, -0.01f, 1.01f, 0.175f);
-            // Four tabs (Görevler joined the bar instead of floating beside the hero — "menü karmaşık").
-            _researchTile = NavTab(nav.transform, "AR-GE", researchIcon, 0f, OpenResearch, 0.25f);
-            _armoryTile = NavTab(nav.transform, "SİLAHLAR", weaponsIcon, 0.25f, OpenLab, 0.25f);
-            _pilotsTile = NavTab(nav.transform, "PİLOTLAR", null, 0.5f, OpenHangar, 0.25f);
-            _missionsTile = NavTab(nav.transform, "GÖREVLER", trophyIcon, 0.75f, () => OpenMeta(_missions), 0.25f);
-
-            _credit = _ui.Label(m, $"© {StudioIntro.StudioName}", 22, new Color(0.78f, 0.71f, 1f, 0.55f));
-            UIFactory.Place(_credit, 0.1f, 0.176f, 0.9f, 0.19f);
+            UIFactory.Place(nav, -0.01f, -0.01f, 1.01f, 0.165f);
+            _researchTile = NavTab(nav.transform, "AR-GE", researchIcon, 0f, OpenResearch, 0.2f);
+            _armoryTile = NavTab(nav.transform, "SİLAHLAR", weaponsIcon, 0.2f, OpenLab, 0.2f);
+            _homeTile = NavTab(nav.transform, "ANA SAYFA", homeIcon, 0.4f, () => { }, 0.2f);
+            RaiseHomeTab(_homeTile);
+            _pilotsTile = NavTab(nav.transform, "PİLOTLAR", null, 0.6f, OpenHangar, 0.2f);
+            _missionsTile = NavTab(nav.transform, "GÖREVLER", trophyIcon, 0.8f, () => OpenMeta(_missions), 0.2f);
 
             BuildRewards(m, root);
             BuildMissions(m, root);
+        }
+
+        private void BuildChestTrack(Transform m)
+        {
+            Image start = Img(m, trophyIcon, "TrackStart");
+            UIFactory.Place(start, 0.02f, 0.448f, 0.1f, 0.49f);
+            Image track = Capsule(m, 0.1f, 0.461f, 0.9f, 0.477f);
+            track.color = new Color(0.1f, 0.06f, 0.18f, 0.9f);
+            _chestFill = _ui.Panel(track.transform, Palette.Honey, "Fill");
+            _chestFill.raycastTarget = false;
+            UIFactory.Place(_chestFill, 0f, 0f, 0f, 1f);
+
+            _chests = new Image[RecordChests.Count];
+            for (int i = 0; i < _chests.Length; i++)
+            {
+                float x = 0.1f + 0.8f * (i + 1) / _chests.Length;
+                Image chest = Img(m, chestClosedSprite, "Chest");
+                chest.enabled = true;
+                chest.raycastTarget = true;
+                UIFactory.Place(chest, x - 0.05f, 0.44f, x + 0.05f, 0.5f);
+                int index = i;
+                chest.gameObject.AddComponent<Button>().onClick.AddListener(() => TapChest(index));
+                _chests[i] = chest;
+                Text mark = _ui.Label(m, Clock(RecordChests.Seconds[i]), 24, Palette.Cream);
+                UIFactory.Place(mark, x - 0.06f, 0.419f, x + 0.06f, 0.442f);
+            }
+            _chestHint = _ui.Label(m, "", 26, Palette.Hex(0xDCCFFF));
+            UIFactory.Place(_chestHint, 0.05f, 0.5f, 0.95f, 0.528f);
+        }
+
+        private void TapChest(int index)
+        {
+            MetaProgressionService meta = run.Meta;
+            int gold = RecordChests.Gold[index], dust = RecordChests.Dust[index];
+            if (meta.ClaimRecordChest(index))
+            {
+                Feel.Juice.PunchUI(_chests[index].rectTransform);
+                MenuToast(dust > 0 ? Loc.T($"Sandık: +{gold} altın, +{dust} yıldız tozu!") : Loc.T($"Sandık: +{gold} altın!"));
+                RefreshMenu();
+            }
+            else if (meta.RecordChestClaimed(index)) MenuToast("Bu sandığı zaten açtın.");
+            else
+            {
+                MenuToast(Loc.T($"{Clock(RecordChests.Seconds[index])} hayatta kal, sandığı aç!"));
+            }
+        }
+
+        /// <summary>A round event icon beside the stage card: icon, a state tag under it and a "!" badge.</summary>
+        private Tile SideIcon(Transform parent, Sprite icon, float x0, float y0, System.Action onClick)
+        {
+            var tile = new Tile();
+            tile.Button = IconButton(parent, icon, Palette.Hex(0x5B3C99), onClick);
+            UIFactory.Place(tile.Button, x0, y0, x0 + 0.13f, y0 + 0.06f);
+            tile.Icon = tile.Button.transform.Find("Face/Icon").GetComponent<Image>();
+            tile.Icon.enabled = true;
+            Image cap = Capsule(parent, x0 - 0.01f, y0 - 0.026f, x0 + 0.14f, y0 - 0.002f);
+            tile.Label = _ui.Label(cap.transform, "", 22, Palette.Cream);
+            UIFactory.Place(tile.Label, 0.04f, 0f, 0.96f, 1f);
+            tile.Badge = Badge(tile.Button.transform, 0.72f, 0.7f, 1.02f, 1.05f);
+            return tile;
+        }
+
+        private GameObject Badge(Transform parent, float x0, float y0, float x1, float y1)
+        {
+            Image badge = Img(parent, null, "Badge");
+            badge.enabled = true;
+            badge.sprite = roundedSprite;
+            badge.type = Image.Type.Sliced;
+            badge.color = Palette.Coral;
+            UIFactory.Place(badge, x0, y0, x1, y1);
+            Text bang = _ui.Label(badge.transform, "!", 30, Color.white);
+            bang.GetComponent<Outline>().effectColor = Palette.Outline;
+            badge.gameObject.SetActive(false);
+            return badge.gameObject;
+        }
+
+        /// <summary>The centre tab sits in a glossy bubble that rises above the bar — the "you are here" tab.</summary>
+        private void RaiseHomeTab(Tile home)
+        {
+            Transform node = home.Button.transform;
+            Image bubble = Img(node, homeBubbleSprite, "Bubble");
+            bubble.enabled = true;
+            if (homeBubbleSprite == null) bubble.color = Palette.HotPink;
+            bubble.transform.SetAsFirstSibling();
+            UIFactory.Place(bubble, 0.02f, 0.28f, 0.98f, 1.5f);
+            UIFactory.Place(home.Icon, 0.2f, 0.5f, 0.8f, 1.3f);
+            home.Label.color = Palette.Honey;
+            home.Badge.SetActive(false);
         }
 
         // ---------------------------------------------------------------- Pieces
@@ -266,19 +383,14 @@ namespace PofudukFilo.UI
 
             tile.Icon = Img(node, icon, "Icon");
             tile.Icon.enabled = true;
-            UIFactory.Place(tile.Icon, 0.2f, 0.3f, 0.8f, 1f);
-            Text text = _ui.Label(node, label, 34, Palette.White);
-            UIFactory.Place(text, 0f, 0f, 1f, 0.3f);
-
-            Image badge = Img(node, null, "Badge");
-            badge.enabled = true;
-            badge.sprite = roundedSprite;
-            badge.type = Image.Type.Sliced;
-            badge.color = Palette.Coral;
-            UIFactory.Place(badge, 0.68f, 0.72f, 0.86f, 0.97f);
-            Text bang = _ui.Label(badge.transform, "!", 34, Color.white);
-            bang.GetComponent<Outline>().effectColor = Palette.Outline;
-            tile.Badge = badge.gameObject;
+            UIFactory.Place(tile.Icon, 0.2f, 0.32f, 0.8f, 1f);
+            tile.Label = _ui.Label(node, label, 30, Palette.White);
+            UIFactory.Place(tile.Label, -0.04f, 0f, 1.04f, 0.3f);
+            tile.Label.resizeTextForBestFit = true;
+            tile.Label.resizeTextMinSize = 18;
+            tile.Label.resizeTextMaxSize = 30;
+            tile.Label.horizontalOverflow = HorizontalWrapMode.Wrap;
+            tile.Badge = Badge(node, 0.66f, 0.72f, 0.88f, 0.97f);
             return tile;
         }
 
@@ -296,22 +408,78 @@ namespace PofudukFilo.UI
 
             float best = meta.BestEndlessSeconds;
             bool saved = run.HasSavedRun;
-            string line = "";
+            string line;
             if (saved)
             {
                 (int stage, float minutes) = run.SavedRunInfo();
                 line = Loc.T($"Kayıt: Bölüm {stage} · {Mathf.FloorToInt(minutes)}:{Mathf.FloorToInt(minutes * 60f % 60f):00}");
             }
-            else if (best > 0f)
-                line = Loc.T($"Rekor: {Mathf.FloorToInt(best / 60f)}:{Mathf.FloorToInt(best % 60f):00}");
+            else line = Loc.T($"Rekor: {Clock(best)}");
             _recordText.text = line;
             _recordIcon.gameObject.SetActive(!saved);
-            _recordCapsule.SetActive(line.Length > 0);
             UIFactory.SetText(_playButton, saved ? "DEVAM ET" : "OYNA");
             _restartButton.gameObject.SetActive(saved);
-            _credit.gameObject.SetActive(!saved); // the Yeni Oyun button sits where the credit line is
+            RefreshChests(best);
+            RefreshSideIcons();
             RefreshGift();
             RefreshMissionsBadge();
+        }
+
+        private static string Clock(float seconds) =>
+            $"{Mathf.FloorToInt(seconds / 60f)}:{Mathf.FloorToInt(seconds % 60f):00}";
+
+        private void RefreshChests(float best)
+        {
+            if (_chests == null) return;
+            MetaProgressionService meta = run.Meta;
+            _chestFill.rectTransform.anchorMax = new Vector2(RecordChests.Progress(best), 1f);
+            bool any = false;
+            for (int i = 0; i < _chests.Length; i++)
+            {
+                bool claimed = meta.RecordChestClaimed(i);
+                bool ready = meta.CanClaimRecordChest(i);
+                any |= ready;
+                _chests[i].sprite = claimed ? chestOpenSprite : chestClosedSprite;
+                _chests[i].color = claimed ? new Color(1f, 1f, 1f, 0.55f)
+                    : ready ? Color.white
+                    : new Color(0.6f, 0.55f, 0.7f, 1f);
+            }
+            int next = RecordChests.NextGoal(best);
+            _chestHint.text = any ? Loc.T("Sandık hazır — dokun, aç!")
+                : next >= 0 ? Loc.T($"Sonraki sandık: {Clock(RecordChests.Seconds[next])} hayatta kal")
+                : Loc.T("Bütün sandıklar açıldı!");
+            _chestHint.color = any ? Palette.Honey : Palette.Hex(0xDCCFFF);
+        }
+
+        private void RefreshSideIcons()
+        {
+            if (_nextPilotTile == null) return;
+            MetaProgressionService meta = run.Meta;
+            CharacterDefinition next = NextPilot();
+            if (next != null)
+            {
+                _nextPilotTile.Icon.sprite = next.sprite;
+                int pct = next.goldCost > 0 ? Mathf.Clamp(Mathf.FloorToInt(100f * meta.Gold / next.goldCost), 0, 100) : 100;
+                _nextPilotTile.Label.text = $"%{pct}";
+                _nextPilotTile.Badge.SetActive(meta.CanUnlock(next));
+            }
+            _nextPilotTile.Button.gameObject.SetActive(next != null);
+            _nextPilotTile.Label.transform.parent.gameObject.SetActive(next != null);
+
+            long now = System.DateTime.UtcNow.Ticks;
+            meta.CheckIn(now);
+            int day = (meta.Streak - 1) % 7 + 1;
+            _streakTile.Label.text = Loc.T($"GÜN {day}/7");
+            _streakTile.Badge.SetActive(meta.CanClaimStreak(now));
+        }
+
+        /// <summary>The cheapest locked pilot that gold alone opens — the menu's and the run-end's next goal.</summary>
+        private CharacterDefinition NextPilot()
+        {
+            CharacterDefinition next = null;
+            foreach (CharacterDefinition c in run.Characters)
+                if (!run.Meta.IsUnlocked(c) && c.requiresChapterCleared < 0 && (next == null || c.goldCost < next.goldCost)) next = c;
+            return next;
         }
 
         private bool ArmoryAffordable()
@@ -339,6 +507,15 @@ namespace PofudukFilo.UI
                 _shine.anchorMin = new Vector2(x, -0.2f);
                 _shine.anchorMax = new Vector2(x, 1.2f);
             }
+
+            if (_chests != null)
+                for (int i = 0; i < _chests.Length; i++)
+                {
+                    bool ready = _chests[i].color == Color.white && _chests[i].sprite == chestClosedSprite;
+                    float w = ready ? Mathf.Sin(t * 16f + i) * 10f * Mathf.Clamp01(Mathf.Sin(t * 2f) * 3f - 1.5f) : 0f;
+                    _chests[i].rectTransform.localRotation = Quaternion.Euler(0f, 0f, w);
+                    _chests[i].rectTransform.localScale = Vector3.one * (ready ? 1.1f + 0.05f * Mathf.Sin(t * 5f) : 1f);
+                }
 
             if (_twinkles != null)
                 for (int i = 0; i < _twinkles.Length; i++)

@@ -159,12 +159,13 @@ namespace PofudukFilo.UI
 
         private void RefreshPilot()
         {
-            if (_pilotText == null) return;
+            if (_heroShip == null) return;
             string id = run.Meta.SelectedCharacterId;
             CharacterDefinition pilot = run.Characters.Count > 0 ? run.Characters[0] : null;
             foreach (CharacterDefinition c in run.Characters)
                 if (c.id == id && run.Meta.IsUnlocked(c)) pilot = c;
-            _pilotText.text = Loc.T(pilot != null ? $"Pilot: {pilot.displayName}" : "");
+            if (_pilotText != null) _pilotText.text = Loc.T(pilot != null ? $"Pilot: {pilot.displayName}" : "");
+            if (_avatar != null && pilot != null) _avatar.sprite = pilot.sprite;
             if (_pilotsTile != null && pilot != null) _pilotsTile.Icon.sprite = pilot.sprite;
             if (_heroShip != null && pilot != null)
             {

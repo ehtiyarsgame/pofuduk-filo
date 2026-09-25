@@ -50,6 +50,8 @@ namespace PofudukFilo.Meta
         public int streak;
         public long streakLastDay = -1;
         public long streakClaimedDay = -1;
+        // Record chests on the menu's chest track (bit i = chest i opened).
+        public int recordChestsClaimed;
     }
 
     /// <summary>

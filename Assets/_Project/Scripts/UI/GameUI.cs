@@ -621,9 +621,7 @@ namespace PofudukFilo.UI
                     : Loc.T($"{best.displayName} için {missing} altın kaldı");
             }
             // The next pilot as a visible goal (retention.md): how close the gold is, in percent.
-            CharacterDefinition next = null;
-            foreach (CharacterDefinition c in run.Characters)
-                if (!meta.IsUnlocked(c) && c.requiresChapterCleared < 0 && (next == null || c.goldCost < next.goldCost)) next = c;
+            CharacterDefinition next = NextPilot();
             if (next != null && next.goldCost > 0)
             {
                 int pct = Mathf.Clamp(Mathf.FloorToInt(100f * meta.Gold / next.goldCost), 0, 100);

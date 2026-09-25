@@ -104,6 +104,12 @@ namespace PofudukFilo.EditorTools
             // Rewarded-ad placements (ad-rewards.md).
             Add("icon_ad", ArtRecipes.IconAd(), 128);
             Add("icon_gift", ArtRecipes.GiftBox(), 256);
+            // Menu v4 lobby (main-menu.md §3).
+            Add("stage_card", ArtRecipes.StageCard(), 100);
+            Add("chest_closed", ArtRecipes.Chest(false), 128);
+            Add("chest_open", ArtRecipes.Chest(true), 128);
+            Add("home_bubble", ArtRecipes.HomeBubble(), 200);
+            Add("icon_home", ArtRecipes.IconHome(), 128);
 
             Add("b_feather", ArtRecipes.Feather(false), 64);
             Add("b_feather_giant", ArtRecipes.Feather(true), 64);

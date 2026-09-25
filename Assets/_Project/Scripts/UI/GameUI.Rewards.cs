@@ -31,14 +31,7 @@ namespace PofudukFilo.UI
 
         private void BuildRewards(Transform menu, Transform safeRoot)
         {
-            // The gift sits in the top bar with the wallet (menu v3: nothing floats beside the hero); its state —
-            // HEDİYE / countdown / Yarın — is a small tag under the icon.
-            _giftButton = IconButton(menu, giftIcon, Palette.Hex(0x5B3C99), ClaimGift);
-            UIFactory.Place(_giftButton, 0.63f, 0.925f, 0.77f, 0.985f);
-            Image cap = Capsule(menu, 0.6f, 0.893f, 0.8f, 0.922f);
-            _giftText = _ui.Label(cap.transform, "", 22, Palette.Cream);
-            UIFactory.Place(_giftText, 0.04f, 0f, 0.96f, 1f);
-
+            // The gift button itself is a side icon of the lobby (BuildMenu); this adds the toast it reports into.
             _menuToast = _ui.Label(safeRoot, "", 56, Palette.Cream);
             UIFactory.Place(_menuToast, 0.05f, 0.62f, 0.95f, 0.7f);
             _menuToast.gameObject.SetActive(false);

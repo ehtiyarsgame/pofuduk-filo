@@ -236,7 +236,9 @@ namespace PofudukFilo.EditorTools
                          ("weaponsIcon", "icon_weapons"), ("gearIcon", "icon_gear"), ("playIcon", "icon_play"),
                          ("pauseIcon", "icon_pause"), ("trophyIcon", "icon_trophy"), ("pedestalSprite", "menu_pedestal"),
                          ("raysSprite", "menu_rays"), ("capsuleSprite", "ui_capsule"), ("navBarSprite", "ui_navbar"),
-                         ("ribbonSprite", "menu_ribbon"), ("pawSprite", "icon_paw"), ("shineSprite", "ui_shine"), ("vignetteSprite", "ui_vignette")
+                         ("ribbonSprite", "menu_ribbon"), ("pawSprite", "icon_paw"), ("shineSprite", "ui_shine"), ("vignetteSprite", "ui_vignette"),
+                         ("stageCardSprite", "stage_card"), ("chestClosedSprite", "chest_closed"), ("chestOpenSprite", "chest_open"),
+                         ("homeBubbleSprite", "home_bubble"), ("homeIcon", "icon_home")
                      })
                 Set(ui, field, c.Sprites[key]);
             // Rounded display font, fetched by CI (tools/ci, OFL licence); built-in font otherwise.

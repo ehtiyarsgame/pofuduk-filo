@@ -92,6 +92,29 @@ namespace PofudukFilo.Meta
             Commit();
         }
 
+        // ---------------------------------------------------------------- Record chests (main-menu.md §3)
+
+        public bool RecordChestClaimed(int index) => RecordChests.IsClaimed(_data.recordChestsClaimed, index);
+
+        public bool CanClaimRecordChest(int index) =>
+            RecordChests.CanClaim(index, _data.bestEndlessSeconds, _data.recordChestsClaimed);
+
+        public bool AnyRecordChestClaimable()
+        {
+            for (int i = 0; i < RecordChests.Count; i++) if (CanClaimRecordChest(i)) return true;
+            return false;
+        }
+
+        public bool ClaimRecordChest(int index)
+        {
+            if (!CanClaimRecordChest(index)) return false;
+            _data.recordChestsClaimed |= 1 << index;
+            _data.gold += RecordChests.Gold[index];
+            _data.stardust += RecordChests.Dust[index];
+            Commit();
+            return true;
+        }
+
         // ---------------------------------------------------------------- Login streak
 
         /// <summary>Call on reaching the menu: advances the streak on a new day.</summary>
