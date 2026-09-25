@@ -147,7 +147,7 @@ namespace PofudukFilo.UI
             float v = u.effectPerLevel * level;
             return u.stat switch
             {
-                StatType.Armor => $"-{Mathf.RoundToInt(v)} hasar",
+                StatType.Armor => $"-%{Mathf.RoundToInt(Formulas.ArmorReduction(v) * 100f)} hasar",
                 StatType.Rerolls or StatType.Banishes or StatType.Revives => $"+{Mathf.RoundToInt(v)} hak",
                 _ => Pct(v)
             };
@@ -156,7 +156,7 @@ namespace PofudukFilo.UI
         private static string WorkshopDescription(StatType stat) => stat switch
         {
             StatType.MaxHp => "Oyuna daha fazla maksimum canla başlarsın.",
-            StatType.Armor => "Aldığın her darbe biraz daha az acıtır.",
+            StatType.Armor => "Zırh her darbenin bir yüzdesini emer (en çok %60).",
             StatType.Revives => "Ölünce olduğun yerde dirilme hakkı (her oyun).",
             StatType.GoldGain => "Her oyunda daha çok altın: gelişim daha hızlı.",
             StatType.Experience => "Taşlardan daha çok tecrübe: daha hızlı seviye atlarsın.",

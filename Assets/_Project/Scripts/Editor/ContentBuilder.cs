@@ -344,7 +344,7 @@ namespace PofudukFilo.EditorTools
             ["sugar_heart"] = "Şeker barı daha hızlı dolar.",
             ["golden_paw"] = "Daha çok altın toplarsın: oyun dışı gelişime yatırım.",
             ["wise_owl"] = "Taşlardan daha çok tecrübe: daha sık kart seçersin.",
-            ["turtle_shell"] = "Her darbe 2 daha az acıtır; ama silahlar biraz yavaşlar.",
+            ["turtle_shell"] = "+2 zırh: her darbenin bir yüzdesini emer; ama silahlar biraz yavaşlar.",
             ["lucky_clover"] = "Nadir kart ve daha iyi ödül şansı.",
         };
 
@@ -842,15 +842,15 @@ namespace PofudukFilo.EditorTools
             Branch(1, "def", new[]
             {
                 ("Pamuk", "+%5 maks. can", StatType.MaxHp, 0.05f),
-                ("Kabuk", "Alınan hasar -1", StatType.Armor, 1f),
+                ("Kabuk", "+1 zırh", StatType.Armor, 1f),
                 ("Tatlı Diş", "+%10 şeker dolumu", StatType.RushGain, 0.10f),
                 ("Yastık", "+%5 maks. can", StatType.MaxHp, 0.05f),
                 ("Kıl Payı", "Kıl payı XP'si 2 kat", StatType.GrazeXp, 1f),
-                ("Zırh", "Alınan hasar -1", StatType.Armor, 1f),
+                ("Zırh", "+1 zırh", StatType.Armor, 1f),
                 ("Kalp", "+%8 maks. can", StatType.MaxHp, 0.08f),
                 ("Anka", "+1 diriliş", StatType.Revives, 1f),
                 ("Şeker Ustası", "+%15 şeker dolumu", StatType.RushGain, 0.15f),
-                ("Kale", "Alınan hasar -2", StatType.Armor, 2f)
+                ("Kale", "+2 zırh", StatType.Armor, 2f)
             });
             Branch(2, "luck", new[]
             {

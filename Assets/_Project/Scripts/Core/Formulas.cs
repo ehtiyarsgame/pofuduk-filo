@@ -43,7 +43,34 @@ namespace PofudukFilo.Core
         public static float EnemyDamageScale(float minutes)
         {
             float m = Math.Max(0f, minutes);
-            return 1f + 0.25f * m + 0.04f * m * m; // humans dodge far better than the QA bot (threat.md §3.1)
+            // Quadratic term 0.02 (was 0.04): grows with the run but stays proportionate late (threat.md §3.7, owner
+            // 2026-09-25: "çok ilerki zamanda tek yiyince direkt ölüm olmasın").
+            return 1f + 0.25f * m + 0.02f * m * m;
+        }
+
+        // ---------------------------------------------------------------- Survivability (threat.md §3.7)
+
+        /// <summary>No single hit takes more than this share of max HP, however late the run: never a one-shot.</summary>
+        public const float MaxHitFraction = 0.35f;
+
+        /// <summary>Armour points at which incoming damage is halved (diminishing returns).</summary>
+        public const float ArmorHalfPoint = 20f;
+
+        /// <summary>Most armour can ever absorb.</summary>
+        public const float MaxArmorReduction = 0.6f;
+
+        /// <summary>
+        /// Armour absorbs a share of every hit (owner: "zırh gelen hasarı yüzdelik olarak emsin"):
+        /// reduction = A / (A + 20), capped at 60 %. 5 armour → 20 %, 10 → 33 %, 20 → 50 %.
+        /// </summary>
+        public static float ArmorReduction(float armor) =>
+            Math.Min(MaxArmorReduction, Math.Max(0f, armor) / (Math.Max(0f, armor) + ArmorHalfPoint));
+
+        /// <summary>Damage actually taken: armour share removed, at least 1, never more than MaxHitFraction of max HP.</summary>
+        public static float DamageTaken(float incoming, float armor, float maxHp)
+        {
+            float taken = Math.Max(1f, incoming * (1f - ArmorReduction(armor)));
+            return maxHp > 0f ? Math.Min(taken, Math.Max(1f, maxHp * MaxHitFraction)) : taken;
         }
 
         // ---------------------------------------------------------------- Leaks (threat.md §3.4)

@@ -30,7 +30,7 @@ namespace PofudukFilo.Player
         public bool IsAlive => CurrentHp > 0f;
         /// <summary>True during the post-hit grace period (the ship blinks).</summary>
         public bool IsInvulnerable => Time.time < _invulnerableUntil;
-        /// <summary>Flat damage reduction per hit from the meta "Armour" upgrade.</summary>
+        /// <summary>Armour points (workshop, Kaplumbağa Kabuğu, constellation): Formulas.ArmorReduction turns them into a damage share.</summary>
         public float Armor { get; set; }
 
         private void Awake()
@@ -66,7 +66,8 @@ namespace PofudukFilo.Player
         {
             if (!IsAlive || Time.time < _invulnerableUntil) return;
 
-            float taken = Mathf.Max(1f, amount - Armor);
+            // Armour absorbs a share, and no single hit can take more than 35 % of max HP (threat.md §3.7).
+            float taken = Core.Formulas.DamageTaken(amount, Armor, MaxHp);
             CurrentHp = Mathf.Max(0f, CurrentHp - taken);
             _invulnerableUntil = Time.time + invulnerabilitySeconds;
             Damaged?.Invoke(taken);

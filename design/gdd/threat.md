@@ -119,6 +119,27 @@ level (×3.25), the sugar meter (420) and the drop chances (0.04 / 0.00055 / 0.0
 Big enemies, elites, formations and bosses are unchanged. Leak shares follow base HP, clamped at a 3 % floor,
 so they stay the same for fodder.
 
+### 3.7 No one-shots; armour as a share (2026-09-25)
+
+Owner feedback: *"çok ilerki zamanda tek yiyebilir miyim… tekte direkt ölüm olmasın; oransal olarak artsın zarar
+vermesi ama orantılı olsun… zırh gelen hasarı yüzdelik olarak emsin"* ("very late in a run, can I get one-shot?
+One hit shouldn't kill outright; damage can grow with the run but should stay proportionate… armour should absorb
+incoming damage as a percentage").
+
+- **Damage curve.** `EnemyDamageScale(t) = 1 + 0.25t + 0.02t²` (the quadratic term was 0.04).
+  - Examples: ×2.75 at 5 min, ×5.5 at 10 min, ×12 at 20 min.
+  - On map 3 the threat clock starts 6 minutes ahead, so this term mattered most there.
+- **Hit cap.** No single hit takes more than **35 % of max HP** (`Formulas.MaxHitFraction`). A full-HP ship
+  always survives at least two hits, and usually three.
+- **Armour.** Armour now absorbs a share of each hit instead of subtracting a flat amount:
+  - reduction = A / (A + 20), capped at 60 % (`Formulas.ArmorReduction`).
+  - Examples: 5 armour → 20 %, 10 → 33 %, 20 → 50 %.
+  - Sources are unchanged: workshop Zırh (+1/lv, up to 5), Kaplumbağa Kabuğu (+2/lv), and the constellation
+    (+1, +1, +2).
+  - Old flat armour lost its value late in a run. A share keeps it worth the same at minute 1 and minute 20.
+- **Order of application.** In `Formulas.DamageTaken`, armour applies first, then the cap. The result is at least 1.
+- **Leaks.** Leak damage (§3.5) is already a share of max HP. It ignores both armour and the cap.
+
 ## 4. Formulas
 
 - `EnemyDamageScale(t) = 1 + 0.15t + 0.025t²` (0.2t in run 49; run 51, with every enemy type spawning, died at 155 s). Examples: ×1 at 0, ×1.7 at 3 min, ×2.4 at 5 min, ×3.3 at 7 min.
@@ -134,9 +155,8 @@ so they stay the same for fodder.
   was saved at.
 - **Bullets already in flight:** damage is fixed when a bullet spawns. Bullets already on screen are not
   rescaled.
-- **Armour:** armour subtracts a flat amount after scaling (`PlayerHealth.TakeDamage`, minimum 1). Kaplumbağa
-  Kabuğu and the workshop's armour therefore lose value as the run goes on. This is intended: they help the
-  early and middle game, not the wall.
+- **Armour:** since §3.7, armour absorbs a share of each hit (A / (A + 20), up to 60 %), and every hit is capped at
+  35 % of max HP (`Formulas.DamageTaken`).
 
 ## 6. Dependencies
 

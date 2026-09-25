@@ -151,8 +151,29 @@ namespace PofudukFilo.Tests
         public void test_enemy_damage_scale_grows_with_run_time()
         {
             Assert.That(Formulas.EnemyDamageScale(0f), Is.EqualTo(1f).Within(1e-5f));
-            Assert.That(Formulas.EnemyDamageScale(5f), Is.EqualTo(3.25f).Within(1e-4f));
+            Assert.That(Formulas.EnemyDamageScale(5f), Is.EqualTo(2.75f).Within(1e-4f));
             Assert.That(Formulas.EnemyDamageScale(-1f), Is.EqualTo(1f).Within(1e-5f));
+        }
+
+        [Test]
+        public void test_armor_absorbs_a_share_with_diminishing_returns()
+        {
+            Assert.That(Formulas.ArmorReduction(0f), Is.EqualTo(0f));
+            Assert.That(Formulas.ArmorReduction(5f), Is.EqualTo(0.2f).Within(1e-5f));
+            Assert.That(Formulas.ArmorReduction(20f), Is.EqualTo(0.5f).Within(1e-5f));
+            Assert.That(Formulas.ArmorReduction(1000f), Is.EqualTo(Formulas.MaxArmorReduction).Within(1e-5f));
+        }
+
+        [Test]
+        public void test_damage_taken_never_one_shots()
+        {
+            // Arrange: a late-run 400-damage bullet against a 120 HP ship with no armour.
+            // Act
+            float taken = Formulas.DamageTaken(400f, 0f, 120f);
+            // Assert: capped at 35 % of max HP — at least three such hits to fall.
+            Assert.That(taken, Is.EqualTo(42f).Within(1e-4f));
+            Assert.That(Formulas.DamageTaken(10f, 5f, 100f), Is.EqualTo(8f).Within(1e-4f));
+            Assert.That(Formulas.DamageTaken(0.5f, 0f, 100f), Is.EqualTo(1f).Within(1e-4f));
         }
 
         [Test]
