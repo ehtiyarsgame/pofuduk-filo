@@ -309,16 +309,16 @@ namespace PofudukFilo.EditorTools
             // Hero main guns (hero-guns.md)
             ["chick_cannon"] = "Cıvık'ın ana silahı: ağır, patlayan civciv topları; patlama her seviyede büyür.",
             ["spark_pistol"] = "Mırnav'ın ana silahı: mermi yok; en yakın düşmana anında elektrik çarpar ve zincirle zıplar. Kısa menzil.",
-            ["bubble_rifle"] = "Balonbaş'ın ana silahı: düşmanları delen balon mermiler.",
-            ["star_bow"] = "Yıldızpati'nin ana silahı: geniş yıldız yelpazesi.",
+            ["bubble_rifle"] = "Balonbaş'ın ana silahı: duvardan ve düşmandan seken, her sekmede güçlenen balonlar.",
+            ["star_bow"] = "Yıldızpati'nin ana silahı: geniş yıldız yelpazesi; 3. seviyeden sonra yıldızlar hedefe döner.",
             ["ice_gun"] = "Pengu'nun ana silahı: kesintisiz buz ışını; yavaşlatır, uzun tutunca dondurur.",
-            ["yarn_launcher"] = "Kuzu'nun ana silahı: iri, ağır yün yumakları.",
+            ["yarn_launcher"] = "Kuzu'nun ana silahı: yakın mesafeli yün pompalı; geniş saçma, düşmanı geri iter.",
             ["mega_chick_cannon"] = "EVRİM: Dev civciv topları; her 4. atış 3 kat.",
             ["thunder_pistol"] = "EVRİM: Yıldırım; 8 düşmana zincirlenir ve sersemletir.",
-            ["bubble_storm"] = "EVRİM: 6 delici balon, geniş yelpaze.",
-            ["comet_bow"] = "EVRİM: 8 yıldızlık yelpaze; her 5. atış kuyruklu yıldız.",
+            ["bubble_storm"] = "EVRİM: 6 balon, 6 sekme; yapışır ve patlar.",
+            ["comet_bow"] = "EVRİM: 7 güdümlü yıldız, delip geçer; her 5. atış 3 kat.",
             ["glacier_gun"] = "EVRİM: Buzul Işını; 3 ışın, 7 düşman, uzun donma.",
-            ["yarn_cyclone"] = "EVRİM: Yün kasırgası; dev yumaklar 2 düşman deler.",
+            ["yarn_cyclone"] = "EVRİM: Yün Kasırgası; 12 saçma, iter, yavaşlatır, 2 deler.",
             ["yarn_ball"] = "Ekran kenarlarından seken yün yumağı; değdiği her düşmanı ezer.",
             ["shark_swarm"] = "EVRİM: Dev köpekbalıkları; her vuruşta 2 yavru balık saldırır.",
             ["cosmic_yarn"] = "EVRİM: Dev yumak; her sekmede mini yumaklar saçar.",
@@ -384,6 +384,18 @@ namespace PofudukFilo.EditorTools
                 specialEveryN = specialEvery, specialDamageMultiplier = specialMult, upgradeText = text, effects = fx
             };
 
+        private static WeaponLevelStats Bounce(WeaponLevelStats s, int bounces)
+        {
+            s.bounces = bounces;
+            return s;
+        }
+
+        private static WeaponLevelStats Homing(WeaponLevelStats s, float degreesPerSecond)
+        {
+            s.homing = degreesPerSecond;
+            return s;
+        }
+
         private static WeaponLevelStats Wings(WeaponLevelStats s, int sideShots)
         {
             s.sideShots = sideShots;
@@ -391,7 +403,7 @@ namespace PofudukFilo.EditorTools
         }
 
         private const BulletEffect Boom = BulletEffect.Explode, Split = BulletEffect.Split,
-            Chain = BulletEffect.Chain, Slow = BulletEffect.Slow;
+            Chain = BulletEffect.Chain, Slow = BulletEffect.Slow, Knock = BulletEffect.Knockback;
 
         private WeaponDefinition Weapon(string id, string name, Rarity rarity, int bulletType, WeaponBehaviour prefab,
             WeaponLevelStats[] levels, PassiveDefinition key = null, WeaponDefinition evolvesInto = null)
@@ -632,23 +644,26 @@ namespace PofudukFilo.EditorTools
                 L(20f, 0.28f, 4, 0, 0, 0, 5.6f, 0.6f, "5 düşmana zincir, 0.6 sn sersemletme", fx: Slow)
             }, "thunder_pistol", "Yıldırım", L(22f, 0.24f, 7, 0, 0, 0, 6.5f, 0.8f, "Yıldırım: 8 düşmana zincir, 0.8 sn sersemletme", fx: Slow), Arc);
 
+            // Balonbaş grows by BOUNCES (hero-guns.md §3.4): bubbles spring off walls, the HUD edge and enemies,
+            // growing ×1.15 per bounce — play the edges and corners.
             Gun("bubble_rifle", "Balon Tüfeği", BMeteor, new[]
             {
-                L(16f, 0.30f, 2, 0, 11f, 1, 0, 1.8f, "2 delici balon"),
-                L(16f, 0.30f, 2, 0, 11f, 1, 0, 1.8f, "YENİ: sakız yapışır, düşman yavaşlar", fx: Slow),
-                L(16f, 0.28f, 3, 20f, 11f, 1, 0, 1.8f, "3 balon, yelpaze", fx: Slow),
-                L(18f, 0.28f, 3, 20f, 11f, 1, 0, 1.8f, "YENİ: balonlar çarpınca patlar", fx: Slow | Boom),
-                L(20f, 0.26f, 4, 24f, 12f, 2, 0, 1.8f, "4 balon, 2 düşman deler", fx: Slow | Boom)
-            }, "bubble_storm", "Balon Fırtınası", L(22f, 0.24f, 6, 36f, 12f, 3, 0, 1.8f, "6 balon: yapışır, patlar, 3 deler", fx: Slow | Boom));
+                Bounce(L(12f, 0.32f, 2, 20f, 10f, 0, 0, 3f, "2 seken balon: duvardan ve düşmandan 1 kez seker"), 1),
+                Bounce(L(12f, 0.32f, 2, 20f, 10f, 0, 0, 3f, "YENİ: sakız yapışır, düşman yavaşlar; 2 sekme", fx: Slow), 2),
+                Bounce(L(13f, 0.30f, 3, 30f, 10f, 0, 0, 3f, "3 balon, 2 sekme", fx: Slow), 2),
+                Bounce(L(14f, 0.30f, 3, 30f, 10f, 0, 0, 3f, "YENİ: balonlar çarpınca patlar; 3 sekme", fx: Slow | Boom), 3),
+                Bounce(L(15f, 0.28f, 4, 36f, 11f, 0, 0, 3f, "4 balon, 4 sekme; her sekmede güçlenir", fx: Slow | Boom), 4)
+            }, "bubble_storm", "Balon Fırtınası", Bounce(L(17f, 0.26f, 6, 50f, 11f, 0, 0, 3.5f, "Balon Fırtınası: 6 balon, 6 sekme, yapışır, patlar", fx: Slow | Boom), 6));
 
+            // Yıldızpati grows by AIM (hero-guns.md §3.4): a wide fan whose stars turn toward targets from Lv3.
             Gun("star_bow", "Yıldız Yayı", BStar, new[]
             {
-                L(11f, 0.26f, 3, 24f, 14f, 0, 0, 1.4f, "3 yıldızlık yelpaze"),
-                L(11f, 0.26f, 3, 24f, 14f, 0, 0, 1.4f, "YENİ: yıldızlar yandaki düşmana sıçrar", fx: Chain),
-                L(11f, 0.24f, 4, 30f, 14f, 0, 0, 1.4f, "4 yıldız", fx: Chain),
-                L(12f, 0.24f, 4, 30f, 14f, 0, 0, 1.4f, "YENİ: yıldızlar ikiye bölünür", fx: Chain | Split),
-                L(13f, 0.22f, 5, 40f, 15f, 0, 0, 1.4f, "5 yıldız; her 5. atış 3 kat", 5, 3f, Chain | Split)
-            }, "comet_bow", "Kuyruklu Yıldız Yayı", L(15f, 0.2f, 7, 52f, 16f, 1, 0, 1.4f, "7 yıldız: sıçrar, bölünür, deler", 5, 3f, Chain | Split));
+                L(11f, 0.26f, 3, 30f, 13f, 0, 0, 1.6f, "3 yıldızlık geniş yelpaze"),
+                L(11f, 0.26f, 3, 30f, 13f, 0, 0, 1.6f, "YENİ: yıldızlar yandaki düşmana sıçrar", fx: Chain),
+                Homing(L(11f, 0.25f, 3, 30f, 12f, 0, 0, 1.8f, "YENİ: yıldızlar hedefe döner (güdümlü)", fx: Chain), 200f),
+                Homing(L(12f, 0.24f, 4, 36f, 12f, 0, 0, 1.8f, "4 güdümlü yıldız; yıldızlar ikiye bölünür", fx: Chain | Split), 260f),
+                Homing(L(13f, 0.22f, 5, 44f, 13f, 0, 0, 1.8f, "5 güdümlü yıldız; her 5. atış 3 kat", 5, 3f, Chain | Split), 320f)
+            }, "comet_bow", "Kuyruklu Yıldız Yayı", Homing(L(15f, 0.2f, 7, 56f, 14f, 1, 0, 2f, "Kuyruklu Yıldız: 7 güdümlü yıldız, delip geçer", 5, 3f, Chain | Split), 420f));
 
             // Pengu grows by CONTROL (hero-guns.md §3.3): a continuous beam — wider, longer freezes, then split in two.
             // count = beams, area = half-width, pierce = extra enemies per beam, life = freeze seconds, cd = damage tick.
@@ -662,14 +677,16 @@ namespace PofudukFilo.EditorTools
                 L(9f, 0.10f, 2, 0, 0, 4, 0.34f, 1.2f, "Kalın çift ışın: 5 düşman, 1.2 sn donma")
             }, "glacier_gun", "Buzul Işını", L(11f, 0.09f, 3, 0, 0, 6, 0.4f, 1.5f, "Buzul: 3 ışın, 7 düşman, 1.5 sn donma"), Beam);
 
-            Gun("yarn_launcher", "Yün Atar", BYarn, new[]
+            // Kuzu grows by CLOSE-RANGE PUNCH (hero-guns.md §3.4): a wool shotgun — short range, wide spread, shoves
+            // enemies back. Brave play: dive into the swarm. life = range (speed × life ≈ 3.6 u at Lv1).
+            Gun("yarn_launcher", "Yün Saçmalı", BYarn, new[]
             {
-                L(22f, 0.34f, 1, 0, 10f, 0, 0, 2f, "İri yün yumağı"),
-                L(22f, 0.34f, 1, 0, 10f, 0, 0, 2f, "YENİ: yün dolanır, düşman yavaşlar", fx: Slow),
-                L(22f, 0.32f, 2, 0, 10f, 0, 0, 2f, "YENİ: yumak çözülüp ikiye bölünür", fx: Slow | Split),
-                L(24f, 0.30f, 2, 0, 10f, 0, 0, 2f, "YENİ: yumaklar patlar", fx: Slow | Split | Boom),
-                L(26f, 0.28f, 3, 18f, 11f, 1, 0, 2f, "3 yumak; her 4. atış 3 kat", 4, 3f, Slow | Split | Boom)
-            }, "yarn_cyclone", "Yün Kasırgası", L(30f, 0.26f, 4, 24f, 11f, 2, 0, 2f, "Yün kasırgası: dolanır, bölünür, patlar", 4, 3f, Slow | Split | Boom));
+                L(8f, 0.5f, 5, 50f, 13f, 0, 0, 0.28f, "Yün saçması: yakına 5 saçma"),
+                L(8f, 0.48f, 5, 50f, 13f, 0, 0, 0.28f, "YENİ: saçma düşmanı geri iter", fx: Knock),
+                L(8f, 0.46f, 7, 56f, 13f, 0, 0, 0.3f, "7 saçma, biraz daha uzağa", fx: Knock),
+                L(9f, 0.44f, 7, 56f, 13f, 0, 0, 0.3f, "YENİ: yün dolanır, düşman yavaşlar", fx: Knock | Slow),
+                L(9f, 0.42f, 9, 64f, 14f, 1, 0, 0.32f, "9 saçma, 1 düşman deler", fx: Knock | Slow)
+            }, "yarn_cyclone", "Yün Kasırgası", L(11f, 0.38f, 12, 80f, 14f, 2, 0, 0.36f, "Yün Kasırgası: 12 saçma, iter, yavaşlatır, 2 deler", fx: Knock | Slow));
         }
 
         // ---------------------------------------------------------------- Lab, fusions, Hangar, Constellation

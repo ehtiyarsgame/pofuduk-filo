@@ -79,6 +79,31 @@ Balonbaş, Yıldızpati and Kuzu.
 **Mırnav's range is short on purpose.** He must fly up to the swarm, while Pengu and Pıtır work from below. This
 fits the leak rule (`threat.md` §3.5).
 
+### 3.4 Round 3: Balonbaş, Yıldızpati, Kuzu (2026-09-25)
+
+| Hero | Gun | How it fires | Grows by | Level path | Evolution |
+|---|---|---|---|---|---|
+| Balonbaş | Balon Tüfeği | bubbles that **bounce** off the side walls, the HUD edge and enemies, ×1.15 damage per bounce | **bounces** | 2 bubbles, 1 bounce → slow, 2 → 3 bubbles → burst, 3 → 4 bubbles, 4 | Balon Fırtınası: 6 bubbles, 6 bounces |
+| Yıldızpati | Yıldız Yayı | wide fan of stars | **aim** | 3-star fan → chain → **homing** from Lv3 (200°/s) → 4 stars + split (260°/s) → 5 stars, ×3 every 5th (320°/s) | Kuyruklu Yıldız: 7 homing stars, pierce 1 (420°/s) |
+| Kuzu | Yün Saçmalı | **shotgun**: a wide, short-range spray (speed × life ≈ 3.6 u) | **close punch** | 5 pellets → knockback → 7 → slow → 9 pellets, pierce 1 | Yün Kasırgası: 12 pellets, 80°, pierce 2 |
+
+**Mechanisms.**
+- **Bounce.** `BulletData.Bounces`:
+  - `MoveBulletsJob` reflects a bouncing shot off the visible walls (`Walls`: the camera sides and `Playfield.TopY`).
+  - `PlayerBulletCollisionJob` sends it back off an enemy instead of popping it.
+  - Each bounce multiplies damage by ×1.15 and keeps the shot alive for at least 1.2 s more.
+- **Homing.** `BulletData.Homing`, in °/s: `HomingJob` turns the shot toward the nearest visible enemy within 9 u
+  before it moves.
+- **Knockback.** `BulletEffect.Knockback` pushes the enemy 0.3 u back up the screen. Bosses are not pushed.
+
+**Round-3 gun mods.**
+
+| Gun | Track 1 | Track 2 | Track 3 |
+|---|---|---|---|
+| Balon Tüfeği | Lastik Sakız (Rubber Gum): +1 bounce at Lv2 and Lv4 | Ek Balon (Extra Bubble) | Sert Balon (Hard Bubble) |
+| Yıldız Yayı | Yıldız Pusulası (Star Compass): homing +15 %/lv | Ek Yıldız (Extra Star) | Parlak Yıldız (Bright Star) |
+| Yün Saçmalı | Ek Saçma (Extra Pellet): +1 pellet per level | Uzun Namlu (Long Barrel): range +10 %/lv | Sıkı Yün (Tight Wool) |
+
 ## 4. Gun mods: permanent tracks per gun (hero-guns.md §4)
 
 Owner decision on 2026-09-25: *"her silahın kendine özgü geliştirmesi olsun"* ("every gun should have its own

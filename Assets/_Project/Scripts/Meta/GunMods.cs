@@ -11,7 +11,11 @@ namespace PofudukFilo.Meta
         Count,
         Area,
         Pierce,
-        Duration
+        Duration,
+        /// <summary>Extra bounces (Balonbaş).</summary>
+        Bounces,
+        /// <summary>Homing turn rate × (1 + v) (Yıldızpati).</summary>
+        Homing
     }
 
     /// <summary>One permanent upgrade track of one hero gun (hero-guns.md §4).</summary>
@@ -75,23 +79,22 @@ namespace PofudukFilo.Meta
                 new GunMod("donma", "Derin Donma", "Dondurma süresi +%12 / sv", GunModKind.Duration, 0.12f),
                 new GunMod("soguk", "Keskin Soğuk", "Hasar +%5 / sv", GunModKind.Damage, 0.05f)
             },
-            // Round 3 (Balonbaş, Yıldızpati, Kuzu) gets its own tracks with its new mechanics; until then these three.
             ["bubble_rifle"] = new[]
             {
+                new GunMod("sekme", "Lastik Sakız", "Sv2 ve Sv4'te +1 sekme", GunModKind.Bounces, 0.5f),
                 new GunMod("adet", "Ek Balon", "Sv3 ve Sv5'te +1 balon", GunModKind.Count, 0.4f),
-                new GunMod("hiz", "Hızlı Pompa", "Atış hızı +%4 / sv", GunModKind.FireRate, 0.04f),
                 new GunMod("hasar", "Sert Balon", "Hasar +%5 / sv", GunModKind.Damage, 0.05f)
             },
             ["star_bow"] = new[]
             {
+                new GunMod("gudum", "Yıldız Pusulası", "Hedefe dönüş +%15 / sv", GunModKind.Homing, 0.15f),
                 new GunMod("adet", "Ek Yıldız", "Sv3 ve Sv5'te +1 yıldız", GunModKind.Count, 0.4f),
-                new GunMod("hiz", "Hızlı Yay", "Atış hızı +%4 / sv", GunModKind.FireRate, 0.04f),
                 new GunMod("hasar", "Parlak Yıldız", "Hasar +%5 / sv", GunModKind.Damage, 0.05f)
             },
             ["yarn_launcher"] = new[]
             {
-                new GunMod("adet", "Ek Yumak", "Sv3 ve Sv5'te +1 yumak", GunModKind.Count, 0.4f),
-                new GunMod("hiz", "Hızlı Atış", "Atış hızı +%4 / sv", GunModKind.FireRate, 0.04f),
+                new GunMod("sacma", "Ek Saçma", "Her sv +1 saçma", GunModKind.Count, 1f),
+                new GunMod("menzil", "Uzun Namlu", "Menzil +%10 / sv", GunModKind.Duration, 0.10f),
                 new GunMod("hasar", "Sıkı Yün", "Hasar +%5 / sv", GunModKind.Damage, 0.05f)
             }
         };
@@ -113,8 +116,11 @@ namespace PofudukFilo.Meta
             public float Duration;
             public int Count;
             public int Pierce;
+            public int Bounces;
+            public float Homing;
 
-            public bool IsZero => Damage == 0f && FireRate == 0f && Area == 0f && Duration == 0f && Count == 0 && Pierce == 0;
+            public bool IsZero => Damage == 0f && FireRate == 0f && Area == 0f && Duration == 0f && Count == 0 && Pierce == 0
+                && Bounces == 0 && Homing == 0f;
         }
 
         public static Bonus Evaluate(string gunId, Func<string, int> levelOf)
@@ -132,6 +138,8 @@ namespace PofudukFilo.Meta
                     case GunModKind.Duration: b.Duration += v; break;
                     case GunModKind.Count: b.Count += (int)Math.Floor(v + 1e-4); break;
                     case GunModKind.Pierce: b.Pierce += (int)Math.Floor(v + 1e-4); break;
+                    case GunModKind.Bounces: b.Bounces += (int)Math.Floor(v + 1e-4); break;
+                    case GunModKind.Homing: b.Homing += v; break;
                 }
             }
             return b;

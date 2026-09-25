@@ -59,6 +59,8 @@ namespace PofudukFilo.Weapons
             s.lifetime *= 1f + mod.Duration;
             if (s.projectileCount > 0) s.projectileCount += mod.Count;
             s.pierce += mod.Pierce;
+            if (s.bounces > 0) s.bounces += mod.Bounces;
+            s.homing *= 1f + mod.Homing;
             // Build cards (passives.md §3.2): Çift Namlu adds a shot/ball/bounce, Delici Pençe adds pierce.
             if (s.projectileCount > 0) s.projectileCount += Mathf.RoundToInt(Stats.GetBonus(StatType.ExtraProjectiles));
             s.pierce += Mathf.RoundToInt(Stats.GetBonus(StatType.Pierce));

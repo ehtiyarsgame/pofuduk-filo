@@ -51,7 +51,7 @@ namespace PofudukFilo.Weapons
                 }
 
                 bullets.SpawnPlayerBullet(typeIndex, position, direction * speed,
-                    RollDamage(s.damage * damageScale), s.pierce, lifetime, s.effects, ExplodeRadiusOf(s));
+                    RollDamage(s.damage * damageScale), s.pierce, lifetime, s.effects, ExplodeRadiusOf(s), s.bounces, s.homing);
             }
 
             // Wing feathers (hero-guns.md §3.3): pairs fanning out from the outer lanes.
@@ -62,7 +62,7 @@ namespace PofudukFilo.Weapons
                 float angle = (90f + side * (sideShotAngle + 10f * (k / 2))) * Mathf.Deg2Rad;
                 var dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
                 bullets.SpawnPlayerBullet(typeIndex, origin + new Vector2(side * edge, 0f), dir * speed,
-                    RollDamage(s.damage * damageScale * 0.8f), s.pierce, lifetime, s.effects, ExplodeRadiusOf(s));
+                    RollDamage(s.damage * damageScale * 0.8f), s.pierce, lifetime, s.effects, ExplodeRadiusOf(s), s.bounces, s.homing);
             }
         }
     }

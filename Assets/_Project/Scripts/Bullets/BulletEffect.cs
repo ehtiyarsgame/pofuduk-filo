@@ -15,6 +15,8 @@ namespace PofudukFilo.Bullets
         /// <summary>A spark jumps to the nearest other enemy within 3.5 units (60 % damage).</summary>
         Chain = 4,
         /// <summary>Slows the enemy hit to 55 % speed for 1.5 s.</summary>
-        Slow = 8
+        Slow = 8,
+        /// <summary>Shoves the enemy back up the screen (Kuzu's wool shot, hero-guns.md §3.4). Bosses stand firm.</summary>
+        Knockback = 16
     }
 }

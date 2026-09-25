@@ -30,6 +30,10 @@ namespace PofudukFilo.Weapons
         public Bullets.BulletEffect effects;
         [Tooltip("Extra wing shots fanning out beside the lanes, in pairs (Tüy Blaster, hero-guns.md §3.3).")]
         public int sideShots;
+        [Tooltip("Times each shot may bounce off walls or enemies, growing ×1.15 per bounce (Balonbaş, hero-guns.md §3.4).")]
+        public int bounces;
+        [Tooltip("Turn rate toward the nearest enemy in °/s; 0 = straight (Yıldızpati, hero-guns.md §3.4).")]
+        public float homing;
         [TextArea] public string upgradeText;
     }
 

@@ -46,6 +46,17 @@ namespace PofudukFilo.Bullets
         private bool _clearEnemyBulletsRequested;
         private float _maxBulletRadius;
         private float4 _bounds;
+        private float4 _walls;
+
+        /// <summary>Visible playfield edges for bouncing shots; the top is the HUD panel's edge (Playfield.TopY).</summary>
+        private void UpdateWalls()
+        {
+            Camera cam = Camera.main;
+            if (cam == null) return;
+            float halfH = cam.orthographicSize, halfW = cam.orthographicSize * cam.aspect;
+            Vector3 c = cam.transform.position;
+            _walls = new float4(c.x - halfW + 0.2f, c.y - halfH, c.x + halfW - 0.2f, Playfield.TopY(cam) - 0.2f);
+        }
 
         private InstancedDrawer _drawer;
         private readonly System.Collections.Generic.List<IBulletAbsorber> _absorbers = new();
@@ -95,15 +106,20 @@ namespace PofudukFilo.Bullets
 
         /// <summary>Queue a player bullet. Safe to call at any time — it joins the simulation next schedule.</summary>
         public void SpawnPlayerBullet(int typeIndex, Vector2 position, Vector2 velocity, float damage,
-            int pierce = 0, float lifetime = 3f, BulletEffect effects = BulletEffect.None, float explodeRadius = 0f)
+            int pierce = 0, float lifetime = 3f, BulletEffect effects = BulletEffect.None, float explodeRadius = 0f,
+            int bounces = 0, float homing = 0f)
         {
             BulletData b = Create(typeIndex, position, velocity, damage, pierce, lifetime);
             b.Effects = (byte)effects;
             b.Area = explodeRadius;
+            b.Bounces = bounces;
+            b.Homing = homing;
             _pendingPlayer.Add(b);
         }
 
         public const float ExplodeRadius = 1.0f;
+        /// <summary>How far a Knockback hit shoves an enemy back up (world units).</summary>
+        public const float KnockbackDistance = 0.3f;
 
         /// <summary>
         /// Player-shot traits on hit (hero-guns.md §3.2): each gun level can add one. Resolved on the main thread after
@@ -137,6 +153,8 @@ namespace PofudukFilo.Bullets
                 }
             }
             if ((fx & BulletEffect.Slow) != 0 && target != null && !target.IsDead) target.Slow(0.55f, 1.5f);
+            if ((fx & BulletEffect.Knockback) != 0 && target != null && !target.IsDead && target is not BossEnemy)
+                target.Nudge(new Vector2(0f, KnockbackDistance));
             if ((fx & BulletEffect.Split) != 0)
             {
                 for (int s = -1; s <= 1; s += 2)
@@ -237,10 +255,15 @@ namespace PofudukFilo.Bullets
             EnemyManager enemies = EnemyManager.Instance;
             PlayerHealth player = PlayerHealth.Instance;
 
-            // Player bullets: move → (grid) → collide with enemies.
+            // Player bullets: (steer) → move → (grid) → collide with enemies.
             NativeArray<BulletData> playerArray = _playerBullets.AsArray();
-            JobHandle playerMove = new MoveBulletsJob { Bullets = playerArray, DeltaTime = dt, Bounds = _bounds }
-                .Schedule(playerArray.Length, 64);
+            UpdateWalls();
+            JobHandle steer = default;
+            if (enemies != null && enemies.Count > 0)
+                steer = new HomingJob { Bullets = playerArray, Enemies = enemies.Proxies, EnemyCount = enemies.Count, DeltaTime = dt, SearchRadius = 9f }
+                    .Schedule(playerArray.Length, 64);
+            JobHandle playerMove = new MoveBulletsJob { Bullets = playerArray, DeltaTime = dt, Bounds = _bounds, Walls = _walls }
+                .Schedule(playerArray.Length, 64, steer);
 
             JobHandle playerChain = playerMove;
             if (enemies != null && enemies.Count > 0)
@@ -267,7 +290,7 @@ namespace PofudukFilo.Bullets
 
             // Enemy bullets: move → collide with the single player.
             NativeArray<BulletData> enemyArray = _enemyBullets.AsArray();
-            JobHandle enemyChain = new MoveBulletsJob { Bullets = enemyArray, DeltaTime = dt, Bounds = _bounds }
+            JobHandle enemyChain = new MoveBulletsJob { Bullets = enemyArray, DeltaTime = dt, Bounds = _bounds, Walls = _walls }
                 .Schedule(enemyArray.Length, 64);
 
             if (player != null && player.IsAlive)

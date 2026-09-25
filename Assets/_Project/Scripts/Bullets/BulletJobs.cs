@@ -28,6 +28,10 @@ namespace PofudukFilo.Bullets
         public int SplitInto;
         /// <summary>Explosion radius of a player shot with the Explode trait; 0 = BulletSystem.ExplodeRadius (hero-guns.md §3.3).</summary>
         public float Area;
+        /// <summary>Balonbaş (hero-guns.md §3.4): walls and enemies it may still bounce off; each bounce ×1.15 damage.</summary>
+        public int Bounces;
+        /// <summary>Yıldızpati (hero-guns.md §3.4): turn rate toward the nearest enemy in degrees per second; 0 = straight.</summary>
+        public float Homing;
     }
 
     /// <summary>Collision snapshot of one enemy, written by EnemyManager each frame.</summary>
@@ -72,6 +76,10 @@ namespace PofudukFilo.Bullets
         public float DeltaTime;
         /// <summary>Despawn bounds: xy = min, zw = max.</summary>
         public float4 Bounds;
+        /// <summary>The visible playfield walls bouncing shots reflect off: xy = min, zw = max (w = the HUD panel's edge).</summary>
+        public float4 Walls;
+
+        public const float BounceDamageGrowth = 1.15f;
 
         public void Execute(int index)
         {
@@ -80,6 +88,21 @@ namespace PofudukFilo.Bullets
 
             b.Position += b.Velocity * DeltaTime;
             b.Lifetime -= DeltaTime;
+
+            if (b.Bounces > 0)
+            {
+                bool hitSide = (b.Position.x < Walls.x && b.Velocity.x < 0f) || (b.Position.x > Walls.z && b.Velocity.x > 0f);
+                bool hitTop = b.Position.y > Walls.w && b.Velocity.y > 0f;
+                if (hitSide || hitTop)
+                {
+                    if (hitSide) b.Velocity.x = -b.Velocity.x;
+                    if (hitTop) b.Velocity.y = -b.Velocity.y;
+                    b.Bounces--;
+                    b.Damage *= BounceDamageGrowth;
+                    b.Lifetime = math.max(b.Lifetime, 1.2f);
+                    b.LastHitEnemyId = -1;
+                }
+            }
 
             bool outside = b.Position.x < Bounds.x || b.Position.y < Bounds.y ||
                            b.Position.x > Bounds.z || b.Position.y > Bounds.w;
@@ -115,6 +138,48 @@ namespace PofudukFilo.Bullets
                 for (int y = min.y; y <= max.y; y++)
                     Grid.Add(BulletGrid.CellKey(new int2(x, y)), i);
             }
+        }
+    }
+
+    /// <summary>Homing shots turn toward the nearest visible enemy (Yıldızpati, hero-guns.md §3.4).</summary>
+    [BurstCompile]
+    public struct HomingJob : IJobParallelFor
+    {
+        public NativeArray<BulletData> Bullets;
+        [ReadOnly] public NativeArray<EnemyProxy> Enemies;
+        public int EnemyCount;
+        public float DeltaTime;
+        public float SearchRadius;
+
+        public void Execute(int index)
+        {
+            BulletData b = Bullets[index];
+            if (!b.Alive || b.Homing <= 0f) return;
+
+            float bestSq = SearchRadius * SearchRadius;
+            int best = -1;
+            for (int i = 0; i < EnemyCount; i++)
+            {
+                float d = math.distancesq(Enemies[i].Position, b.Position);
+                if (d < bestSq && Enemies[i].Radius > 0f)
+                {
+                    bestSq = d;
+                    best = i;
+                }
+            }
+            if (best < 0) return;
+
+            float speed = math.length(b.Velocity);
+            if (speed <= 0f) return;
+            float current = math.atan2(b.Velocity.y, b.Velocity.x);
+            float2 to = Enemies[best].Position - b.Position;
+            float wanted = math.atan2(to.y, to.x);
+            float delta = wanted - current;
+            delta = math.atan2(math.sin(delta), math.cos(delta)); // wrap to [-π, π]
+            float maxTurn = math.radians(b.Homing) * DeltaTime;
+            float turned = current + math.clamp(delta, -maxTurn, maxTurn);
+            b.Velocity = new float2(math.cos(turned), math.sin(turned)) * speed;
+            Bullets[index] = b;
         }
     }
 
@@ -158,6 +223,15 @@ namespace PofudukFilo.Bullets
                 b.Pierce--;
                 if (b.Pierce < 0)
                 {
+                    // A bouncing bubble springs back off the enemy instead of popping (hero-guns.md §3.4).
+                    if (b.Bounces > 0)
+                    {
+                        b.Bounces--;
+                        b.Pierce = 0;
+                        b.Velocity.y = -b.Velocity.y;
+                        b.Damage *= MoveBulletsJob.BounceDamageGrowth;
+                        break;
+                    }
                     b.Alive = false;
                     break;
                 }
