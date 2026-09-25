@@ -74,6 +74,9 @@ namespace PofudukFilo.UI
             public Text Label;
             public GameObject Badge;
             public Text BadgeText;
+            public Image Raised;
+            public float X;
+            public float W;
         }
 
         private Image _heroShip;
@@ -122,7 +125,6 @@ namespace PofudukFilo.UI
             BuildRecordRoad(m);
             BuildMapSelector(m);
             BuildPlay(m);
-            BuildTabBar(m);
 
             BuildRewards(m, root);
             BuildMissions(m, root);
@@ -379,57 +381,87 @@ namespace PofudukFilo.UI
                 : Loc.T($"KİLİTLİ · {Clock(meta.MapBest(_viewMap - 1))} / {Clock(Maps.UnlockSeconds)}");
         }
 
-        private void BuildTabBar(Transform m)
+        /// <summary>
+        /// The bottom tab bar lives on its own layer above the lobby and every meta screen, so it is always there outside
+        /// a run (owner 2026-09-25: "alttaki barlar her zaman gözüksün, neden sürekli geri diyoruz"). The tab of the
+        /// open screen is raised; there are no Back buttons.
+        /// </summary>
+        private void BuildNav(Transform root)
         {
+            _nav = _ui.Node("NavLayer", root).gameObject;
+            Transform m = _nav.transform;
             Image bar = Kit(m, kitTabBar, "TabBar", 1f);
             if (kitTabBar == null) bar.color = Palette.Hex(0x1B1447);
             bar.raycastTarget = true;
             UIFactory.Place(bar, -0.02f, -0.08f, 1.02f, 1f - 758f / MockH);
 
-            float[] x0 = { 6f, 77.7f, 149.3f, 244.7f, 316.3f };
-            float[] w = { 67.7f, 67.7f, 91.4f, 67.7f, 67.7f };
-            _researchTile = Tab(m, "AR-GE", researchIcon, x0[0], w[0], OpenResearch);
-            _armoryTile = Tab(m, "SİLAHLAR", weaponsIcon, x0[1], w[1], OpenLab);
-            Tab(m, "ANA SAYFA", homeIcon, x0[2], w[2], () => { }, selected: true);
-            _pilotsTile = Tab(m, "PİLOTLAR", null, x0[3], w[3], OpenHangar);
-            _missionsTile = Tab(m, "GÖREVLER", trophyIcon, x0[4], w[4], () => OpenMeta(_missions));
+            const float w = 75.6f;
+            _tabs.Clear();
+            _researchTile = Tab(m, "AR-GE", researchIcon, 6f + 0 * w, w, OpenResearch);
+            _armoryTile = Tab(m, "SİLAHLAR", weaponsIcon, 6f + 1 * w, w, OpenLab);
+            Tab(m, "ANA SAYFA", homeIcon, 6f + 2 * w, w, GoHome);
+            _pilotsTile = Tab(m, "PİLOTLAR", null, 6f + 3 * w, w, OpenHangar);
+            _missionsTile = Tab(m, "GÖREVLER", trophyIcon, 6f + 4 * w, w, () => OpenMeta(_missions));
+            SelectTab(HomeTab);
+            _nav.SetActive(false);
         }
 
-        /// <summary>A bottom tab: icon over a label; the selected one is a raised violet candy tile, taller and brighter.</summary>
-        private Tile Tab(Transform m, string label, Sprite icon, float x, float w, System.Action open, bool selected = false)
+        private const int HomeTab = 2;
+        private GameObject _nav;
+        private readonly System.Collections.Generic.List<Tile> _tabs = new(5);
+
+        /// <summary>A bottom tab: icon over a label, with a raised violet candy tile shown while it is the open screen.</summary>
+        private Tile Tab(Transform m, string label, Sprite icon, float x, float w, System.Action open)
         {
-            var tile = new Tile();
-            float y = selected ? 746f : 766f, h = selected ? 84f : 64f;
-            if (selected)
+            var tile = new Tile { X = x, W = w };
+            tile.Raised = Kit(m, kitViolet, "Raised", 0.86f);
+            if (kitViolet == null) tile.Raised.color = Palette.Hex(0x6A55D6);
+            At(tile.Raised, x + 2f, 746f, w - 4f, 84f);
+            Image hit = Kit(m, null, label, 1f, Image.Type.Simple);
+            hit.color = new Color(1f, 1f, 1f, 0f);
+            hit.raycastTarget = true;
+            At(hit, x, 746f, w, 90f);
+            tile.Button = hit.gameObject.AddComponent<Button>();
+            tile.Button.onClick.AddListener(() =>
             {
-                tile.Button = KitButton(m, kitViolet, open, 0.86f);
-            }
-            else
-            {
-                Image hit = Kit(m, null, label, 1f, Image.Type.Simple);
-                hit.color = new Color(1f, 1f, 1f, 0f);
-                hit.raycastTarget = true;
-                tile.Button = hit.gameObject.AddComponent<Button>();
-                tile.Button.onClick.AddListener(() =>
-                {
-                    Feel.Juice.PunchUI(hit.rectTransform);
-                    if (Audio.AudioManager.Instance != null) Audio.AudioManager.Instance.Play(Audio.SfxId.Click, 0.03f);
-                    open();
-                });
-            }
-            At(tile.Button, x, y, w, h);
-            float iconSize = selected ? 54f : 40f;
+                Feel.Juice.PunchUI(tile.Icon.rectTransform);
+                if (Audio.AudioManager.Instance != null) Audio.AudioManager.Instance.Play(Audio.SfxId.Click, 0.03f);
+                open();
+            });
             tile.Icon = Kit(m, icon, "Icon", 1f, Image.Type.Simple);
             tile.Icon.preserveAspect = true;
-            At(tile.Icon, x + (w - iconSize) / 2f, selected ? 752f : 768f, iconSize, iconSize);
-            tile.Label = InkText(m, label, selected ? 39 : 33, selected ? Palette.White : TabIdle, 4f);
-            At(tile.Label, x - 4, selected ? 808f : 812f, w + 8, 18);
+            tile.Label = InkText(m, label, 33, TabIdle, 4f);
             tile.Label.resizeTextForBestFit = true;
-            tile.Label.resizeTextMinSize = 22;
-            tile.Label.resizeTextMaxSize = selected ? 39 : 33;
+            tile.Label.resizeTextMinSize = 20;
             tile.Label.horizontalOverflow = HorizontalWrapMode.Wrap;
-            (tile.Badge, tile.BadgeText) = Dot(m, x + w - 32, y);
+            (tile.Badge, tile.BadgeText) = Dot(m, x + w - 28f, 764f);
+            _tabs.Add(tile);
             return tile;
+        }
+
+        /// <summary>Raises the tab of the open screen (−1 = none, e.g. the constellation reached from a side button).</summary>
+        private void SelectTab(int index)
+        {
+            for (int i = 0; i < _tabs.Count; i++)
+            {
+                Tile t = _tabs[i];
+                bool on = i == index;
+                t.Raised.gameObject.SetActive(on);
+                float size = on ? 50f : 40f;
+                At(t.Icon, t.X + (t.W - size) / 2f, on ? 752f : 768f, size, size);
+                At(t.Label, t.X - 4f, on ? 806f : 812f, t.W + 8f, 18f);
+                t.Label.color = on ? Palette.White : TabIdle;
+                t.Label.resizeTextMaxSize = on ? 37 : 31;
+            }
+        }
+
+        /// <summary>The Home tab: back to the lobby from any meta screen.</summary>
+        private void GoHome()
+        {
+            HideMetaScreens();
+            _menu.SetActive(true);
+            SelectTab(HomeTab);
+            RefreshMenu();
         }
 
         // ---------------------------------------------------------------- Kit helpers

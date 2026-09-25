@@ -141,3 +141,24 @@ mockup's 390×844 px coordinates (`At`), so the build matches the approved pictu
   - The gift tile stays pressable. Tapping it while it is waiting shows when it is ready.
 - The stage card is gone. The chest track lives in the "REKOR YOLU" (Record Road) panel.
 - PLAY shows the mode, or the saved run, as a subline. "Yeni Oyun" (New Game) is a small pill under it.
+
+## 7. The tab bar is always there (2026-09-25)
+
+Owner feedback: *"alttaki butonlar geri tuşu yerine… alttaki barlar her zaman gözüksün, oyun içi hariç; neden
+sürekli geri diyoruz ki"* ("instead of Back buttons, the bottom bar should always be visible, except in a run; why
+do we keep pressing Back?").
+
+**The tab bar's own layer.** The tab bar (`BuildNav`) now has its own layer above the lobby and every meta screen.
+It is shown for the whole MainMenu state and hidden in a run.
+
+**Tabs.**
+- Every tab switches screens directly (`OpenMeta` closes the others).
+- ANA SAYFA (Home) returns to the lobby (`GoHome`).
+- The open screen's tab is raised on a violet candy tile (`SelectTab`).
+- The Constellation, reached from the side STARS button, raises no tab.
+
+**No Back buttons.**
+- The "Geri" (Back) buttons are gone from the list screens (Ar-Ge, Silahlar, Pilotlar, Görevler) and the
+  Constellation.
+- Lists now run down to the top of the tab bar (y 0.125).
+- The Constellation's Aç (Unlock) and Sıfırla (Reset) buttons moved above the tab bar.

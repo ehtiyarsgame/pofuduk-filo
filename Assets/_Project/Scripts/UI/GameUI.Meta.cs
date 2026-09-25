@@ -68,18 +68,17 @@ namespace PofudukFilo.UI
 
         private void OpenMeta(MetaScreen screen)
         {
+            HideMetaScreens(); // tabs switch screens directly, no stack of screens to back out of
             _menu.SetActive(false);
             screen.Root.SetActive(true);
             screen.Root.transform.SetAsLastSibling();
+            if (_nav != null)
+            {
+                _nav.transform.SetAsLastSibling(); // the tab bar stays on top of every meta screen
+                SelectTab(screen == _research ? 0 : screen == _lab ? 1 : screen == _hangar ? 3 : screen == _missions ? 4 : -1);
+            }
             SetWallet(screen.Wallet);
             screen.Refresh();
-        }
-
-        private void CloseMeta(MetaScreen screen)
-        {
-            screen.Root.SetActive(false);
-            _menu.SetActive(true);
-            RefreshMenu();
         }
 
         private MetaScreen ListScreen(Transform root, string title, Action refresh)
@@ -99,9 +98,8 @@ namespace PofudukFilo.UI
             UIFactory.Place(more, 0.82f, 0.855f, 0.97f, 0.895f);
             _walletAdButtons.Add(more);
 
-            screen.List = ScrollList(screen.Root.transform, 0.04f, 0.13f, 0.96f, 0.85f);
-
-            UIFactory.Place(_ui.Button(screen.Root.transform, "Geri", Palette.HotPink, () => CloseMeta(screen), 64), 0.25f, 0.03f, 0.75f, 0.1f);
+            // Down to the tab bar, which replaces the old Back button (main-menu.md §7).
+            screen.List = ScrollList(screen.Root.transform, 0.04f, 0.125f, 0.96f, 0.85f);
             screen.Root.SetActive(false);
             _metaScreens.Add(screen);
             return screen;
@@ -433,7 +431,7 @@ namespace PofudukFilo.UI
             for (int b = 0; b < 3; b++)
             {
                 RectTransform column = _ui.Node($"Branch{b}", screen.Root.transform);
-                UIFactory.Place(column, 0.03f + b * 0.32f, 0.12f, 0.33f + b * 0.32f, 0.74f);
+                UIFactory.Place(column, 0.03f + b * 0.32f, 0.215f, 0.33f + b * 0.32f, 0.74f);
                 var layout = column.gameObject.AddComponent<VerticalLayoutGroup>();
                 layout.spacing = 10f;
                 layout.padding = new RectOffset(6, 6, 0, 0);
@@ -443,11 +441,11 @@ namespace PofudukFilo.UI
                 _branchColumns.Add(column);
             }
 
-            UIFactory.Place(_ui.Button(screen.Root.transform, "Geri", Palette.HotPink, () => CloseMeta(screen), 52), 0.03f, 0.03f, 0.32f, 0.1f);
+            // Above the tab bar (no Back button: the tabs take you anywhere).
             _buyNodeButton = _ui.Button(screen.Root.transform, "Aç", Palette.Honey, BuySelectedNode, 52);
-            UIFactory.Place(_buyNodeButton, 0.35f, 0.03f, 0.65f, 0.1f);
+            UIFactory.Place(_buyNodeButton, 0.05f, 0.13f, 0.55f, 0.2f);
             _respecButton = _ui.Button(screen.Root.transform, "Sıfırla", Palette.Lavender, Respec, 44);
-            UIFactory.Place(_respecButton, 0.68f, 0.03f, 0.97f, 0.1f);
+            UIFactory.Place(_respecButton, 0.6f, 0.13f, 0.95f, 0.2f);
 
             screen.Root.SetActive(false);
             _metaScreens.Add(screen);

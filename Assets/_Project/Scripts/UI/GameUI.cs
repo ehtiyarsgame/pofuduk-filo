@@ -92,6 +92,7 @@ namespace PofudukFilo.UI
             BuildMenu(safe);
             BuildWorkshop(safe);
             BuildMetaScreens(safe);
+            BuildNav(safe);
             BuildSettings(safe);
 
             run.StateChanged += OnStateChanged;
@@ -162,6 +163,11 @@ namespace PofudukFilo.UI
             _hud.SetActive(state is GameState.Playing or GameState.LevelUp or GameState.Paused or GameState.Dead);
             _workshop.SetActive(false);
             HideMetaScreens();
+            if (_nav != null)
+            {
+                _nav.SetActive(state == GameState.MainMenu); // the tab bar is there everywhere outside a run
+                SelectTab(HomeTab);
+            }
 
             if (state == GameState.MainMenu) RefreshMenu();
             if (state == GameState.Dead) RefreshDeath();
