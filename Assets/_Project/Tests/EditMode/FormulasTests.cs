@@ -47,8 +47,8 @@ namespace PofudukFilo.Tests
         [Test]
         public void SpawnBudget_ClampsDda()
         {
-            Assert.That(Formulas.SpawnBudget(0f, 10f), Is.EqualTo(6.5f * 1.15f).Within(1e-5f));
-            Assert.That(Formulas.SpawnBudget(0f, 0f), Is.EqualTo(6.5f * 0.75f).Within(1e-5f));
+            Assert.That(Formulas.SpawnBudget(0f, 10f), Is.EqualTo(3.5f * 1.15f).Within(1e-5f));
+            Assert.That(Formulas.SpawnBudget(0f, 0f), Is.EqualTo(3.5f * 0.75f).Within(1e-5f));
         }
 
         [Test]

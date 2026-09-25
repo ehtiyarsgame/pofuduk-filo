@@ -64,7 +64,7 @@ Balonbaş, Yıldızpati and Kuzu.
 
 | Hero | Gun | How it fires | Grows by | Level path | Evolution |
 |---|---|---|---|---|---|
-| Pıtır | Tüy Blaster (`FeatherBlaster`) | straight parallel lanes | **width** | 1 → 2 → 3 lanes (split at Lv3) → +2 wing feathers → 4 lanes, pierce, giant every 5th | Prism Beam (unchanged) |
+| Pıtır | Tüy Blaster (`FeatherBlaster`) | straight parallel lanes | **width** | 2 → 3 lanes → split at Lv3 → +2 wing feathers → 4 lanes, pierce, giant every 5th | Prism Beam (unchanged) |
 | Cıvık | Civciv Topu (`FeatherBlaster`) | heavy explosive ball | **blast area** | Lv2 explodes, radius 1.0 → 1.15 → 1.3 (+chicks) → 1.45 | Dev Civciv Topu, radius 1.9 |
 | Mırnav | Kıvılcım (`ChainArcGun`) | **no bullet**: an instant arc to the nearest enemy within range, then jumps within 3.5 u (×0.85 per jump) | **chain** | 1 → 2 → 2 (+0.4 s stun) → 3 (+slow, 0.5 s) → 4 jumps (0.6 s); range 4.5 → 5.6 | Yıldırım: 7 jumps, 0.8 s stun, range 6.5 |
 | Pengu | Buz Işını (`IceBeamGun`) | **continuous beam** straight up; hits the first 1 + pierce enemies, slows them | **control** | Lv2: 1.2 s in the beam freezes (0.8 s); wider; Lv4 splits into 2 beams; Lv5 freeze 1.2 s | Buzul Işını: 3 beams, 7 enemies, 1.5 s freeze |

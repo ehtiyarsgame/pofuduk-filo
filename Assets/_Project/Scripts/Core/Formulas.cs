@@ -70,8 +70,9 @@ namespace PofudukFilo.Core
             float clamped = Math.Clamp(ddaMultiplier, 0.75f, 1.15f);
             // threat.md §3.6, the horde (2026-09-25: "canavarları çoklatabiliriz… hala çok basit"): 2.5× the old
             // 2 + 1.1t + 0.12t², with lighter fodder, so a strong build mows a crowd and a weak one drowns in leaks.
-            // 2026-09-25 again: "düşmanları biraz daha arttıralım" — ×1.3 on top (3.25× the original).
-            return (6.5f + 3.6f * minutes + 0.39f * minutes * minutes) * clamped;
+            // 2026-09-25 again: "düşmanları biraz daha arttıralım" — ×1.3 on top (3.25× the original growth).
+            // The start is gentler (3.5, not 6.5): QA run 67 had 40 enemies on screen at 10 s and the Lv1 gun died at 28 s.
+            return (3.5f + 3.6f * minutes + 0.39f * minutes * minutes) * clamped;
         }
 
         /// <summary>Cost(L) = round10(base · growth^(L−1)) for a meta upgrade going to level L (L ≥ 1).</summary>

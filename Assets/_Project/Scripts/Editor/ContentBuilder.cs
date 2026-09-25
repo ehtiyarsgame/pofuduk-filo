@@ -462,12 +462,13 @@ namespace PofudukFilo.EditorTools
                 new[] { L(16f, 0.22f, 7, 50f, 16f, 2, 0, 1.6f, "7 tüy; tüyler bölünür ve patlar; her 4. atış dev tüy", 4, 3f, Split | Boom) });
             var feather = WeaponPrefab<FeatherBlaster>("FeatherBlaster", b => Set(b, "giantBulletTypeIndex", BGiantFeather));
             // Every level adds a new trait (hero-guns.md §3.2), not just more feathers.
-            // Pıtır grows by WIDTH (hero-guns.md §3.3): 1 → 2 → 3 → 4 parallel lanes, then wing feathers.
+            // Pıtır grows by WIDTH (hero-guns.md §3.3): 2 → 3 → 4 parallel lanes, then wing feathers. (It started at one
+            // lane for a day; with the horde, QA run 67 died at 28 s, so Lv1 keeps the classic two lanes.)
             StartingWeapon = Weapon("feather_blaster", "Tüy Blaster", Rarity.Common, BFeather, feather, new[]
             {
-                L(18f, 0.25f, 1, 0, 14f, 0, 0, 1.5f, "Tek hat, hızlı tüy akışı"),
-                L(14f, 0.24f, 2, 0, 14f, 0, 0, 1.5f, "YENİ: 2. tüy akışı"),
-                L(13f, 0.24f, 3, 0, 14f, 0, 0, 1.5f, "YENİ: 3. akış; tüyler çarpınca ikiye bölünür", fx: Split),
+                L(12f, 0.25f, 2, 0, 14f, 0, 0, 1.5f, "2 paralel tüy akışı"),
+                L(12f, 0.24f, 3, 0, 14f, 0, 0, 1.5f, "YENİ: 3. tüy akışı"),
+                L(12f, 0.24f, 3, 0, 14f, 0, 0, 1.5f, "YENİ: tüyler çarpınca ikiye bölünür", fx: Split),
                 Wings(L(13f, 0.23f, 3, 0, 14f, 0, 0, 1.5f, "YENİ: 2 kanat tüyü çaprazlara uçar", fx: Split), 2),
                 Wings(L(14f, 0.22f, 4, 0, 15f, 1, 0, 1.5f, "YENİ: 4. akış, tüyler 1 düşman deler; her 5. atış dev tüy", 5, 3f, Split), 2)
             }, crystal, prismDef);

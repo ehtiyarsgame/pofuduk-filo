@@ -269,6 +269,8 @@ namespace PofudukFilo.Core
             ["HEDİYE"] = "GIFT",
             ["Yarın"] = "Tomorrow",
             ["SONSUZ GALAKSİ"] = "ENDLESS GALAXY",
+            ["YENİ: 3. tüy akışı"] = "NEW: a 3rd feather lane",
+            ["2 paralel tüy akışı"] = "2 parallel feather lanes",
             ["KİLİTLİ HARİTA"] = "LOCKED MAP",
             ["2 seken balon: duvardan ve düşmandan 1 kez seker"] = "2 bouncing bubbles: bounce once off walls and enemies",
             ["YENİ: sakız yapışır, düşman yavaşlar; 2 sekme"] = "NEW: sticky gum slows enemies; 2 bounces",
