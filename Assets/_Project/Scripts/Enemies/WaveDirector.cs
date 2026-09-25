@@ -316,33 +316,33 @@ namespace PofudukFilo.Enemies
 
             for (int i = 0; i < MaxSwarmSpawnsPerFrame; i++)
             {
-                int pick = PickAffordable(phase.swarm, _budget);
-                if (pick < 0) return; // save up for something
+                // Decide WHO comes next by weight first, then save up for it. Picking among what the budget could
+                // already afford meant the 1-point chick won every time the budget reached 1, so bees, bears,
+                // donuts and marshmallows never spawned (device feedback 2026-09-25: "tek düşman tipi var").
+                if (_nextSwarmPhase != phase || _nextSwarmPick < 0 || _nextSwarmPick >= phase.swarm.Length)
+                {
+                    _nextSwarmPhase = phase;
+                    _nextSwarmPick = SwarmPicker.PickWeighted(Weights(phase.swarm), UnityEngine.Random.value);
+                }
+                if (_nextSwarmPick < 0) return;
 
-                SwarmEntry entry = phase.swarm[pick];
+                SwarmEntry entry = phase.swarm[_nextSwarmPick];
+                if (_budget < entry.threatCost) return; // save up for it
                 if (EnemyManager.Instance.Spawn(entry.prefab, RandomTopEdgePoint()) == null) return; // enemy cap
                 _budget -= entry.threatCost;
+                _nextSwarmPick = -1;
             }
         }
 
-        private static int PickAffordable(SwarmEntry[] entries, float budget)
+        private static float[] Weights(SwarmEntry[] entries)
         {
-            float total = 0f;
-            for (int i = 0; i < entries.Length; i++)
-                if (entries[i].threatCost <= budget) total += entries[i].weight;
-            if (total <= 0f) return -1;
-
-            float roll = UnityEngine.Random.value * total;
-            int last = -1;
-            for (int i = 0; i < entries.Length; i++)
-            {
-                if (entries[i].threatCost > budget) continue;
-                last = i;
-                roll -= entries[i].weight;
-                if (roll < 0f) return i;
-            }
-            return last;
+            var w = new float[entries.Length];
+            for (int i = 0; i < w.Length; i++) w[i] = entries[i].weight;
+            return w;
         }
+
+        private RunPhase _nextSwarmPhase;
+        private int _nextSwarmPick = -1;
 
         // ---------------------------------------------------------------- Formation layer
 
