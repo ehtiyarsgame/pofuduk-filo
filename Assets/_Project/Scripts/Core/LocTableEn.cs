@@ -274,6 +274,7 @@ namespace PofudukFilo.Core
             ["Önce kayıtlı oyununa devam et."] = "Finish your saved run first.",
 
             // ---- Missions (retention.md)
+            ["Ana Menü"] = "Main Menu",
             ["Görevler"] = "Missions",
             ["GÖREVLER"] = "MISSIONS",
             ["Her gün gir, ödül büyüsün. 7. gün: büyük ödül!"] = "Come back daily and the reward grows. Day 7: big prize!",

@@ -13,32 +13,19 @@ namespace PofudukFilo.UI
     public sealed partial class GameUI
     {
         private MetaScreen _missions;
-        private Button _missionsButton;
-        private GameObject _missionsBadge;
 
         private void BuildMissions(Transform menu, Transform safeRoot)
         {
+            // Opened from the GÖREVLER tab in the bottom bar (its "!" badge lives on that tab).
             _missions = ListScreen(safeRoot, "Görevler", RefreshMissions);
-            _missionsButton = IconButton(menu, trophyIcon, Palette.Hex(0x5B3C99), () => OpenMeta(_missions));
-            UIFactory.Place(_missionsButton, 0.035f, 0.445f, 0.205f, 0.525f);
-            Image cap = Capsule(menu, 0.015f, 0.41f, 0.215f, 0.443f);
-            UIFactory.Place(_ui.Label(cap.transform, "GÖREVLER", 24, Palette.Cream), 0.04f, 0f, 0.96f, 1f);
-
-            Image badge = Img(_missionsButton.transform, roundedSprite, "Badge");
-            badge.enabled = true;
-            badge.type = Image.Type.Sliced;
-            badge.color = Palette.Coral;
-            UIFactory.Place(badge, 0.7f, 0.7f, 1.02f, 1.02f);
-            _ui.Label(badge.transform, "!", 30, Color.white);
-            _missionsBadge = badge.gameObject;
         }
 
         private void RefreshMissionsBadge()
         {
-            if (_missionsBadge == null) return;
+            if (_missionsTile == null) return;
             long now = DateTime.UtcNow.Ticks;
             run.Meta.CheckIn(now);
-            _missionsBadge.SetActive(run.Meta.AnyMissionClaimable(now));
+            _missionsTile.Badge.SetActive(run.Meta.AnyMissionClaimable(now));
         }
 
         private void RefreshMissions()

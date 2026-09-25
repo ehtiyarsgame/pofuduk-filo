@@ -32,7 +32,16 @@ agreed in the 2026-09-25 design discussion.
 - **Rewards:** one reward per day, starting at 100 gold on day 1 and rising to 1000 gold + 5 Stardust on day 7.
   The week then repeats.
 
-### Where it shows
+### Where it shows (menu v3, 2026-09-25)
+
+The menu was simplified because the owner found it "karmaşık" (cluttered): nothing floats beside the hero any more.
+
+- **Top bar:** gold, Stardust, the ad gift (with a HEDİYE / countdown / Yarın tag) and settings.
+- **Under the hero:** one chip showing "Pilot: X | GÜÇ ×N.NN". Tapping it opens Ar-Ge.
+- **Bottom bar:** four tabs — AR-GE, SİLAHLAR, PİLOTLAR, GÖREVLER. Each can carry a "!" badge.
+- **Run-end screen:** has Tekrar Oyna (play again), Geliştir (upgrade) and Ana Menü (main menu).
+
+Earlier layout, now superseded:
 
 - **Menu:** a trophy button labelled **GÖREVLER**, below the gift button. It shows a "!" badge while something
   can be claimed.

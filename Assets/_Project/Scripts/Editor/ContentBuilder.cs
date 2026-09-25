@@ -952,7 +952,7 @@ namespace PofudukFilo.EditorTools
             {
                 var run = ScriptableObject.CreateInstance<RunDefinition>();
                 run.chapterIndex = c;
-                run.breatherSeconds = 9f;
+                run.breatherSeconds = 4f; // device feedback 2026-09-25: long empty stretches around boss fights
                 run.maxLiveFormations = 2;
                 run.phases = BuildTimeline(names[c]);
                 Runs.Add(SaveAsset(run, "Data/Runs", $"Run_{c + 1}"));
@@ -983,20 +983,20 @@ namespace PofudukFilo.EditorTools
                     swarm = new[] { S("Chick", 1, 8), S("CandyBee", 1.5f, 4), S("CookieRobot", 3, 4), S("DonutUfo", 4, 3), S("JellyBear", 5, 2) },
                     formations = mixed, formationInterval = 18f },
                 new RunPhase { label = "Mini-Boss: Jöle Kral!", kind = PhaseKind.MiniBoss, startMinute = 3f,
-                    swarm = new[] { S("Chick", 1, 10) }, budgetScale = 0.3f, formationInterval = 0f, bossPrefab = Enemies["JellyKing"] },
+                    swarm = new[] { S("Chick", 1, 8), S("CandyBee", 1.5f, 4), S("CookieRobot", 3, 2) }, budgetScale = 0.65f, formations = early, formationInterval = 20f, bossPrefab = Enemies["JellyKing"] },
                 new RunPhase { label = "Dalga 3", startMinute = 3.2f,
                     swarm = new[] { S("Chick", 1, 8), S("CandyBee", 1.5f, 4), S("CookieRobot", 3, 4), S("DonutUfo", 4, 3),
                         S("JellyBear", 5, 3), S("GumBalloon", 4, 2), S("Marshmallow", 8, 1.5f), S("EliteChick", 25, 0.4f) },
                     formations = mixed, formationInterval = 16f },
                 new RunPhase { label = "Mini-Boss: Kurabiye Robot Ana!", kind = PhaseKind.MiniBoss, startMinute = 6f,
-                    swarm = new[] { S("Chick", 1, 10) }, budgetScale = 0.3f, formationInterval = 0f, bossPrefab = Enemies["CookieMech"] },
+                    swarm = new[] { S("Chick", 1, 8), S("CandyBee", 1.5f, 4), S("CookieRobot", 3, 2) }, budgetScale = 0.65f, formations = early, formationInterval = 20f, bossPrefab = Enemies["CookieMech"] },
                 new RunPhase { label = "Dalga 5: Kaos", startMinute = 6.2f, budgetScale = 1.2f,
                     swarm = new[] { S("Chick", 1, 8), S("CandyBee", 1.5f, 4), S("CookieRobot", 3, 4), S("DonutUfo", 4, 3),
                         S("JellyBear", 5, 3), S("GumBalloon", 4, 2), S("Marshmallow", 8, 2), S("IceCreamTower", 6, 2),
                         S("EliteChick", 25, 0.6f) },
                     formations = mixed, formationInterval = 12f },
                 new RunPhase { label = "Final: Kraliçe Tavuk!", kind = PhaseKind.FinalBoss, startMinute = 8f,
-                    swarm = new[] { S("Chick", 1, 6) }, budgetScale = 0.2f, formationInterval = 0f, bossPrefab = Enemies["QueenHen"] }
+                    swarm = new[] { S("Chick", 1, 6), S("CandyBee", 1.5f, 3) }, budgetScale = 0.5f, formations = early, formationInterval = 24f, bossPrefab = Enemies["QueenHen"] }
             };
         }
 

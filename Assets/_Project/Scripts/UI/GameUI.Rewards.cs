@@ -31,19 +31,13 @@ namespace PofudukFilo.UI
 
         private void BuildRewards(Transform menu, Transform safeRoot)
         {
+            // The gift sits in the top bar with the wallet (menu v3: nothing floats beside the hero); its state —
+            // HEDİYE / countdown / Yarın — is a small tag under the icon.
             _giftButton = IconButton(menu, giftIcon, Palette.Hex(0x5B3C99), ClaimGift);
-            UIFactory.Place(_giftButton, 0.035f, 0.585f, 0.205f, 0.665f);
-            Image cap = Capsule(menu, 0.015f, 0.55f, 0.225f, 0.583f);
-            _giftText = _ui.Label(cap.transform, "", 28, Palette.Cream);
+            UIFactory.Place(_giftButton, 0.63f, 0.925f, 0.77f, 0.985f);
+            Image cap = Capsule(menu, 0.6f, 0.893f, 0.8f, 0.922f);
+            _giftText = _ui.Label(cap.transform, "", 22, Palette.Cream);
             UIFactory.Place(_giftText, 0.04f, 0f, 0.96f, 1f);
-
-            // Güç Katsayısı (economy.md §3.1) on the right, mirroring the gift: it multiplies every coin, and a tap
-            // goes straight to Ar-Ge where it grows.
-            Button power = IconButton(menu, researchIcon, Palette.Hex(0x5B3C99), OpenResearch);
-            UIFactory.Place(power, 0.795f, 0.585f, 0.965f, 0.665f);
-            Image powerCap = Capsule(menu, 0.775f, 0.55f, 0.985f, 0.583f);
-            _powerText = _ui.Label(powerCap.transform, "", 28, Palette.Honey);
-            UIFactory.Place(_powerText, 0.04f, 0f, 0.96f, 1f);
 
             _menuToast = _ui.Label(safeRoot, "", 56, Palette.Cream);
             UIFactory.Place(_menuToast, 0.05f, 0.62f, 0.95f, 0.7f);

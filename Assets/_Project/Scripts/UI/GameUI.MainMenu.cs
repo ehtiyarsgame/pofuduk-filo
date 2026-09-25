@@ -57,6 +57,7 @@ namespace PofudukFilo.UI
         private Tile _researchTile;
         private Tile _armoryTile;
         private Tile _pilotsTile;
+        private Tile _missionsTile;
 
         private void BuildMenu(Transform root)
         {
@@ -70,8 +71,8 @@ namespace PofudukFilo.UI
             // --- Top: currency capsules + gear.
             _wallet = new WalletView
             {
-                Gold = CurrencyCapsule(m, coinIcon, 0.03f, 0.36f, Palette.Honey),
-                Dust = CurrencyCapsule(m, stardustIcon, 0.39f, 0.66f, Palette.Hex(0xDCCFFF))
+                Gold = CurrencyCapsule(m, coinIcon, 0.03f, 0.33f, Palette.Honey),
+                Dust = CurrencyCapsule(m, stardustIcon, 0.36f, 0.58f, Palette.Hex(0xDCCFFF))
             };
             Button gear = IconButton(m, gearIcon, Palette.Lavender, OpenSettings);
             UIFactory.Place(gear, 0.84f, 0.925f, 0.97f, 0.985f);
@@ -100,9 +101,19 @@ namespace PofudukFilo.UI
             UIFactory.Place(pedestal, 0.1f, 0.468f, 0.9f, 0.548f);
             _heroShip = Img(m, null, "HeroShip");
             UIFactory.Place(_heroShip, 0.25f, 0.5f, 0.75f, 0.725f);
-            Image pilotCap = Capsule(m, 0.3f, 0.445f, 0.7f, 0.477f);
-            _pilotText = _ui.Label(pilotCap.transform, "", 36, Palette.Pink);
-            UIFactory.Place(_pilotText, 0.05f, 0f, 0.95f, 1f);
+            // One info chip under the hero: pilot on the left, Güç Katsayısı on the right (tap → Ar-Ge).
+            Image pilotCap = Capsule(m, 0.14f, 0.443f, 0.86f, 0.479f);
+            _pilotText = _ui.Label(pilotCap.transform, "", 34, Palette.Pink);
+            UIFactory.Place(_pilotText, 0.04f, 0f, 0.56f, 1f);
+            _powerText = _ui.Label(pilotCap.transform, "", 34, Palette.Honey);
+            UIFactory.Place(_powerText, 0.56f, 0f, 0.96f, 1f);
+            Image divider = _ui.Panel(pilotCap.transform, new Color(1f, 1f, 1f, 0.25f), "Divider");
+            divider.sprite = null;
+            divider.raycastTarget = false;
+            UIFactory.Place(divider, 0.555f, 0.2f, 0.56f, 0.8f);
+            Button powerHit = pilotCap.gameObject.AddComponent<Button>();
+            pilotCap.raycastTarget = true;
+            powerHit.onClick.AddListener(OpenResearch);
 
             // --- Record / saved-run capsule with a trophy.
             Image recordCap = Capsule(m, 0.22f, 0.388f, 0.78f, 0.426f);
@@ -149,9 +160,11 @@ namespace PofudukFilo.UI
             nav.type = navBarSprite != null ? Image.Type.Sliced : Image.Type.Simple;
             nav.raycastTarget = true;
             UIFactory.Place(nav, -0.01f, -0.01f, 1.01f, 0.175f);
-            _researchTile = NavTab(nav.transform, "AR-GE", researchIcon, 0f, OpenResearch);
-            _armoryTile = NavTab(nav.transform, "SİLAHLAR", weaponsIcon, 1f / 3f, OpenLab);
-            _pilotsTile = NavTab(nav.transform, "PİLOTLAR", null, 2f / 3f, OpenHangar);
+            // Four tabs (Görevler joined the bar instead of floating beside the hero — "menü karmaşık").
+            _researchTile = NavTab(nav.transform, "AR-GE", researchIcon, 0f, OpenResearch, 0.25f);
+            _armoryTile = NavTab(nav.transform, "SİLAHLAR", weaponsIcon, 0.25f, OpenLab, 0.25f);
+            _pilotsTile = NavTab(nav.transform, "PİLOTLAR", null, 0.5f, OpenHangar, 0.25f);
+            _missionsTile = NavTab(nav.transform, "GÖREVLER", trophyIcon, 0.75f, () => OpenMeta(_missions), 0.25f);
 
             _credit = _ui.Label(m, $"© {StudioIntro.StudioName}", 22, new Color(0.78f, 0.71f, 1f, 0.55f));
             UIFactory.Place(_credit, 0.1f, 0.176f, 0.9f, 0.19f);
@@ -236,11 +249,11 @@ namespace PofudukFilo.UI
         }
 
         /// <summary>A tab in the bottom bar: big icon, label, "!" badge.</summary>
-        private Tile NavTab(Transform bar, string label, Sprite icon, float x0, System.Action open)
+        private Tile NavTab(Transform bar, string label, Sprite icon, float x0, System.Action open, float width = 1f / 3f)
         {
             var tile = new Tile();
             RectTransform node = _ui.Node(label, bar);
-            UIFactory.Place(node, x0 + 0.01f, 0.08f, x0 + 1f / 3f - 0.01f, 0.95f);
+            UIFactory.Place(node, x0 + 0.01f, 0.08f, x0 + width - 0.01f, 0.95f);
             Image hit = node.gameObject.AddComponent<Image>();
             hit.color = new Color(1f, 1f, 1f, 0f);
             tile.Button = node.gameObject.AddComponent<Button>();

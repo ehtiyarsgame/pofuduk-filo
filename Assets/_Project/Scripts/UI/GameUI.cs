@@ -560,8 +560,11 @@ namespace PofudukFilo.UI
                 run.StartEndless();
             }), 80);
             UIFactory.Place(again, 0.1f, 0.22f, 0.9f, 0.33f);
-            _upgradeButton = _ui.Button(screen.transform, "Geliştir", Palette.Lavender, OpenWorkshopFromEnd, 52);
-            UIFactory.Place(_upgradeButton, 0.3f, 0.12f, 0.7f, 0.19f);
+            _upgradeButton = _ui.Button(screen.transform, "Geliştir", Palette.Lavender, OpenWorkshopFromEnd, 48);
+            UIFactory.Place(_upgradeButton, 0.08f, 0.12f, 0.48f, 0.19f);
+            // Back to the menu to look around (pilots, missions, gift) — device feedback 2026-09-25.
+            Button home = _ui.Button(screen.transform, "Ana Menü", Palette.Outline, () => AfterRunAd(run.EnterMenu), 48);
+            UIFactory.Place(home, 0.52f, 0.12f, 0.92f, 0.19f);
             _endlessButton = _ui.Button(screen.transform, "Sonsuz Mod'a Devam (+%50 altın)", Palette.Honey, run.ContinueEndless, 46);
             UIFactory.Place(_endlessButton, 0.12f, 0.345f, 0.88f, 0.395f);
             BuildAdPlacements(screen.transform);
