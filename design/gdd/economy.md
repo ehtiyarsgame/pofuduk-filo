@@ -49,7 +49,7 @@ noticed no difference"). In QA run 45 it tripled enemy HP.
 Enemy HP now scales with **√P** instead (`Formulas.EnemyHpForPower`):
 
 - At P = 2, enemies have ×1.41 HP, while Forge damage alone is ×1.5–2. Upgrades always come out stronger.
-- Coins scale with P, so they grow faster than enemy HP.
+- Coins scale with √P (since §3.4), the same pace as enemy HP.
 - The threat curve in `threat.md` still decides how long a run lasts.
 
 ### 3.4 Slower meta (2026-09-25, device feedback)
@@ -87,11 +87,11 @@ faster.
 
 ## 4. Formulas
 
-- `PowerRating = 1 + 0.04·ForgePower + 0.03·ForgeSpeed + 0.02·ΣWorkshop + 0.02·ΣMastery + 0.03·(PilotLevel − 1)`.
+- `PowerRating = 1 + 0.02·ForgePower + 0.01·ForgeSpeed + 0.01·ΣWorkshop + 0.02·ΣMastery + 0.03·(PilotLevel − 1)`.
   Examples:
   - A fresh save is ×1.00.
-  - Forge 10/10 plus 10 workshop levels is ×1.90.
-- `CoinValue = base × max(1, PowerRating) × (1 + 0.08·t)`, where t is run minutes.
+  - Forge 10/10 plus 10 workshop levels is ×1.40.
+- `CoinValue = base × √max(1, PowerRating) × (1 + 0.04·t)`, where t is run minutes.
   - `base` is the enemy's gold value × 5. Formation clears use 15 instead.
   - Example: a Jelly Bear gives 10 at the start. At ×2 power and 5 minutes into the run, it gives
     10 × 2 × 1.4 = 28, which drops as a coin stack.
