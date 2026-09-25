@@ -31,14 +31,14 @@ namespace PofudukFilo.Core
         }
 
         /// <summary>
-        /// Enemy bullet damage × (1 + 0.3t + 0.03t²), t in run minutes (threat.md §3.1). The un-upgraded player
+        /// Enemy bullet damage × (1 + 0.2t + 0.025t²), t in run minutes (threat.md §3.1). The un-upgraded player
         /// must eventually fall behind — Ball Blast's wall — so Forge levels and ads decide how far a run goes.
-        /// ×1 at start, ×2.2 at 3 min, ×3.25 at 5 min, ×4.6 at 7 min.
+        /// ×1 at start, ×1.8 at 3 min, ×2.6 at 5 min, ×3.6 at 7 min (QA run 45 at 0.3/0.03: bot dead at 142 s).
         /// </summary>
         public static float EnemyDamageScale(float minutes)
         {
             float m = Math.Max(0f, minutes);
-            return 1f + 0.3f * m + 0.03f * m * m;
+            return 1f + 0.2f * m + 0.025f * m * m;
         }
 
         /// <summary>Enemy fire-rate multiplier: 1 + 0.1t, capped at ×2.2 (reached at 12 min).</summary>

@@ -27,11 +27,11 @@ namespace PofudukFilo.Core
         public float GainBonus { get; set; }
 
         [SerializeField] private float comboWindow = 1.6f;
-        [SerializeField] private float meterMax = 200f; // QA run 13: a rush every ~20 s at 70; device feedback 2026-09-25: still "sürekli" at 120
+        [SerializeField] private float meterMax = 160f; // QA run 13: a rush every ~20 s at 70; device feedback 2026-09-25: "sürekli" at 120; none in 3 min at 200 (QA 45)
         [Tooltip("The bar grows this fraction of meterMax per run minute after meterGrowthStartMinutes: kill rate climbs all run " +
                  "(QA run 24: a rush every ~15 s by minute 4 with no growth; runs 25/26 growing from minute 0: first rush at 100–140 s).")]
-        [SerializeField] private float meterGrowthPerMinute = 0.5f;
-        [SerializeField] private float meterGrowthStartMinutes = 1f;
+        [SerializeField] private float meterGrowthPerMinute = 0.4f;
+        [SerializeField] private float meterGrowthStartMinutes = 2f;
         [Tooltip("Meter per kill = killValue × (1 + combo × comboBonus).")]
         [SerializeField] private float comboBonus = 0.03f;
         [SerializeField] private float eliteKillValue = 10f;
