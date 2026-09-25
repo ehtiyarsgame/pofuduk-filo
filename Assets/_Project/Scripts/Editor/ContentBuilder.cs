@@ -271,15 +271,17 @@ namespace PofudukFilo.EditorTools
                 Type("Spark", "b_spark", 0.5f, 0.13f, true, 3000),
                 Type("Ice", "b_ice", 0.55f, 0.13f, true, 3000),
                 Type("Yarn", "b_yarn", 0.42f, 0.17f, false, 3000),
-                Type("Egg", "b_egg", 0.42f, 0.12f, false, 3010),
-                Type("Stinger", "b_stinger", 0.52f, 0.08f, true, 3010),
-                Type("Crumb", "b_crumb", 0.42f, 0.12f, false, 3010),
-                Type("Gum", "b_gum", 0.4f, 0.12f, false, 3010),
-                Type("Jelly", "b_jelly", 0.72f, 0.2f, false, 3010),
-                Type("JellySmall", "b_jelly_small", 0.44f, 0.12f, false, 3010),
-                Type("Scoop", "b_scoop", 0.46f, 0.13f, false, 3010),
-                Type("Puff", "b_puff", 0.5f, 0.14f, false, 3010),
-                Type("GoldEgg", "b_gold_egg", 0.46f, 0.13f, false, 3010)
+                // Enemy shots draw well above their hit radius so they read in a crowd (device feedback 2026-09-25:
+                // "düşman ateşleri gerçekten hiç görünmüyor"); hit radii are unchanged, so fairness is unchanged.
+                Type("Egg", "b_egg", 0.62f, 0.12f, false, 3010),
+                Type("Stinger", "b_stinger", 0.74f, 0.08f, true, 3010),
+                Type("Crumb", "b_crumb", 0.62f, 0.12f, false, 3010),
+                Type("Gum", "b_gum", 0.58f, 0.12f, false, 3010),
+                Type("Jelly", "b_jelly", 0.92f, 0.2f, false, 3010),
+                Type("JellySmall", "b_jelly_small", 0.6f, 0.12f, false, 3010),
+                Type("Scoop", "b_scoop", 0.64f, 0.13f, false, 3010),
+                Type("Puff", "b_puff", 0.68f, 0.14f, false, 3010),
+                Type("GoldEgg", "b_gold_egg", 0.66f, 0.13f, false, 3010)
             };
         }
 
