@@ -106,6 +106,8 @@ namespace PofudukFilo.UI
             waveDirector.FormationCleared += _ => Toast("Formasyon Temizlendi!");
             waveDirector.PhaseStarted += p => { if (p.kind != PhaseKind.Waves) ShowBossBanner(p.label); };
             waveDirector.StageAdvanced += (cleared, next) => Toast($"Bölüm {next + 1} başladı!", 2.4f);
+            run.LevelUpAutoRewarded += (healed, amount) =>
+                Toast(healed ? Loc.T($"Seviye! +{amount} can") : Loc.T($"Seviye! +{amount} altın"), 1.4f);
             inventory.WeaponEvolved += (from, to) => Toast(Loc.T($"EVRİM! {Loc.T(from.displayName)} » {Loc.T(to.displayName)}"), 2.6f);
 
             OnStateChanged(run.State);
@@ -130,6 +132,7 @@ namespace PofudukFilo.UI
         {
             MeasurePlayfield();
             UpdateRushHud();
+            UpdateLoadoutStrip();
             UpdateMenuAnim();
             UpdateRewards();
             if (_toast != null && _toast.gameObject.activeSelf && Time.unscaledTime > _toastUntil)
@@ -225,12 +228,13 @@ namespace PofudukFilo.UI
             _xpBar.Snap(0f);
 
             _bossBar = _ui.Node("BossBar", _hud.transform).gameObject;
-            UIFactory.Place(_bossBar.GetComponent<RectTransform>(), 0.1f, 0.84f, 0.94f, 0.868f); // just under the panel
+            UIFactory.Place(_bossBar.GetComponent<RectTransform>(), 0.1f, 0.81f, 0.94f, 0.838f); // under the loadout strip
             _bossHp = HudBar.Create(_ui, _bossBar.transform, barTrackSprite, barFillSprite, Palette.Coral, null, 30);
             UIFactory.Place(_bossHp, 0f, 0f, 1f, 1f);
             _bossBar.SetActive(false);
 
             BuildRushHud(_hud.transform);
+            BuildLoadoutStrip(_hud.transform);
 
             _toast = _ui.Label(_hud.transform, "", 80, Palette.Cream);
             UIFactory.Place(_toast, 0.05f, 0.6f, 0.95f, 0.7f);

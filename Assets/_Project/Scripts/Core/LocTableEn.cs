@@ -433,6 +433,8 @@ namespace PofudukFilo.Core
         public static readonly Dictionary<string, string> Templates = new()
         {
             ["Sv. {0}"] = "Lv. {0}",
+            ["Seviye! +{0} can"] = "Level up! +{0} HP",
+            ["Seviye! +{0} altın"] = "Level up! +{0} gold",
             ["Giriş serisi: {0}. gün"] = "Login streak: day {0}",
             ["{0} düşman yok et"] = "Defeat {0} enemies",
             ["Tek oyunda {0} dakika dayan"] = "Survive {0} minutes in one run",

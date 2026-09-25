@@ -32,7 +32,7 @@ namespace PofudukFilo.UI
             _rushBar.Snap(0f);
 
             _comboText = _ui.Label(hud, "", 52, Palette.Cream, TextAnchor.MiddleRight);
-            UIFactory.Place(_comboText, 0.45f, 0.79f, 0.95f, 0.835f); // below the boss bar
+            UIFactory.Place(_comboText, 0.45f, 0.76f, 0.95f, 0.805f); // below the boss bar
             _comboText.rectTransform.pivot = new Vector2(1f, 0.5f); // punch grows leftwards, never off-screen
             _comboText.gameObject.SetActive(false);
 

@@ -93,6 +93,8 @@ namespace PofudukFilo.Core
         public event Action<GameState> StateChanged;
         /// <summary>The cards on offer; rerolls and banishes left.</summary>
         public event Action<IReadOnlyList<UpgradeOption>, int, int> LevelUpOffered;
+        /// <summary>A level-up with nothing left to upgrade was paid out automatically: (healed?, amount).</summary>
+        public event Action<bool, int> LevelUpAutoRewarded;
         /// <summary>Revives left (0 = only "give up").</summary>
         public event Action<int> DeathOffered;
         public event Action<RunSummary> RunEnded;
@@ -523,6 +525,20 @@ namespace PofudukFilo.Core
                 extra += xpSystem.Level / 10;
             draft.Choices = 3 + extra;
             draft.Roll(_offer);
+
+            // Everything maxed: every card would be the same "Şeker Molası". Grant it straight away instead of stopping
+            // the game for a choice that is not one (device feedback 2026-09-25).
+            bool onlyFallback = _offer.Count > 0;
+            foreach (UpgradeOption o in _offer) onlyFallback &= o.Kind == UpgradeKind.Fallback;
+            if (onlyFallback)
+            {
+                bool healed = ApplyFallback();
+                LevelUpAutoRewarded?.Invoke(healed, healed ? fallbackHeal : fallbackGold);
+                xpSystem.ConsumePendingLevelUp();
+                if (xpSystem.PendingLevelUps > 0) OfferNextDraft();
+                else if (State == GameState.LevelUp) SetState(GameState.Playing);
+                return;
+            }
             SetState(GameState.LevelUp);
             LevelUpOffered?.Invoke(_offer, _rerollsLeft, _banishesLeft);
         }
@@ -561,11 +577,16 @@ namespace PofudukFilo.Core
             OfferNextDraft();
         }
 
-        private void ApplyFallback()
+        /// <summary>game-concept.md §6: full inventory → heal if hurt, otherwise gold. True if it healed.</summary>
+        private bool ApplyFallback()
         {
-            // game-concept.md §6: full inventory → heal if hurt, otherwise gold.
-            if (player.CurrentHp < player.MaxHp) player.Heal(fallbackHeal);
-            else _fallbackGoldEarned += fallbackGold;
+            if (player.CurrentHp < player.MaxHp)
+            {
+                player.Heal(fallbackHeal);
+                return true;
+            }
+            _fallbackGoldEarned += fallbackGold;
+            return false;
         }
 
         /// <summary>Stats that live outside the weapons (max HP, luck) follow passive changes mid-run.</summary>

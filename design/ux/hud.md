@@ -9,7 +9,9 @@ Everything the player reads during play sits in one **top panel**, out of the th
 - **Row 1:** HP bar with a heart and "85/130", the gold count, and the pause button.
 - **Row 2:** the XP bar with "Lv. N" on the left, and the Sugar meter (ŞEKER / ŞEKER HAZIR! / HÜCUM!) on the right.
 
-Just below the panel, and only while a boss is alive, sit the boss HP bar and the combo counter. The Sugar Bomb
+Directly under the panel is the **loadout strip** (2026-09-25). It shows up to 4 weapon icons, then up to 4 boost icons. Each icon carries its level, or MAX / EVO in gold. The main gun has a pink frame, other weapons sky, and boosts mint. It refreshes every 0.4 s (`GameUI.Loadout`).
+
+Below the loadout strip, and only while a boss is alive, sit the boss HP bar and the combo counter. The Sugar Bomb
 button sits in the bottom-left corner.
 
 ## 2. The panel hides what cannot be hit
