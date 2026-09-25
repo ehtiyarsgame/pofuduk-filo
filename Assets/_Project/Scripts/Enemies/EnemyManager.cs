@@ -156,6 +156,11 @@ namespace PofudukFilo.Enemies
             return p.y < _screenMax.y && p.y > _screenMin.y && p.x > _screenMin.x && p.x < _screenMax.x;
         }
 
+        /// <summary>Keeps a swaying enemy's X inside the visible playfield (wide sways used to carry it off the side,
+        /// where it could neither be seen nor hit).</summary>
+        public float ClampToPlayfieldX(float x, float margin) =>
+            _screenMin.x < -900f ? x : Mathf.Clamp(x, _screenMin.x + 0.3f + margin, _screenMax.x - 0.3f - margin);
+
         private void UpdateScreenBounds()
         {
             if (_camera == null) _camera = Camera.main;

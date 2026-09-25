@@ -191,6 +191,7 @@ namespace PofudukFilo.Enemies
             p.y += velocity.y * dt;
             _originX += velocity.x * dt;
             p.x = _originX + Mathf.Sin(_age * swayFrequency) * swayAmplitude;
+            if (EnemyManager.Instance != null) p.x = EnemyManager.Instance.ClampToPlayfieldX(p.x, hitRadius);
             transform.position = p;
         }
 
