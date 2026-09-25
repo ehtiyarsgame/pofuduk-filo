@@ -199,14 +199,18 @@ namespace PofudukFilo.UI
 
             // Power tag above the hero (tap → Ar-Ge, where power is bought).
             Image tag = Kit(m, kitPill, "PowerTag", 1.86f);
-            At(tag, 135, 152, 120, 30);
+            At(tag, 118, 152, 154, 30);
             tag.raycastTarget = true;
             tag.gameObject.AddComponent<Button>().onClick.AddListener(OpenResearch);
             Image bolt = Kit(tag.transform, kitPower, "Bolt", 1f, Image.Type.Simple);
             bolt.preserveAspect = true;
-            UIFactory.Place(bolt, 0.05f, 0.14f, 0.25f, 0.86f);
+            UIFactory.Place(bolt, 0.04f, 0.14f, 0.2f, 0.86f);
             _powerText = InkText(tag.transform, "", 44, Palette.Hex(0xFFE45C), 4f);
-            UIFactory.Place(_powerText, 0.24f, 0f, 0.96f, 1f);
+            UIFactory.Place(_powerText, 0.22f, 0f, 0.96f, 1f);
+            _powerText.resizeTextForBestFit = true;
+            _powerText.resizeTextMinSize = 26;
+            _powerText.resizeTextMaxSize = 44;
+            _powerText.horizontalOverflow = HorizontalWrapMode.Wrap;
 
             // Pilot ribbon under the platform: name, then the pilot's own gun in gold.
             Image ribbon = Kit(m, kitPink, "Ribbon", 1.36f);
@@ -302,7 +306,7 @@ namespace PofudukFilo.UI
             big.resizeTextMinSize = 70;
             big.resizeTextMaxSize = 138;
             _playSub = InkText(_playButton.transform, "", 42, Palette.White, 4f);
-            foreach (Shadow s in _playSub.GetComponents<Shadow>()) s.effectColor = Palette.Hex(0x7A3A00); // Outline is a Shadow too
+            _playSub.GetComponent<UIStroke>().color = Palette.Hex(0x7A3A00);
             UIFactory.Place(_playSub, 0.02f, 0.12f, 0.98f, 0.4f);
             Image shine = Kit(_playButton.transform, shineSprite, "Shine", 1f, Image.Type.Simple);
             shine.color = new Color(1f, 1f, 1f, 0.5f);
@@ -417,18 +421,11 @@ namespace PofudukFilo.UI
         {
             Text t = _ui.Label(parent, text, size, color, align);
             t.horizontalOverflow = HorizontalWrapMode.Overflow;
-            Outline diag = t.GetComponent<Outline>();
-            diag.effectColor = Ink;
-            diag.effectDistance = new Vector2(stroke * 0.7f, -stroke * 0.7f);
-            Outline across = t.gameObject.AddComponent<Outline>();
-            across.effectColor = Ink;
-            across.effectDistance = new Vector2(stroke, 0.01f);
-            Outline down = t.gameObject.AddComponent<Outline>();
-            down.effectColor = Ink;
-            down.effectDistance = new Vector2(0.01f, stroke);
-            Shadow drop = t.gameObject.AddComponent<Shadow>();
-            drop.effectColor = Ink;
-            drop.effectDistance = new Vector2(0f, -stroke * 1.3f);
+            Destroy(t.GetComponent<Outline>()); // removed at frame end; UIStroke draws the whole stroke itself
+            UIStroke s = t.gameObject.AddComponent<UIStroke>();
+            s.color = Ink;
+            s.width = stroke;
+            s.drop = stroke * 1.3f;
             return t;
         }
 
