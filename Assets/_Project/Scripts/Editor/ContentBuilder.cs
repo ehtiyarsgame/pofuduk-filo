@@ -861,16 +861,18 @@ namespace PofudukFilo.EditorTools
 
         private void BuildEnemies()
         {
-            EnemyPrefab<Enemy>("Chick", "chick", 0.9f, e => Stats(e, 10, 0.38f, 1, 1, 1.4f, 5f, 1, 0, 2.8f, 10, true));
+            // Horde (threat.md §3.6): fodder (chick, bee, cookie robot, balloon) has ~70 % of its old HP and fires
+            // ~60 % as often, because 2.5× as many come — the crowd is the threat, not a bullet storm.
+            EnemyPrefab<Enemy>("Chick", "chick", 0.9f, e => Stats(e, 7, 0.38f, 1, 1, 1.4f, 9f, 1, 0, 2.8f, 10, true));
             EnemyPrefab<Enemy>("JellyBear", "jelly_bear", 1.2f, e => Stats(e, 45, 0.55f, 3, 2, 0.8f, 5f, 3, 30, 2.8f, 12, true, BEnemyBig));
-            EnemyPrefab<Enemy>("CookieRobot", "cookie_robot", 1f, e => Stats(e, 25, 0.45f, 3, 1, 1f, 3.4f, 1, 0, 4f, 12, true));
+            EnemyPrefab<Enemy>("CookieRobot", "cookie_robot", 1f, e => Stats(e, 18, 0.45f, 3, 1, 1f, 5.5f, 1, 0, 4f, 12, true));
             EnemyPrefab<Enemy>("IceCreamTower", "ice_cream", 1.3f, e => Stats(e, 70, 0.6f, 4, 3, 0.6f, 3.5f, 8, 315, 2.4f, 10, false));
-            EnemyPrefab<Enemy>("GumBalloon", "gum_balloon", 1f, e => Stats(e, 20, 0.45f, 3, 1, 1.2f, 6f, 6, 300, 2.5f, 10, false));
+            EnemyPrefab<Enemy>("GumBalloon", "gum_balloon", 1f, e => Stats(e, 14, 0.45f, 3, 1, 1.2f, 9f, 6, 300, 2.5f, 10, false));
             // Added 2026-09-25 (device feedback: "tek düşman tipi var"): each moves and shoots differently.
             EnemyPrefab<Enemy>("CandyBee", "candy_bee", 0.8f, e =>
             {
                 // Fast and swervy, one quick aimed shot: hard to track, easy to kill.
-                Stats(e, 8, 0.34f, 1, 1, 2.4f, 4f, 1, 0, 4.2f, 8, true);
+                Stats(e, 6, 0.34f, 1, 1, 2.4f, 7f, 1, 0, 4.2f, 8, true);
                 Set(e, "swayAmplitude", 1.8f);
                 Set(e, "swayFrequency", 2.6f);
             });

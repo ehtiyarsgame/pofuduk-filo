@@ -15,12 +15,14 @@ namespace PofudukFilo.Core
         public const float XpLinear = 9f;
         public const float XpCoefficient = 0.9f;
         public const float XpExponent = 1.7f;
+        /// <summary>Horde density (threat.md §3.6) brings about 2.5× the kills, so every level needs 2.5× the XP.</summary>
+        public const double XpScale = 2.5;
 
         /// <summary>XP required to go from <paramref name="level"/> to level + 1 (level starts at 1).</summary>
         public static int XpToNextLevel(int level)
         {
             if (level < 1) throw new ArgumentOutOfRangeException(nameof(level));
-            return (int)Math.Floor(XpBase + XpLinear * level + XpCoefficient * Math.Pow(level, XpExponent));
+            return (int)Math.Floor(XpScale * (XpBase + XpLinear * level + XpCoefficient * Math.Pow(level, XpExponent)));
         }
 
         /// <summary>HP(t, c) = HP_base · (1 + 0.35t + 0.06t²) · 1.22^c — a DPS race (threat.md §3.1): without upgrades the
@@ -66,7 +68,9 @@ namespace PofudukFilo.Core
         public static float SpawnBudget(float minutes, float ddaMultiplier)
         {
             float clamped = Math.Clamp(ddaMultiplier, 0.75f, 1.15f);
-            return (2f + 1.1f * minutes + 0.12f * minutes * minutes) * clamped; // threat.md §3.1 (was 1.5 + 0.9t + 0.08t²)
+            // threat.md §3.6, the horde (2026-09-25: "canavarları çoklatabiliriz… hala çok basit"): 2.5× the old
+            // 2 + 1.1t + 0.12t², with lighter fodder, so a strong build mows a crowd and a weak one drowns in leaks.
+            return (5f + 2.75f * minutes + 0.3f * minutes * minutes) * clamped;
         }
 
         /// <summary>Cost(L) = round10(base · growth^(L−1)) for a meta upgrade going to level L (L ≥ 1).</summary>

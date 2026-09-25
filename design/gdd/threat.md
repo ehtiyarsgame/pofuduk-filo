@@ -92,6 +92,29 @@ enemy-HP scaling. That is a modest gain. The meta curve was not the problem; the
 - The player now faces a real positioning trade-off: stay low and safe, or move up and across to cut the
   swarm before it passes.
 
+### 3.6 The horde (2026-09-25, third revision)
+
+Device feedback, with a screenshot of a level 11 run showing barely any enemies on screen: *"canavarları
+çoklatabiliriz, hem de stres atar; çok güçlü olduğunda… güçlü olduğunu buradan bilir… hala çok ama çok ama çokkk
+basit"* ("we can multiply the monsters, it also relieves stress; when you're very strong you know it from this…
+still very, very, veryyy easy"). QA telemetry agreed: 4–12 enemies on screen at a time.
+
+**Rule.** The crowd is both the power readout and the threat:
+- A strong build mows it down, and the combo climbs.
+- A weak one cannot keep up. The swarm leaks (§3.5) and runs into the ship.
+
+| What | Before | After | Why |
+|---|---|---|---|
+| Spawn budget (points/s) | 2 + 1.1t + 0.12t² | **5 + 2.75t + 0.3t²** | 2.5× as many enemies |
+| Fodder HP (Chick / Bee / Cookie Robot / Balloon) | 10 / 8 / 25 / 20 | **7 / 6 / 18 / 14** | Each dies fast, but the crowd needs about 1.75× the DPS |
+| Fodder fire interval (s) | 5 / 4 / 3.4 / 6 | **9 / 7 / 5.5 / 9** | The bodies are the threat, not a bullet storm (about 1.4× the bullets overall) |
+| XP per level | `XpToNextLevel` | **× 2.5** (`XpScale`) | Levelling pace stays as it was |
+| Sugar meter | 130 | **320** | Rush pace stays as it was |
+| Coin / heart / bomb chance per kill | 0.12 / 0.0018 / 0.002 | **0.05 / 0.0007 / 0.0008** | Per-minute drops stay as they were; gold a little lower |
+
+Big enemies, elites, formations and bosses are unchanged. Leak shares follow base HP, clamped at a 3 % floor,
+so they stay the same for fodder.
+
 ## 4. Formulas
 
 - `EnemyDamageScale(t) = 1 + 0.15t + 0.025t²` (0.2t in run 49; run 51, with every enemy type spawning, died at 155 s). Examples: ×1 at 0, ×1.7 at 3 min, ×2.4 at 5 min, ×3.3 at 7 min.
