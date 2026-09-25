@@ -22,6 +22,7 @@ namespace PofudukFilo.Meta
             // Saves from before mastery/pilot levels existed deserialize these as null.
             _data.weaponMastery ??= new List<UpgradeLevelEntry>();
             _data.gunMods ??= new List<UpgradeLevelEntry>();
+            _data.mapBest ??= new List<float>();
             _data.pilotLevels ??= new List<UpgradeLevelEntry>();
             _data.adProgress ??= new List<UpgradeLevelEntry>();
             _data.missionProgress ??= new List<int>();
@@ -156,6 +157,40 @@ namespace PofudukFilo.Meta
         // ---------------------------------------------------------------- Endless record
 
         public float BestEndlessSeconds => _data.bestEndlessSeconds;
+
+        // ---------------------------------------------------------------- Maps (maps.md)
+
+        /// <summary>Best time on a map; map 1 is the classic endless record.</summary>
+        public float MapBest(int index) =>
+            index == 0 ? _data.bestEndlessSeconds : index < _data.mapBest.Count ? _data.mapBest[index] : 0f;
+
+        public bool IsMapUnlocked(int index) => Maps.IsUnlocked(index, MapBest);
+
+        /// <summary>The map the lobby has selected (always an unlocked one).</summary>
+        public int SelectedMap
+        {
+            get => IsMapUnlocked(_data.selectedMap) ? Math.Clamp(_data.selectedMap, 0, Maps.Count - 1) : 0;
+            set
+            {
+                if (!IsMapUnlocked(value) || value == _data.selectedMap) return;
+                _data.selectedMap = value;
+                _persist(_data);
+            }
+        }
+
+        /// <summary>Stores a map's time; true if it beat that map's record. Map 1 also feeds the endless record.</summary>
+        public bool RecordMap(int index, float seconds, int kills)
+        {
+            if (index == 0) return RecordEndless(seconds, kills);
+            while (_data.mapBest.Count <= index) _data.mapBest.Add(0f);
+            bool best = seconds > _data.mapBest[index];
+            if (best)
+            {
+                _data.mapBest[index] = seconds;
+                _persist(_data);
+            }
+            return best;
+        }
         public int BestEndlessKills => _data.bestEndlessKills;
 
         /// <summary>Stores an Endless result; true if it beat the time record.</summary>

@@ -196,7 +196,8 @@ namespace PofudukFilo.Progression
         private int CoinValue(float baseValue)
         {
             float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f;
-            return Mathf.Max(1, Mathf.RoundToInt(Core.Formulas.CoinValue(baseValue, CoinPowerMultiplier, minutes)));
+            return Mathf.Max(1, Mathf.RoundToInt(Core.Formulas.CoinValue(baseValue, CoinPowerMultiplier, minutes)
+                * Meta.Maps.Current.GoldMultiplier)); // harder maps pay more (maps.md §3)
         }
 
         private void SpawnGold(Vector2 pos, int value) => Spawn(PickupRules.GoldKindFor(value), pos, value);

@@ -38,6 +38,9 @@ namespace PofudukFilo.Meta
         public int forgePower;
         public int forgeSpeed;
         public float bestEndlessSeconds;
+        /// <summary>Best time per map (maps.md); index 0 mirrors bestEndlessSeconds.</summary>
+        public List<float> mapBest = new();
+        public int selectedMap;
         public int bestEndlessKills;
         // Rewarded ads (ad-rewards.md): per-item unlock progress and the daily counters.
         public List<UpgradeLevelEntry> adProgress = new();
@@ -66,6 +69,7 @@ namespace PofudukFilo.Meta
     {
         public int version = 1;
         public string characterId;
+        public int mapIndex;
         // Timeline
         public int stage;
         public float elapsed;

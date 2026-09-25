@@ -173,8 +173,9 @@ namespace PofudukFilo.Bullets
             float lifetime = 8f, bool absorbable = true, int splitIntoType = -1)
         {
             // Every enemy shot (troops and bosses) hits harder as the run goes on (threat.md §3.1).
-            float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f;
-            BulletData b = Create(typeIndex, position, velocity, damage * Formulas.EnemyDamageScale(minutes), 0, lifetime);
+            float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.ThreatMinutes : 0f;
+            BulletData b = Create(typeIndex, position, velocity,
+                damage * Formulas.EnemyDamageScale(minutes) * Meta.Maps.Current.DamageMultiplier, 0, lifetime);
             b.Absorbable = absorbable;
             if (splitIntoType >= 0 && splitIntoType < bulletTypes.Length) b.SplitInto = splitIntoType + 1;
             _pendingEnemy.Add(b);

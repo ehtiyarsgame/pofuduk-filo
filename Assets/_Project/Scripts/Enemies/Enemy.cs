@@ -256,7 +256,7 @@ namespace PofudukFilo.Enemies
 
             // Aggression ramp: enemies fire more often as the run goes on (threat.md §3.1),
             // so a strong late build still has to dodge (device feedback: late game too easy).
-            float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f;
+            float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.ThreatMinutes : 0f;
             _fireTimer -= dt * Formulas.EnemyFireRateScale(minutes);
             // A warm pulse before the shot says "this one is about to fire" (enemy-attacks.md §3.2).
             if (shotTelegraphSeconds > 0f)
@@ -442,8 +442,8 @@ namespace PofudukFilo.Enemies
                 Vector2 pp = player.transform.position;
                 if (pp.y < top.y && Mathf.Abs(pp.x - top.x) < laserHalfWidth + player.HitRadius)
                 {
-                    float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f;
-                    player.TakeDamage(bulletDamage * Formulas.EnemyDamageScale(minutes)); // i-frames: once per ~0.9 s
+                    float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.ThreatMinutes : 0f;
+                    player.TakeDamage(bulletDamage * Formulas.EnemyDamageScale(minutes) * Meta.Maps.Current.DamageMultiplier); // i-frames: once per ~0.9 s
                 }
             }
         }

@@ -226,6 +226,7 @@ namespace PofudukFilo.Core
             var s = new RunSnapshot
             {
                 characterId = CurrentCharacter != null ? CurrentCharacter.id : null,
+                mapIndex = Maps.CurrentIndex,
                 hp = player.CurrentHp,
                 level = xpSystem.Level,
                 xp = xpSystem.CurrentXp,
@@ -284,7 +285,9 @@ namespace PofudukFilo.Core
             }
 
             _forcedCharacterId = s.characterId;
+            _forcedMap = s.mapIndex; // a saved run resumes on its own map
             StartRun(s.stage, true);
+            _forcedMap = -1;
             _forcedCharacterId = null;
 
             var weapons = new List<(WeaponDefinition, int)>();
@@ -426,8 +429,13 @@ namespace PofudukFilo.Core
         /// <summary>Lab weapon by id (base or evolution), or null.</summary>
         public WeaponDefinition WeaponById(string id) => FindWeapon(id);
 
+        /// <summary>Map a resumed run must use (−1 = the lobby's selection).</summary>
+        private int _forcedMap = -1;
+
         private void StartRun(int chapterIndex, bool endless)
         {
+            // Maps (maps.md): the lobby's selected map, or the saved run's own when resuming.
+            Maps.Select(_forcedMap >= 0 ? _forcedMap : Meta.SelectedMap);
             SaveService.DeleteRun(); // a new run replaces any saved one (ResumeRun re-saves as it plays)
             _autosaveTimer = 0f;
             _extraRunDamage = 0f;
@@ -772,7 +780,7 @@ namespace PofudukFilo.Core
                 gold += _stageGold;
                 stardust = _stageStardust;
                 cleared = _highestStageCleared;
-                newRecord = Meta.RecordEndless(waveDirector.RunMinutes * 60f, _kills);
+                newRecord = Meta.RecordMap(Maps.CurrentIndex, waveDirector.RunMinutes * 60f, _kills);
             }
             else if (_endless)
             {

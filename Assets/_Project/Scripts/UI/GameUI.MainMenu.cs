@@ -102,6 +102,8 @@ namespace PofudukFilo.UI
         private Image _chestFill;
         private Image[] _chests;
         private GameObject _giftDot;
+        private Text _mapText;
+        private int _viewMap = -1;
 
         private void BuildMenu(Transform root)
         {
@@ -118,6 +120,7 @@ namespace PofudukFilo.UI
             BuildHero(m);
             BuildSideColumns(m);
             BuildRecordRoad(m);
+            BuildMapSelector(m);
             BuildPlay(m);
             BuildTabBar(m);
 
@@ -296,6 +299,7 @@ namespace PofudukFilo.UI
             _playButton = KitButton(m, kitYellow, () =>
             {
                 if (run.HasSavedRun) run.ResumeRun();
+                else if (!run.Meta.IsMapUnlocked(_viewMap)) MenuToast(LockedMapHint(_viewMap));
                 else run.StartEndless();
             }, 0.58f);
             At(_playButton, 34, 622, 322, 92);
@@ -322,6 +326,57 @@ namespace PofudukFilo.UI
             _restartButton = pill.gameObject.AddComponent<Button>();
             _restartButton.onClick.AddListener(run.StartEndless);
             InkText(pill.transform, "Yeni Oyun", 36, Palette.White, 3.5f);
+        }
+
+        /// <summary>Map selector between the record road and PLAY (maps.md §4): ‹ name · gold ×N ›.</summary>
+        private void BuildMapSelector(Transform m)
+        {
+            Image pill = Kit(m, kitPill, "MapSelector", 2f);
+            At(pill, 70, 593, 250, 27);
+            _mapText = InkText(pill.transform, "", 32, Palette.White, 3.5f);
+            UIFactory.Place(_mapText, 0.14f, 0f, 0.86f, 1f);
+            _mapText.resizeTextForBestFit = true;
+            _mapText.resizeTextMinSize = 18;
+            _mapText.resizeTextMaxSize = 32;
+            _mapText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            _mapText.supportRichText = true;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                int delta = side;
+                Button arrow = KitButton(m, kitViolet, () => ChangeMap(delta), 2.2f);
+                At(arrow, side < 0 ? 60f : 296f, 590f, 34f, 32f);
+                Text t = InkText(arrow.transform, side < 0 ? "<" : ">", 44, Palette.White, 3.5f);
+                UIFactory.Place(t, 0f, 0.1f, 1f, 1f);
+            }
+        }
+
+        private void ChangeMap(int delta)
+        {
+            if (run.HasSavedRun)
+            {
+                MenuToast("Önce kayıtlı oyununa devam et.");
+                return;
+            }
+            _viewMap = (_viewMap + delta + Maps.Count) % Maps.Count;
+            if (run.Meta.IsMapUnlocked(_viewMap)) run.Meta.SelectedMap = _viewMap;
+            RefreshForge();
+        }
+
+        private string LockedMapHint(int index) =>
+            Loc.T($"{Loc.T(Maps.All[index - 1].Name)} haritasında {Clock(Maps.UnlockSeconds)} hayatta kal, burası açılsın!");
+
+        private void RefreshMapSelector()
+        {
+            if (_mapText == null) return;
+            MetaProgressionService meta = run.Meta;
+            if (_viewMap < 0) _viewMap = meta.SelectedMap;
+            MapDef map = Maps.All[_viewMap];
+            bool open = meta.IsMapUnlocked(_viewMap);
+            string gold = map.GoldMultiplier > 1f ? Loc.T($"×{map.GoldMultiplier:0.#} altın") : "";
+            if (gold.Length > 0) gold = "  " + gold;
+            _mapText.text = open
+                ? $"{Loc.T(map.Name)}<color=#FFE45C>{gold}</color>"
+                : Loc.T($"KİLİTLİ · {Clock(meta.MapBest(_viewMap - 1))} / {Clock(Maps.UnlockSeconds)}");
         }
 
         private void BuildTabBar(Transform m)
@@ -449,7 +504,10 @@ namespace PofudukFilo.UI
                 (int stage, float minutes) = run.SavedRunInfo();
                 _playSub.text = Loc.T($"Kayıt: Bölüm {stage} · {Mathf.FloorToInt(minutes)}:{Mathf.FloorToInt(minutes * 60f % 60f):00}");
             }
-            else _playSub.text = Loc.T("SONSUZ GALAKSİ");
+            else _playSub.text = meta.IsMapUnlocked(_viewMap < 0 ? meta.SelectedMap : _viewMap)
+                ? Loc.T(Maps.All[_viewMap < 0 ? meta.SelectedMap : _viewMap].Name)
+                : Loc.T("KİLİTLİ HARİTA");
+            RefreshMapSelector();
             _restartButton.gameObject.SetActive(saved);
             RefreshChests(best);
             RefreshSideIcons();

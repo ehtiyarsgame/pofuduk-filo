@@ -311,7 +311,8 @@ namespace PofudukFilo.Enemies
         {
             if (phase.swarm.Length == 0) return;
 
-            float perSecond = Formulas.SpawnBudget(RunMinutes, _dda.Multiplier) * phase.budgetScale;
+            float perSecond = Formulas.SpawnBudget(Meta.Maps.ThreatMinutes(RunMinutes), _dda.Multiplier) * phase.budgetScale
+                * Meta.Maps.Current.SpawnMultiplier;
             _budget = Mathf.Min(_budget + perSecond * dt, perSecond * maxBankedBudgetSeconds);
 
             for (int i = 0; i < MaxSwarmSpawnsPerFrame; i++)

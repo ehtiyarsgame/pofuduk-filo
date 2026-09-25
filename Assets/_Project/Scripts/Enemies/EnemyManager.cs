@@ -44,6 +44,8 @@ namespace PofudukFilo.Enemies
 
         /// <summary>Minutes since the run started; drives HP scaling. Set by the run/wave director.</summary>
         public float RunMinutes { get; set; }
+        /// <summary>The threat clock: run minutes plus the current map's offset (maps.md §3). Every threat curve reads it.</summary>
+        public float ThreatMinutes => Meta.Maps.ThreatMinutes(RunMinutes);
         public int ChapterIndex { get; set; }
 
         /// <summary>Güç Eşleme: enemy HP follows the player's kill speed (power-match.md).</summary>
@@ -97,7 +99,8 @@ namespace PofudukFilo.Enemies
             // Power Match: its hidden HP boost cancelled out upgrades ("geliştirdim, fark etmedi"). Power Match still
             // measures kill speed for telemetry when AdaptiveHp is off.
             float adaptive = AdaptiveHp ? Power.Scale : 1f;
-            enemy.Initialize(Formulas.EnemyHp(enemy.BaseHp, RunMinutes, ChapterIndex) * PlayerPowerHpScale * adaptive);
+            enemy.Initialize(Formulas.EnemyHp(enemy.BaseHp, ThreatMinutes, ChapterIndex) * PlayerPowerHpScale * adaptive
+                * Meta.Maps.Current.HpMultiplier);
             _active.Add(enemy);
             return enemy;
         }
@@ -242,7 +245,8 @@ namespace PofudukFilo.Enemies
                     if (((Vector2)e.transform.position - playerPos).sqrMagnitude < r * r)
                     {
                         bool big = e.IsElite || e is BossEnemy;
-                        player.TakeDamage(contactDamage * (big ? 1.5f : 1f) * Formulas.EnemyDamageScale(RunMinutes));
+                        player.TakeDamage(contactDamage * (big ? 1.5f : 1f) * Formulas.EnemyDamageScale(ThreatMinutes)
+                            * Meta.Maps.Current.DamageMultiplier);
                         if (!big) DamageEnemy(e, e.CurrentHp + 0.01f);
                     }
                 }

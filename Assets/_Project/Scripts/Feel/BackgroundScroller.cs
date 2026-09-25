@@ -43,6 +43,9 @@ namespace PofudukFilo.Feel
         private TileLayer _near;
         private float _nextProp;
         private int _propIndex;
+        // Map tint (maps.md §3): the sky and nebula take the current map's colour, so each map is a different place.
+        private readonly List<(SpriteRenderer renderer, Color baseColor)> _tinted = new();
+        private Color _mapTint = Color.white;
 
         private void Start()
         {
@@ -53,12 +56,16 @@ namespace PofudukFilo.Feel
             if (sky != null)
             {
                 SpriteRenderer r = MakeRenderer("sky", sky, -200, Color.white);
+                _tinted.Add((r, Color.white));
                 _sky = r.transform;
                 Vector2 size = sky.bounds.size;
                 _sky.localScale = new Vector3(width / size.x, halfH * 2.1f / size.y, 1f);
             }
 
-            AddTiles(nebula, nebulaSpeed, -190, nebulaTint, width);
+            TileLayer neb = AddTiles(nebula, nebulaSpeed, -190, nebulaTint, width);
+            if (neb != null)
+                foreach (Transform t in neb.Tiles)
+                    if (t.TryGetComponent(out SpriteRenderer sr)) _tinted.Add((sr, nebulaTint));
             AddTiles(farStars, farSpeed, -180, new Color(1f, 1f, 1f, 0.75f), width);
             _near = AddTiles(nearStars, nearSpeed, -170, new Color(1f, 1f, 1f, 0.7f), width);
             _nextProp = Random.Range(0f, 3f);
@@ -100,6 +107,16 @@ namespace PofudukFilo.Feel
         {
             if (_camera == null) return;
             float dt = Time.deltaTime;
+
+            int hex = Meta.Maps.Current.Tint;
+            var wanted = new Color(((hex >> 16) & 0xFF) / 255f, ((hex >> 8) & 0xFF) / 255f, (hex & 0xFF) / 255f, 1f);
+            if (_mapTint != wanted)
+            {
+                _mapTint = Color.Lerp(_mapTint, wanted, 1f - Mathf.Exp(-3f * Time.unscaledDeltaTime));
+                if (((Vector4)(_mapTint - wanted)).sqrMagnitude < 1e-5f) _mapTint = wanted;
+                foreach ((SpriteRenderer renderer, Color baseColor) in _tinted)
+                    if (renderer != null) renderer.color = baseColor * _mapTint;
+            }
             Vector3 cam = _camera.transform.position;
             if (_sky != null) _sky.position = new Vector3(cam.x, cam.y, 0f);
 
