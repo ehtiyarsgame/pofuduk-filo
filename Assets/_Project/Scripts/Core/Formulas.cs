@@ -15,8 +15,8 @@ namespace PofudukFilo.Core
         public const float XpLinear = 9f;
         public const float XpCoefficient = 0.9f;
         public const float XpExponent = 1.7f;
-        /// <summary>Horde density (threat.md §3.6) brings about 2.5× the kills, so every level needs 2.5× the XP.</summary>
-        public const double XpScale = 2.5;
+        /// <summary>Horde density (threat.md §3.6) brings about 3.25× the kills, so every level needs 3.25× the XP.</summary>
+        public const double XpScale = 3.25;
 
         /// <summary>XP required to go from <paramref name="level"/> to level + 1 (level starts at 1).</summary>
         public static int XpToNextLevel(int level)
@@ -70,7 +70,8 @@ namespace PofudukFilo.Core
             float clamped = Math.Clamp(ddaMultiplier, 0.75f, 1.15f);
             // threat.md §3.6, the horde (2026-09-25: "canavarları çoklatabiliriz… hala çok basit"): 2.5× the old
             // 2 + 1.1t + 0.12t², with lighter fodder, so a strong build mows a crowd and a weak one drowns in leaks.
-            return (5f + 2.75f * minutes + 0.3f * minutes * minutes) * clamped;
+            // 2026-09-25 again: "düşmanları biraz daha arttıralım" — ×1.3 on top (3.25× the original).
+            return (6.5f + 3.6f * minutes + 0.39f * minutes * minutes) * clamped;
         }
 
         /// <summary>Cost(L) = round10(base · growth^(L−1)) for a meta upgrade going to level L (L ≥ 1).</summary>

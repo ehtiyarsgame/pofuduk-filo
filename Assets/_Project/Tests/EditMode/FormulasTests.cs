@@ -6,13 +6,13 @@ namespace PofudukFilo.Tests
 {
     public sealed class FormulasTests
     {
-        // Expected values: the table in design/gdd/game-concept.md §5 × XpScale 2.5 (threat.md §3.6).
-        [TestCase(1, 49)]
-        [TestCase(2, 77)]
-        [TestCase(3, 107)]
-        [TestCase(5, 172)]
-        [TestCase(10, 362)]
-        [TestCase(25, 1122)]
+        // Expected values: the table in design/gdd/game-concept.md §5 × XpScale 3.25 (threat.md §3.6).
+        [TestCase(1, 64)]
+        [TestCase(2, 100)]
+        [TestCase(3, 139)]
+        [TestCase(5, 223)]
+        [TestCase(10, 471)]
+        [TestCase(25, 1459)]
         public void XpToNextLevel_MatchesGddTable(int level, int expected)
         {
             Assert.That(Formulas.XpToNextLevel(level), Is.EqualTo(expected));
@@ -47,8 +47,8 @@ namespace PofudukFilo.Tests
         [Test]
         public void SpawnBudget_ClampsDda()
         {
-            Assert.That(Formulas.SpawnBudget(0f, 10f), Is.EqualTo(5f * 1.15f).Within(1e-5f));
-            Assert.That(Formulas.SpawnBudget(0f, 0f), Is.EqualTo(5f * 0.75f).Within(1e-5f));
+            Assert.That(Formulas.SpawnBudget(0f, 10f), Is.EqualTo(6.5f * 1.15f).Within(1e-5f));
+            Assert.That(Formulas.SpawnBudget(0f, 0f), Is.EqualTo(6.5f * 0.75f).Within(1e-5f));
         }
 
         [Test]

@@ -52,11 +52,11 @@ namespace PofudukFilo.Progression
         [SerializeField] private float bottomMargin = 1f;
 
         [Header("Drops")]
-        [SerializeField] private float coinChance = 0.05f; // horde (threat.md §3.6): 2.5× the kills, so a coin per kill is rarer (was 0.12)
+        [SerializeField] private float coinChance = 0.04f; // horde (threat.md §3.6): 3.25× the kills, so a coin per kill is rarer (was 0.12)
         [SerializeField] private int goldPerCoinValue = 5;
-        [SerializeField] private float heartChance = 0.0007f; // ×1/2.5 for the horde (threat.md §3.6); was 0.0018. Earlier: device feedback 2026-09-25: "ölmek imkansız" at 0.004; 0.0012 too stingy (QA 45)
+        [SerializeField] private float heartChance = 0.00055f; // ×1/3.25 for the horde (threat.md §3.6); was 0.0018. Earlier: device feedback 2026-09-25: "ölmek imkansız" at 0.004; 0.0012 too stingy (QA 45)
         [SerializeField] private float magnetChance = 0f; // removed: pickups already fly to the ship on their own
-        [SerializeField] private float bombChance = 0.0008f; // ×1/2.5 for the horde (was 0.002)
+        [SerializeField] private float bombChance = 0.0006f; // ×1/3.25 for the horde (was 0.002)
         [SerializeField] private int formationClearGems = 5;
         [SerializeField] private int mergeThreshold = 250;
 

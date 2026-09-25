@@ -112,6 +112,10 @@ still very, very, veryyy easy"). QA telemetry agreed: 4–12 enemies on screen a
 | Sugar meter | 130 | **320** | Rush pace stays as it was |
 | Coin / heart / bomb chance per kill | 0.12 / 0.0018 / 0.002 | **0.05 / 0.0007 / 0.0008** | Per-minute drops stay as they were; gold a little lower |
 
+**Follow-up (same day):** *"düşmanları bence biraz daha arttıralım"* ("I think we should increase the enemies a
+bit more"). The budget now rises another ×1.3, to **6.5 + 3.6t + 0.39t²**, which is 3.25× the original. XP per
+level (×3.25), the sugar meter (420) and the drop chances (0.04 / 0.00055 / 0.0006) follow it.
+
 Big enemies, elites, formations and bosses are unchanged. Leak shares follow base HP, clamped at a 3 % floor,
 so they stay the same for fodder.
 
