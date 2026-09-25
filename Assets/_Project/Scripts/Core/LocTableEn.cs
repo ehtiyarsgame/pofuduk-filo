@@ -269,6 +269,8 @@ namespace PofudukFilo.Core
             ["HEDİYE"] = "GIFT",
             ["Yarın"] = "Tomorrow",
             ["SONSUZ GALAKSİ"] = "ENDLESS GALAXY",
+            ["ANA SAYFA"] = "HOME",
+            ["YILDIZLAR"] = "STARS",
             ["Bu sandığı zaten açtın."] = "You already opened this chest.",
             ["Sandık hazır — dokun, aç!"] = "Chest ready — tap to open!",
             ["Bütün sandıklar açıldı!"] = "All chests opened!",

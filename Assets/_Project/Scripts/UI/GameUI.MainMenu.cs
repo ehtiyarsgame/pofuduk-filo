@@ -390,7 +390,7 @@ namespace PofudukFilo.UI
             tile.Label.resizeTextMinSize = 18;
             tile.Label.resizeTextMaxSize = 30;
             tile.Label.horizontalOverflow = HorizontalWrapMode.Wrap;
-            tile.Badge = Badge(node, 0.66f, 0.72f, 0.88f, 0.97f);
+            tile.Badge = Badge(node, 0.6f, 0.72f, 0.8f, 0.97f); // inside the tab: the last one sits at the screen edge
             return tile;
         }
 
