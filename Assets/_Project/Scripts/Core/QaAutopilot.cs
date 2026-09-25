@@ -189,7 +189,7 @@ namespace PofudukFilo.Core
 
         private bool _pauseShot;
 
-        private const float ResumeTestAt = 100f;
+        private const float ResumeTestAt = 30f; // before the first death: the harder opening (threat.md §3.6) ends QA runs before 100 s
         private bool _resumeTested;
 
         /// <summary>
