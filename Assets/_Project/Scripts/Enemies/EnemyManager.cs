@@ -123,6 +123,7 @@ namespace PofudukFilo.Enemies
             if (!enemy.IsElite && enemy is not BossEnemy && enemy.SeenAt >= 0f && !SugarRush.RushActive)
                 Power.RecordKill(_clock - enemy.SeenAt);
             EnemyKilled?.Invoke(enemy);
+            enemy.OnKilled(); // death bursts (gum balloon, enemy-attacks.md)
             _toDespawn.Add(enemy); // removed next Update, so indices and iteration stay valid this frame
             return true;
         }

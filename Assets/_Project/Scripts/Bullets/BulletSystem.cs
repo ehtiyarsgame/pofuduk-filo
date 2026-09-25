@@ -151,13 +151,39 @@ namespace PofudukFilo.Bullets
         private readonly System.Collections.Generic.List<Enemy> _scratch = new(16);
 
         public void SpawnEnemyBullet(int typeIndex, Vector2 position, Vector2 velocity, float damage,
-            float lifetime = 8f, bool absorbable = true)
+            float lifetime = 8f, bool absorbable = true, int splitIntoType = -1)
         {
             // Every enemy shot (troops and bosses) hits harder as the run goes on (threat.md §3.1).
             float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f;
             BulletData b = Create(typeIndex, position, velocity, damage * Formulas.EnemyDamageScale(minutes), 0, lifetime);
             b.Absorbable = absorbable;
+            if (splitIntoType >= 0 && splitIntoType < bulletTypes.Length) b.SplitInto = splitIntoType + 1;
             _pendingEnemy.Add(b);
+        }
+
+        /// <summary>Split fan of a fused enemy shot (jelly bear, enemy-attacks.md): three children, ±35°, faster, weaker.</summary>
+        public const float SplitSpreadDegrees = 35f;
+
+        private void SplitExpiredShots()
+        {
+            for (int i = 0; i < _enemyBullets.Length; i++)
+            {
+                BulletData b = _enemyBullets[i];
+                // Only a fuse running out splits it — not a hit on the ship and not leaving the screen.
+                if (b.Alive || b.SplitInto == 0 || b.Lifetime > 0f) continue;
+                int child = b.SplitInto - 1;
+                b.SplitInto = 0;
+                _enemyBullets[i] = b;
+                float speed = math.length(b.Velocity) * 1.5f;
+                float baseAngle = math.atan2(b.Velocity.y, b.Velocity.x);
+                for (int k = -1; k <= 1; k++)
+                {
+                    float a = baseAngle + math.radians(SplitSpreadDegrees * k);
+                    BulletData c = Create(child, b.Position, new Vector2(math.cos(a), math.sin(a)) * speed, b.Damage * 0.6f, 0, 6f);
+                    c.Absorbable = b.Absorbable;
+                    _pendingEnemy.Add(c);
+                }
+            }
         }
 
         /// <summary>
@@ -268,6 +294,7 @@ namespace PofudukFilo.Bullets
 
             ApplyHits();
             Absorb();
+            SplitExpiredShots();
 
             if (_clearEnemyBulletsRequested)
             {

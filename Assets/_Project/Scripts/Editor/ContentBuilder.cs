@@ -19,7 +19,9 @@ namespace PofudukFilo.EditorTools
     {
         // Bullet type indices (order of BulletSystem.bulletTypes).
         public const int BFeather = 0, BGiantFeather = 1, BChick = 2, BStar = 3, BMeteor = 4,
-            BEnemy = 5, BEnemyBig = 6, BBossSpecial = 7, BSpark = 8, BIce = 9, BYarn = 10;
+            BEnemy = 5, BEnemyBig = 6, BBossSpecial = 7, BSpark = 8, BIce = 9, BYarn = 10,
+            // Enemy attack identities (enemy-attacks.md): one shot per enemy type.
+            BEgg = 11, BStinger = 12, BCrumb = 13, BGum = 14, BJelly = 15, BJellySmall = 16, BScoop = 17, BPuff = 18, BGoldEgg = 19;
 
         public readonly Dictionary<string, Sprite> Sprites = new();
         public Mesh Quad;
@@ -138,6 +140,18 @@ namespace PofudukFilo.EditorTools
             Add("b_enemy", ArtRecipes.EnemyBullet(ArtRecipes.Hex(0xFF2E4D)), 64);
             Add("b_enemy_big", ArtRecipes.EnemyBullet(ArtRecipes.Hex(0xFF2E9A)), 64);
             Add("b_boss_special", ArtRecipes.EnemyBullet(ArtRecipes.Hex(0xFF7A1A)), 64);
+            // Enemy attack identities (enemy-attacks.md).
+            Add("b_egg", ArtRecipes.ShotEgg(false), 64);
+            Add("b_gold_egg", ArtRecipes.ShotEgg(true), 64);
+            Add("b_stinger", ArtRecipes.ShotStinger(), 64);
+            Add("b_crumb", ArtRecipes.ShotCrumb(), 64);
+            Add("b_gum", ArtRecipes.ShotGum(), 64);
+            Add("b_jelly", ArtRecipes.ShotJelly(true), 64);
+            Add("b_jelly_small", ArtRecipes.ShotJelly(false), 64);
+            Add("b_scoop", ArtRecipes.ShotScoop(), 64);
+            Add("b_puff", ArtRecipes.ShotPuff(), 64);
+            Add("fx_laser_beam", ArtRecipes.LaserBeam(), 100);
+            Add("fx_laser_warn", ArtRecipes.LaserWarning(), 100);
 
             Add("p_gem_blue", ArtRecipes.GemSprite(ArtRecipes.Sky), 64);
             Add("p_gem_green", ArtRecipes.GemSprite(ArtRecipes.Leaf), 64);
@@ -256,7 +270,16 @@ namespace PofudukFilo.EditorTools
                 // Hero guns (hero-guns.md) — appended so the indices above stay put.
                 Type("Spark", "b_spark", 0.5f, 0.13f, true, 3000),
                 Type("Ice", "b_ice", 0.55f, 0.13f, true, 3000),
-                Type("Yarn", "b_yarn", 0.42f, 0.17f, false, 3000)
+                Type("Yarn", "b_yarn", 0.42f, 0.17f, false, 3000),
+                Type("Egg", "b_egg", 0.42f, 0.12f, false, 3010),
+                Type("Stinger", "b_stinger", 0.52f, 0.08f, true, 3010),
+                Type("Crumb", "b_crumb", 0.42f, 0.12f, false, 3010),
+                Type("Gum", "b_gum", 0.4f, 0.12f, false, 3010),
+                Type("Jelly", "b_jelly", 0.72f, 0.2f, false, 3010),
+                Type("JellySmall", "b_jelly_small", 0.44f, 0.12f, false, 3010),
+                Type("Scoop", "b_scoop", 0.46f, 0.13f, false, 3010),
+                Type("Puff", "b_puff", 0.5f, 0.14f, false, 3010),
+                Type("GoldEgg", "b_gold_egg", 0.46f, 0.13f, false, 3010)
             };
         }
 
@@ -863,35 +886,75 @@ namespace PofudukFilo.EditorTools
         {
             // Horde (threat.md §3.6): fodder (chick, bee, cookie robot, balloon) has ~70 % of its old HP and fires
             // ~60 % as often, because 2.5× as many come — the crowd is the threat, not a bullet storm.
-            EnemyPrefab<Enemy>("Chick", "chick", 0.9f, e => Stats(e, 7, 0.38f, 1, 1, 1.4f, 9f, 1, 0, 2.8f, 10, true));
-            EnemyPrefab<Enemy>("JellyBear", "jelly_bear", 1.2f, e => Stats(e, 45, 0.55f, 3, 2, 0.8f, 5f, 3, 30, 2.8f, 12, true, BEnemyBig));
-            EnemyPrefab<Enemy>("CookieRobot", "cookie_robot", 1f, e => Stats(e, 18, 0.45f, 3, 1, 1f, 5.5f, 1, 0, 4f, 12, true));
-            EnemyPrefab<Enemy>("IceCreamTower", "ice_cream", 1.3f, e => Stats(e, 70, 0.6f, 4, 3, 0.6f, 3.5f, 8, 315, 2.4f, 10, false));
-            EnemyPrefab<Enemy>("GumBalloon", "gum_balloon", 1f, e => Stats(e, 14, 0.45f, 3, 1, 1.2f, 9f, 6, 300, 2.5f, 10, false));
+            // Attack identities (enemy-attacks.md, device feedback 2026-09-25: "düşmanların hep bir ateş türü var… arada
+            // kaynıyor"): every type throws its own shot in its own pattern, so a crowd stays readable.
+            // Chick: an egg dropped straight down — easy, sidestep it.
+            EnemyPrefab<Enemy>("Chick", "chick", 0.9f, e => Stats(e, 7, 0.38f, 1, 1, 1.4f, 9f, 1, 0, 2.4f, 10, false, BEgg));
+            // Jelly bear: a slow jelly blob that bursts into three after a second — get clear before it splits.
+            EnemyPrefab<Enemy>("JellyBear", "jelly_bear", 1.2f, e =>
+            {
+                Stats(e, 45, 0.55f, 3, 2, 0.8f, 5f, 1, 0, 2.2f, 12, true, BJelly);
+                Set(e, "splitFuse", 1.1f);
+                Set(e, "splitTypeIndex", BJellySmall);
+            });
+            // Cookie robot: glows, then a 3-round burst of crumbs at the ship — move after the burst.
+            EnemyPrefab<Enemy>("CookieRobot", "cookie_robot", 1f, e =>
+            {
+                Stats(e, 18, 0.45f, 3, 1, 1f, 5.5f, 1, 0, 4.5f, 9, true, BCrumb);
+                Set(e, "burstCount", 3);
+                Set(e, "burstGap", 0.14f);
+                Set(e, "shotTelegraphSeconds", 0.35f);
+            });
+            // Ice-cream tower: a turning three-armed spiral of scoops — slip between the arms.
+            EnemyPrefab<Enemy>("IceCreamTower", "ice_cream", 1.3f, e =>
+            {
+                Stats(e, 70, 0.6f, 4, 3, 0.6f, 4f, 3, 240, 2.4f, 10, false, BScoop);
+                Set(e, "burstCount", 6);
+                Set(e, "burstGap", 0.28f);
+                Set(e, "spinPerShot", 20f);
+            });
+            // Gum balloon: never shoots — pops into a ring of gum when killed. Don't pop it in your face.
+            EnemyPrefab<Enemy>("GumBalloon", "gum_balloon", 1f, e =>
+            {
+                Stats(e, 14, 0.45f, 3, 1, 1.2f, 9f, 0, 0, 2.5f, 10, false, BGum);
+                Set(e, "deathBurstBullets", 8);
+                Set(e, "deathBurstSpeed", 2.6f);
+            });
             // Added 2026-09-25 (device feedback: "tek düşman tipi var"): each moves and shoots differently.
             EnemyPrefab<Enemy>("CandyBee", "candy_bee", 0.8f, e =>
             {
-                // Fast and swervy, one quick aimed shot: hard to track, easy to kill.
-                Stats(e, 6, 0.34f, 1, 1, 2.4f, 7f, 1, 0, 4.2f, 8, true);
+                // Fast and swervy: glows, then one very fast stinger at the ship — move when it glows.
+                Stats(e, 6, 0.34f, 1, 1, 2.4f, 7f, 1, 0, 7.5f, 8, true, BStinger);
                 Set(e, "swayAmplitude", 1.8f);
                 Set(e, "swayFrequency", 2.6f);
+                Set(e, "shotTelegraphSeconds", 0.5f);
             });
             EnemyPrefab<Enemy>("DonutUfo", "donut_ufo", 1.15f, e =>
             {
-                // Slides wide across the screen and drops a 3-shot fan straight down.
-                Stats(e, 30, 0.55f, 3, 2, 0.7f, 3f, 3, 40, 3.2f, 10, false);
+                // Slides wide, then a warning line and a laser straight down — leave the line.
+                Stats(e, 30, 0.55f, 3, 2, 0.7f, 5.5f, 0, 0, 3.2f, 14, false);
                 Set(e, "swayAmplitude", 2.6f);
                 Set(e, "swayFrequency", 0.9f);
+                Set(e, "laserBeamSprite", Sprites["fx_laser_beam"]);
+                Set(e, "laserWarningSprite", Sprites["fx_laser_warn"]);
             });
             EnemyPrefab<Enemy>("Marshmallow", "marshmallow", 1.35f, e =>
             {
-                // Slow tank: soaks damage and sprays a slow ring you must weave through.
-                Stats(e, 110, 0.65f, 6, 4, 0.45f, 4.5f, 10, 360, 2f, 10, false, BEnemyBig);
+                // Slow tank: a dense ring of puffs with one gap — find the gap.
+                Stats(e, 110, 0.65f, 6, 4, 0.45f, 4.5f, 14, 0, 2f, 10, false, BPuff);
                 Set(e, "swayAmplitude", 0.3f);
+                Set(e, "ringGapDegrees", 60f);
             });
             EnemyPrefab<Enemy>("EliteChick", "chick_elite", 1.3f, e =>
             {
-                Stats(e, 180, 0.6f, 25, 5, 0.7f, 1.8f, 3, 25, 3.6f, 12, true);
+                // Glows, fires three aimed golden eggs, and lunges at the ship every few seconds.
+                Stats(e, 180, 0.6f, 25, 5, 0.7f, 2.6f, 1, 0, 4.8f, 12, true, BGoldEgg);
+                Set(e, "burstCount", 3);
+                Set(e, "burstGap", 0.18f);
+                Set(e, "shotTelegraphSeconds", 0.4f);
+                Set(e, "lungeInterval", 4f);
+                Set(e, "lungeSpeed", 5f);
+                Set(e, "lungeSeconds", 0.6f);
                 Set(e, "isElite", true);
             });
 

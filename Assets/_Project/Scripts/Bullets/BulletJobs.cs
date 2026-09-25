@@ -24,6 +24,8 @@ namespace PofudukFilo.Bullets
         public bool Absorbable;
         /// <summary>On-hit traits of a player shot (BulletEffect flags, hero-guns.md §3.2).</summary>
         public byte Effects;
+        /// <summary>Enemy shot that bursts into three when its fuse (Lifetime) runs out: 1 + the child bullet type, 0 = never.</summary>
+        public int SplitInto;
     }
 
     /// <summary>Collision snapshot of one enemy, written by EnemyManager each frame.</summary>
