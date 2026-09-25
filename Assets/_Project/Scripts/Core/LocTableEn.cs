@@ -406,7 +406,7 @@ namespace PofudukFilo.Core
             ["{0} düşman yok et"] = "Defeat {0} enemies",
             ["Tek oyunda {0} dakika dayan"] = "Survive {0} minutes in one run",
             ["Oyunlardan {0} altın kazan"] = "Earn {0} gold from runs",
-            ["{0} boss yen"] = "Defeat {0} bosses",
+            ["{0} boss yen"] = "Defeat bosses: {0}",
             ["{0} kez Şeker Hücumu yap"] = "Trigger Sugar Rush {0} times",
             ["{0} oyun oyna"] = "Play {0} runs",
             ["Sonraki pilot: {0} %{1}"] = "Next pilot: {0} {1}%",

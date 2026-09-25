@@ -38,7 +38,7 @@ build move that wall further out.
 
 ### 3.3 Sugar Rush
 
-- The meter is 160 at the start (was 120). A meter of 200 gave no rush at all in 3 minutes (QA run 45).
+- The meter is 130 at the start, and bigger enemies fill it by their XP value (run 51: no rush in 4 min at 160 and 1 per kill). Before that it was 160 (was 120). A meter of 200 gave no rush at all in 3 minutes (QA run 45).
 - From minute 2 it grows +40 % of that base per minute (was +35 %).
 - A hit keeps only 30 % of the meter (was 50 %).
 - A rush lasts 5 s (was 6).
@@ -47,7 +47,7 @@ QA run 42 had a rush roughly every 45 s. The target is one every 90–120 s.
 
 ## 4. Formulas
 
-- `EnemyDamageScale(t) = 1 + 0.2t + 0.025t²`. Examples: ×1 at 0, ×1.8 at 3 min, ×2.6 at 5 min, ×3.6 at 7 min.
+- `EnemyDamageScale(t) = 1 + 0.15t + 0.025t²` (0.2t in run 49; run 51, with every enemy type spawning, died at 155 s). Examples: ×1 at 0, ×1.7 at 3 min, ×2.4 at 5 min, ×3.3 at 7 min.
   So a 10-damage bullet hits for 18 at 3 min and 26 at 5 min, against a 100–150 HP ship.
   QA run 45 used 0.3t + 0.03t², and the autopilot died at 142 s: too early, because Power Match also
   raised enemy HP about 3× over the same stretch.

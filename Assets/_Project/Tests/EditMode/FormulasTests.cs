@@ -151,7 +151,7 @@ namespace PofudukFilo.Tests
         public void test_enemy_damage_scale_grows_with_run_time()
         {
             Assert.That(Formulas.EnemyDamageScale(0f), Is.EqualTo(1f).Within(1e-5f));
-            Assert.That(Formulas.EnemyDamageScale(5f), Is.EqualTo(2.625f).Within(1e-4f));
+            Assert.That(Formulas.EnemyDamageScale(5f), Is.EqualTo(2.375f).Within(1e-4f));
             Assert.That(Formulas.EnemyDamageScale(-1f), Is.EqualTo(1f).Within(1e-5f));
         }
 

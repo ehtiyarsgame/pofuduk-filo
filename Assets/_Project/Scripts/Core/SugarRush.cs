@@ -27,7 +27,7 @@ namespace PofudukFilo.Core
         public float GainBonus { get; set; }
 
         [SerializeField] private float comboWindow = 1.6f;
-        [SerializeField] private float meterMax = 160f; // QA run 13: a rush every ~20 s at 70; device feedback 2026-09-25: "sürekli" at 120; none in 3 min at 200 (QA 45)
+        [SerializeField] private float meterMax = 130f; // QA run 13: a rush every ~20 s at 70; device feedback 2026-09-25: "sürekli" at 120; none in 3 min at 200 (QA 45)
         [Tooltip("The bar grows this fraction of meterMax per run minute after meterGrowthStartMinutes: kill rate climbs all run " +
                  "(QA run 24: a rush every ~15 s by minute 4 with no growth; runs 25/26 growing from minute 0: first rush at 100–140 s).")]
         [SerializeField] private float meterGrowthPerMinute = 0.4f;
@@ -111,7 +111,9 @@ namespace PofudukFilo.Core
             _comboTimer = comboWindow;
             if (Active || Ready) return;
 
-            float value = e is BossEnemy ? bossKillValue : e.IsElite ? eliteKillValue : 1f;
+            // Bigger enemies fill more (their XP value): with bears, donuts and marshmallows in the mix the kill count
+            // fell and QA run 51 saw no rush in 4 minutes at 1 per kill.
+            float value = e is BossEnemy ? bossKillValue : e.IsElite ? eliteKillValue : Mathf.Max(1f, e.XpValue);
             _meter += Formulas.RushMeterGain(value, Combo, comboBonus) * (1f + GainBonus);
             float max = CurrentMax;
             if (_meter >= max)
