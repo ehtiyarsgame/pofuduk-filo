@@ -26,6 +26,8 @@ namespace PofudukFilo.Weapons
         [Tooltip("Every Nth shot is a special shot (e.g. Feather Blaster Lv5 giant feather). 0 = off.")]
         public int specialEveryN;
         public float specialDamageMultiplier;
+        [Tooltip("On-hit traits of this level's shots (straight shooters only): explode, split, chain, slow.")]
+        public Bullets.BulletEffect effects;
         [TextArea] public string upgradeText;
     }
 

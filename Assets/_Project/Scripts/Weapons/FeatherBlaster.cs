@@ -46,7 +46,7 @@ namespace PofudukFilo.Weapons
                 }
 
                 bullets.SpawnPlayerBullet(typeIndex, position, direction * speed,
-                    RollDamage(s.damage * damageScale), s.pierce, lifetime);
+                    RollDamage(s.damage * damageScale), s.pierce, lifetime, s.effects);
             }
         }
     }

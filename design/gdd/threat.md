@@ -45,6 +45,23 @@ build move that wall further out.
 
 QA run 42 had a rush roughly every 45 s. The target is one every 90–120 s.
 
+### 3.4 Human-tuned wall (2026-09-25 revision)
+
+Device feedback on 2026-09-25: *"oyun başları hala çok kolay… 10 dakikadan fazla oynayabiliyorum, çok
+geliştirme yapmadan"* ("the openings are still too easy… I can play for more than 10 minutes without much
+upgrading"). The QA bot never dodges, and it hid how easy the game is for a human who does.
+
+The wall is now a **DPS race**, which dodging alone cannot beat:
+
+- **Enemy HP:** HP = base × (1 + 0.35t + 0.06t²). That is ×4.25 at 5 minutes and ×10.5 at 10 minutes.
+- **Spawn budget:** 2 + 1.1t + 0.12t², up from 1.5 + 0.9t + 0.08t². There is more pressure from second 0.
+- **Bullet damage:** 1 + 0.25t + 0.04t².
+- **Body contact:** touching an enemy deals 14 × the damage scale, or ×1.5 that for elites and bosses. Small
+  enemies are destroyed by the ram. A swarm that isn't shot down is now dangerous.
+
+With these settings the QA bot is expected to fall at about 90–150 s. A human without upgrades should fall at
+about 3–5 minutes. The owner's playtest, not the bot, is the calibration target.
+
 ## 4. Formulas
 
 - `EnemyDamageScale(t) = 1 + 0.15t + 0.025t²` (0.2t in run 49; run 51, with every enemy type spawning, died at 155 s). Examples: ×1 at 0, ×1.7 at 3 min, ×2.4 at 5 min, ×3.3 at 7 min.

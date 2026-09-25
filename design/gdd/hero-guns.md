@@ -32,6 +32,29 @@ main gun evolves at level 5 when the player owns **Kristal Gözlük**, the same 
 - **Hangar.** Each hero's row shows "main gun + signature".
 - **Wing guns.** They flash and recoil for the main gun only.
 
+### 3.2 Traits per level (2026-09-25)
+
+Every main-gun level adds a **new trait**, not only more bullets (*"her zaman aynı tip silah… farklı olmayı
+ister kullanıcı"* — "always the same kind of gun… players want something different"). The traits are
+`BulletEffect` flags, resolved when a shot hits (`BulletSystem.ApplyEffects`):
+
+- **Patlama (explode):** deals 50 % damage within 1 unit.
+- **Bölünme (split):** throws off 2 shards at ±40°, each dealing 45 %.
+- **Sıçrama (chain):** a spark jumps to the nearest other enemy within 3.5 units and deals 60 %.
+- **Yavaşlatma (slow):** the enemy moves at 55 % speed for 1.5 s.
+
+Secondary damage never carries traits, so hits never cascade. Each gun unlocks its traits in its own order:
+
+| Gun | Lv2 | Lv4 | Evolution |
+|---|---|---|---|
+| Tüy Blaster | split | pierce | split + explode |
+| Civciv Topu | explode | + split (baby chicks) | explode + split |
+| Kıvılcım | chain | + slow | chain + slow |
+| Balon Tüfeği | slow | + explode | slow + explode |
+| Yıldız Yayı | chain | + split | chain + split |
+| Buz Tabancası | slow | + split (shatter) | slow + split |
+| Yün Atar | slow | Lv3 split, Lv4 explode | all three |
+
 ## 8. Acceptance
 
 - Starting a run as any hero gives an ANA SİLAH card track for that hero's own gun, and visible bullets from the

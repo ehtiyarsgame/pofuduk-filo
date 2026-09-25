@@ -49,6 +49,11 @@ namespace PofudukFilo.Enemies
         /// <summary>Güç Eşleme: enemy HP follows the player's kill speed (power-match.md).</summary>
         public PowerMatch Power { get; } = new();
 
+        [Header("Contact (threat.md §3.1)")]
+        [SerializeField] private float contactDamage = 14f;
+        [Tooltip("Ship body radius for enemy contact (the bullet hitbox is much smaller on purpose).")]
+        [SerializeField] private float contactRadius = 0.4f;
+
         /// <summary>Power Match's adaptive HP (off since 2026-09-25: upgrades must be felt).</summary>
         public bool AdaptiveHp { get; set; }
 
@@ -135,6 +140,9 @@ namespace PofudukFilo.Enemies
         }
 
         /// <summary>Nearest living enemy within <paramref name="maxDistance"/> that is not in <paramref name="exclude"/>.</summary>
+        /// <summary>The enemy behind a bullet-hit proxy index (this frame), or null.</summary>
+        public Enemy ByProxyIndex(int index) => (uint)index < (uint)_active.Count ? _active[index] : null;
+
         public Enemy FindNearest(Vector2 position, float maxDistance, List<Enemy> exclude = null)
         {
             Enemy best = null;
@@ -218,10 +226,23 @@ namespace PofudukFilo.Enemies
                 ? (Vector2)PlayerHealth.Instance.transform.position
                 : Vector2.zero;
 
+            PlayerHealth player = PlayerHealth.Instance;
             for (int i = 0; i < _active.Count; i++)
             {
                 Enemy e = _active[i];
                 e.Tick(dt, playerPos);
+                // Body contact (threat.md §3.1): touching an enemy hurts, scaled like its bullets; small enemies are
+                // knocked out by the ram, bosses and elites stay. Swarms that are not shot down become a real threat.
+                if (player != null && player.IsAlive && !e.IsDead && IsOnScreen(e))
+                {
+                    float r = e.HitRadius + contactRadius;
+                    if (((Vector2)e.transform.position - playerPos).sqrMagnitude < r * r)
+                    {
+                        bool big = e.IsElite || e is BossEnemy;
+                        player.TakeDamage(contactDamage * (big ? 1.5f : 1f) * Formulas.EnemyDamageScale(RunMinutes));
+                        if (!big) DamageEnemy(e, e.CurrentHp + 0.01f);
+                    }
+                }
                 if (e.transform.position.y < despawnBelowY)
                 {
                     e.Group?.OnMemberLost();

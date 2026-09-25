@@ -22,6 +22,8 @@ namespace PofudukFilo.Bullets
         public bool Alive;
         /// <summary>False for boss special attacks, which bubbles and omelettes must not eat.</summary>
         public bool Absorbable;
+        /// <summary>On-hit traits of a player shot (BulletEffect flags, hero-guns.md §3.2).</summary>
+        public byte Effects;
     }
 
     /// <summary>Collision snapshot of one enemy, written by EnemyManager each frame.</summary>
@@ -46,6 +48,8 @@ namespace PofudukFilo.Bullets
         public int EnemyIndex;
         public float Damage;
         public float2 Position;
+        public byte Effects;
+        public int TypeIndex;
     }
 
     public static class BulletGrid
@@ -140,7 +144,9 @@ namespace PofudukFilo.Bullets
                     Kind = BulletHitKind.Enemy,
                     EnemyIndex = enemyIndex,
                     Damage = b.Damage,
-                    Position = b.Position
+                    Position = b.Position,
+                    Effects = b.Effects,
+                    TypeIndex = b.TypeIndex
                 });
                 b.LastHitEnemyId = e.Id;
                 b.Pierce--;

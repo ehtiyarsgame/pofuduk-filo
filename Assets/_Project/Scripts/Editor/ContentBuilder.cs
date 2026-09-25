@@ -328,13 +328,16 @@ namespace PofudukFilo.EditorTools
         }
 
         private static WeaponLevelStats L(float dmg, float cd, int count, float spread, float speed, int pierce,
-            float area, float life, string text, int specialEvery = 0, float specialMult = 1f) =>
+            float area, float life, string text, int specialEvery = 0, float specialMult = 1f, BulletEffect fx = BulletEffect.None) =>
             new()
             {
                 damage = dmg, cooldown = cd, projectileCount = count, spreadDegrees = spread,
                 projectileSpeed = speed, pierce = pierce, area = area, lifetime = life,
-                specialEveryN = specialEvery, specialDamageMultiplier = specialMult, upgradeText = text
+                specialEveryN = specialEvery, specialDamageMultiplier = specialMult, upgradeText = text, effects = fx
             };
+
+        private const BulletEffect Boom = BulletEffect.Explode, Split = BulletEffect.Split,
+            Chain = BulletEffect.Chain, Slow = BulletEffect.Slow;
 
         private WeaponDefinition Weapon(string id, string name, Rarity rarity, int bulletType, WeaponBehaviour prefab,
             WeaponLevelStats[] levels, PassiveDefinition key = null, WeaponDefinition evolvesInto = null)
@@ -390,15 +393,16 @@ namespace PofudukFilo.EditorTools
             var storm = WeaponPrefab<FeatherBlaster>("FeatherStorm", b => Set(b, "giantBulletTypeIndex", BGiantFeather));
             WeaponDefinition prismDef = Weapon("feather_storm", "Tüy Fırtınası", Rarity.Legendary, BFeather, storm,
                 // ≈1.7× the DPS of a max-level blaster — a real step up, not a screen wipe.
-                new[] { L(16f, 0.22f, 7, 50f, 16f, 2, 0, 1.6f, "7 tüylük yelpaze, 2 düşman deler; her 4. atış dev tüy (3×)", 4, 3f) });
+                new[] { L(16f, 0.22f, 7, 50f, 16f, 2, 0, 1.6f, "7 tüy; tüyler bölünür ve patlar; her 4. atış dev tüy", 4, 3f, Split | Boom) });
             var feather = WeaponPrefab<FeatherBlaster>("FeatherBlaster", b => Set(b, "giantBulletTypeIndex", BGiantFeather));
+            // Every level adds a new trait (hero-guns.md §3.2), not just more feathers.
             StartingWeapon = Weapon("feather_blaster", "Tüy Blaster", Rarity.Common, BFeather, feather, new[]
             {
                 L(12f, 0.25f, 2, 0, 14f, 0, 0, 1.5f, "2 paralel tüy, hızlı atış"),
-                L(12f, 0.22f, 3, 0, 14f, 0, 0, 1.5f, "3 paralel tüy, daha hızlı"),
-                L(12f, 0.25f, 3, 16f, 14f, 0, 0, 1.5f, "3 tüy, hafif yelpaze"),
-                L(15.6f, 0.25f, 3, 16f, 14f, 1, 0, 1.5f, "Hasar +%30, tüyler 1 düşmanı deler"),
-                L(15.6f, 0.25f, 5, 30f, 14f, 1, 0, 1.5f, "5 tüy; her 5. atış dev tüy (3×)", 5, 3f)
+                L(12f, 0.24f, 2, 0, 14f, 0, 0, 1.5f, "YENİ: tüyler çarpınca ikiye bölünür", fx: Split),
+                L(12f, 0.24f, 3, 16f, 14f, 0, 0, 1.5f, "3 tüylük yelpaze", fx: Split),
+                L(14f, 0.24f, 3, 16f, 14f, 1, 0, 1.5f, "YENİ: tüyler 1 düşmanı deler", fx: Split),
+                L(15f, 0.24f, 3, 16f, 14f, 1, 0, 1.5f, "YENİ: her 5. atış patlayan dev tüy (3×)", 5, 3f, Split)
             }, crystal, prismDef);
 
             // 2) Egg Mortar → Supernova Omelette
@@ -547,60 +551,60 @@ namespace PofudukFilo.EditorTools
                 HeroGuns.Add(def);
             }
 
-            // Tuned to the Feather Blaster's damage per second (≈95 at Lv1, ≈190 at Lv5); each feels different.
+            // Each level unlocks a new trait (explode / split / chain / slow) so every gun grows differently.
             Gun("chick_cannon", "Civciv Topu", BChick, new[]
             {
-                L(26f, 0.28f, 1, 0, 11f, 0, 0, 1.8f, "Ağır civciv topu"),
-                L(26f, 0.28f, 2, 0, 11f, 0, 0, 1.8f, "2 paralel top"),
-                L(30f, 0.26f, 2, 0, 11f, 0, 0, 1.8f, "Hasar +%15, daha sık"),
-                L(30f, 0.26f, 3, 20f, 11f, 0, 0, 1.8f, "3 top, yelpaze"),
-                L(34f, 0.24f, 3, 20f, 11f, 0, 0, 1.8f, "Her 4. atış 3 kat hasar", 4, 3f)
-            }, "mega_chick_cannon", "Dev Civciv Topu", L(44f, 0.22f, 4, 24f, 12f, 1, 0, 1.8f, "4 dev top; her 4. atış 3 kat", 4, 3f));
+                L(26f, 0.30f, 1, 0, 11f, 0, 0, 1.8f, "Ağır civciv topu"),
+                L(26f, 0.30f, 1, 0, 11f, 0, 0, 1.8f, "YENİ: toplar çarpınca patlar", fx: Boom),
+                L(26f, 0.28f, 2, 0, 11f, 0, 0, 1.8f, "2 patlayan top", fx: Boom),
+                L(28f, 0.28f, 2, 0, 11f, 0, 0, 1.8f, "YENİ: patlamadan 2 yavru civciv fırlar", fx: Boom | Split),
+                L(30f, 0.26f, 3, 20f, 11f, 0, 0, 1.8f, "3 top; her 4. atış 3 kat", 4, 3f, Boom | Split)
+            }, "mega_chick_cannon", "Dev Civciv Topu", L(40f, 0.24f, 4, 24f, 12f, 1, 0, 1.8f, "4 dev top: patlar, yavrular, deler", 4, 3f, Boom | Split));
 
             Gun("spark_pistol", "Kıvılcım Tabancası", BSpark, new[]
             {
                 L(8f, 0.13f, 1, 0, 18f, 0, 0, 1.2f, "Çok hızlı kıvılcım"),
-                L(8f, 0.12f, 2, 0, 18f, 0, 0, 1.2f, "2 kıvılcım"),
-                L(9f, 0.11f, 2, 0, 18f, 0, 0, 1.2f, "Daha hızlı, hasar +%12"),
-                L(9f, 0.11f, 3, 12f, 18f, 0, 0, 1.2f, "3 kıvılcım, yelpaze"),
-                L(11f, 0.10f, 3, 12f, 19f, 1, 0, 1.2f, "Kıvılcımlar 1 düşmanı deler")
-            }, "thunder_pistol", "Yıldırım Tabancası", L(13f, 0.09f, 4, 16f, 20f, 2, 0, 1.2f, "Kıvılcım fırtınası, 2 düşman deler"));
+                L(8f, 0.13f, 1, 0, 18f, 0, 0, 1.2f, "YENİ: kıvılcım yandaki düşmana sıçrar", fx: Chain),
+                L(8f, 0.12f, 2, 0, 18f, 0, 0, 1.2f, "2 kıvılcım", fx: Chain),
+                L(9f, 0.12f, 2, 0, 18f, 0, 0, 1.2f, "YENİ: elektrik çarpan düşman yavaşlar", fx: Chain | Slow),
+                L(10f, 0.11f, 3, 12f, 19f, 1, 0, 1.2f, "YENİ: kıvılcımlar 1 düşmanı deler", fx: Chain | Slow)
+            }, "thunder_pistol", "Yıldırım Tabancası", L(12f, 0.10f, 4, 16f, 20f, 2, 0, 1.2f, "Kıvılcım fırtınası: sıçrar, yavaşlatır, 2 deler", fx: Chain | Slow));
 
             Gun("bubble_rifle", "Balon Tüfeği", BMeteor, new[]
             {
                 L(16f, 0.30f, 2, 0, 11f, 1, 0, 1.8f, "2 delici balon"),
-                L(16f, 0.28f, 3, 0, 11f, 1, 0, 1.8f, "3 balon"),
-                L(18f, 0.28f, 3, 20f, 11f, 1, 0, 1.8f, "Yelpaze, hasar +%12"),
-                L(18f, 0.26f, 4, 24f, 11f, 2, 0, 1.8f, "4 balon, 2 düşman deler"),
-                L(22f, 0.26f, 4, 24f, 12f, 2, 0, 1.8f, "Hasar +%20")
-            }, "bubble_storm", "Balon Fırtınası", L(24f, 0.24f, 6, 36f, 12f, 3, 0, 1.8f, "6 delici balon, geniş yelpaze"));
+                L(16f, 0.30f, 2, 0, 11f, 1, 0, 1.8f, "YENİ: sakız yapışır, düşman yavaşlar", fx: Slow),
+                L(16f, 0.28f, 3, 20f, 11f, 1, 0, 1.8f, "3 balon, yelpaze", fx: Slow),
+                L(18f, 0.28f, 3, 20f, 11f, 1, 0, 1.8f, "YENİ: balonlar çarpınca patlar", fx: Slow | Boom),
+                L(20f, 0.26f, 4, 24f, 12f, 2, 0, 1.8f, "4 balon, 2 düşman deler", fx: Slow | Boom)
+            }, "bubble_storm", "Balon Fırtınası", L(22f, 0.24f, 6, 36f, 12f, 3, 0, 1.8f, "6 balon: yapışır, patlar, 3 deler", fx: Slow | Boom));
 
             Gun("star_bow", "Yıldız Yayı", BStar, new[]
             {
                 L(11f, 0.26f, 3, 24f, 14f, 0, 0, 1.4f, "3 yıldızlık yelpaze"),
-                L(11f, 0.24f, 4, 30f, 14f, 0, 0, 1.4f, "4 yıldız"),
-                L(13f, 0.24f, 4, 30f, 14f, 0, 0, 1.4f, "Hasar +%18"),
-                L(13f, 0.22f, 5, 40f, 14f, 0, 0, 1.4f, "5 yıldız, geniş"),
-                L(15f, 0.22f, 6, 44f, 15f, 0, 0, 1.4f, "6 yıldız; her 5. atış 3 kat", 5, 3f)
-            }, "comet_bow", "Kuyruklu Yıldız Yayı", L(17f, 0.2f, 8, 56f, 16f, 1, 0, 1.4f, "8 yıldız; her 5. atış 3 kat", 5, 3f));
+                L(11f, 0.26f, 3, 24f, 14f, 0, 0, 1.4f, "YENİ: yıldızlar yandaki düşmana sıçrar", fx: Chain),
+                L(11f, 0.24f, 4, 30f, 14f, 0, 0, 1.4f, "4 yıldız", fx: Chain),
+                L(12f, 0.24f, 4, 30f, 14f, 0, 0, 1.4f, "YENİ: yıldızlar ikiye bölünür", fx: Chain | Split),
+                L(13f, 0.22f, 5, 40f, 15f, 0, 0, 1.4f, "5 yıldız; her 5. atış 3 kat", 5, 3f, Chain | Split)
+            }, "comet_bow", "Kuyruklu Yıldız Yayı", L(15f, 0.2f, 7, 52f, 16f, 1, 0, 1.4f, "7 yıldız: sıçrar, bölünür, deler", 5, 3f, Chain | Split));
 
             Gun("ice_gun", "Buz Tabancası", BIce, new[]
             {
                 L(14f, 0.24f, 2, 0, 17f, 1, 0, 1.3f, "2 delici buz sarkıtı"),
-                L(14f, 0.22f, 2, 0, 17f, 2, 0, 1.3f, "2 düşman deler"),
-                L(16f, 0.22f, 3, 0, 17f, 2, 0, 1.3f, "3 sarkıt"),
-                L(16f, 0.20f, 3, 10f, 18f, 2, 0, 1.3f, "Daha hızlı, yelpaze"),
-                L(19f, 0.20f, 4, 14f, 18f, 3, 0, 1.3f, "4 sarkıt, 3 düşman deler")
-            }, "glacier_gun", "Buzul Topu", L(22f, 0.18f, 5, 18f, 19f, 4, 0, 1.3f, "Buzul yağmuru, 4 düşman deler"));
+                L(14f, 0.24f, 2, 0, 17f, 1, 0, 1.3f, "YENİ: buz dondurur, düşman yavaşlar", fx: Slow),
+                L(14f, 0.22f, 3, 0, 17f, 2, 0, 1.3f, "3 sarkıt, 2 düşman deler", fx: Slow),
+                L(15f, 0.22f, 3, 10f, 18f, 2, 0, 1.3f, "YENİ: buz çarpınca parçalara ayrılır", fx: Slow | Split),
+                L(17f, 0.20f, 4, 14f, 18f, 3, 0, 1.3f, "4 sarkıt, 3 düşman deler", fx: Slow | Split)
+            }, "glacier_gun", "Buzul Topu", L(19f, 0.18f, 5, 18f, 19f, 4, 0, 1.3f, "Buzul yağmuru: dondurur, parçalanır, 4 deler", fx: Slow | Split));
 
             Gun("yarn_launcher", "Yün Atar", BYarn, new[]
             {
                 L(22f, 0.34f, 1, 0, 10f, 0, 0, 2f, "İri yün yumağı"),
-                L(22f, 0.32f, 2, 0, 10f, 0, 0, 2f, "2 yumak"),
-                L(26f, 0.30f, 2, 0, 10f, 0, 0, 2f, "Hasar +%18, daha sık"),
-                L(26f, 0.30f, 3, 18f, 10f, 0, 0, 2f, "3 yumak, yelpaze"),
-                L(30f, 0.28f, 3, 18f, 11f, 1, 0, 2f, "Yumaklar 1 düşmanı deler; her 4. atış 3 kat", 4, 3f)
-            }, "yarn_cyclone", "Yün Kasırgası", L(36f, 0.26f, 4, 24f, 11f, 2, 0, 2f, "Dev yumaklar 2 düşman deler; her 4. atış 3 kat", 4, 3f));
+                L(22f, 0.34f, 1, 0, 10f, 0, 0, 2f, "YENİ: yün dolanır, düşman yavaşlar", fx: Slow),
+                L(22f, 0.32f, 2, 0, 10f, 0, 0, 2f, "YENİ: yumak çözülüp ikiye bölünür", fx: Slow | Split),
+                L(24f, 0.30f, 2, 0, 10f, 0, 0, 2f, "YENİ: yumaklar patlar", fx: Slow | Split | Boom),
+                L(26f, 0.28f, 3, 18f, 11f, 1, 0, 2f, "3 yumak; her 4. atış 3 kat", 4, 3f, Slow | Split | Boom)
+            }, "yarn_cyclone", "Yün Kasırgası", L(30f, 0.26f, 4, 24f, 11f, 2, 0, 2f, "Yün kasırgası: dolanır, bölünür, patlar", 4, 3f, Slow | Split | Boom));
         }
 
         // ---------------------------------------------------------------- Lab, fusions, Hangar, Constellation

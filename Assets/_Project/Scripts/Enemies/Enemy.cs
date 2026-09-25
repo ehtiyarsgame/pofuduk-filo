@@ -72,6 +72,7 @@ namespace PofudukFilo.Enemies
         public int XpValue => xpValue;
         public int GoldValue => goldValue;
         public bool IsDead => _hp <= 0f;
+        public float CurrentHp => _hp;
         public bool IsElite => isElite;
         public Color FxColor => fxColor;
         /// <summary>Visual size in world units (for burst radii).</summary>

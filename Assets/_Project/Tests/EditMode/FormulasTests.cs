@@ -47,8 +47,8 @@ namespace PofudukFilo.Tests
         [Test]
         public void SpawnBudget_ClampsDda()
         {
-            Assert.That(Formulas.SpawnBudget(0f, 10f), Is.EqualTo(1.5f * 1.15f).Within(1e-5f));
-            Assert.That(Formulas.SpawnBudget(0f, 0f), Is.EqualTo(1.5f * 0.75f).Within(1e-5f));
+            Assert.That(Formulas.SpawnBudget(0f, 10f), Is.EqualTo(2f * 1.15f).Within(1e-5f));
+            Assert.That(Formulas.SpawnBudget(0f, 0f), Is.EqualTo(2f * 0.75f).Within(1e-5f));
         }
 
         [Test]
@@ -151,7 +151,7 @@ namespace PofudukFilo.Tests
         public void test_enemy_damage_scale_grows_with_run_time()
         {
             Assert.That(Formulas.EnemyDamageScale(0f), Is.EqualTo(1f).Within(1e-5f));
-            Assert.That(Formulas.EnemyDamageScale(5f), Is.EqualTo(2.375f).Within(1e-4f));
+            Assert.That(Formulas.EnemyDamageScale(5f), Is.EqualTo(3.25f).Within(1e-4f));
             Assert.That(Formulas.EnemyDamageScale(-1f), Is.EqualTo(1f).Within(1e-5f));
         }
 

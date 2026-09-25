@@ -23,10 +23,12 @@ namespace PofudukFilo.Core
             return (int)Math.Floor(XpBase + XpLinear * level + XpCoefficient * Math.Pow(level, XpExponent));
         }
 
-        /// <summary>HP(t, c) = HP_base · (1 + 0.25t + 0.035t²) · 1.22^c</summary>
+        /// <summary>HP(t, c) = HP_base · (1 + 0.35t + 0.06t²) · 1.22^c — a DPS race (threat.md §3.1): without upgrades the
+        /// swarm outgrows the player's damage (×4.25 at 5 min, ×10.5 at 10 min).</summary>
         public static float EnemyHp(float baseHp, float minutes, int chapterIndex)
         {
-            float timeScale = 1f + 0.25f * minutes + 0.035f * minutes * minutes; // device feedback: late game melted (was 0.18m + 0.012m²)
+            // device feedback 2026-09-25: "10 dakikadan fazla oynayabiliyorum, çok geliştirme yapmadan" at 0.25m + 0.035m²
+            float timeScale = 1f + 0.35f * minutes + 0.06f * minutes * minutes;
             return baseHp * timeScale * (float)Math.Pow(1.22, chapterIndex);
         }
 
@@ -39,7 +41,7 @@ namespace PofudukFilo.Core
         public static float EnemyDamageScale(float minutes)
         {
             float m = Math.Max(0f, minutes);
-            return 1f + 0.15f * m + 0.025f * m * m;
+            return 1f + 0.25f * m + 0.04f * m * m; // humans dodge far better than the QA bot (threat.md §3.1)
         }
 
         /// <summary>Enemy fire-rate multiplier: 1 + 0.1t, capped at ×2.2 (reached at 12 min).</summary>
@@ -49,7 +51,7 @@ namespace PofudukFilo.Core
         public static float SpawnBudget(float minutes, float ddaMultiplier)
         {
             float clamped = Math.Clamp(ddaMultiplier, 0.75f, 1.15f);
-            return (1.5f + 0.9f * minutes + 0.08f * minutes * minutes) * clamped;
+            return (2f + 1.1f * minutes + 0.12f * minutes * minutes) * clamped; // threat.md §3.1 (was 1.5 + 0.9t + 0.08t²)
         }
 
         /// <summary>Cost(L) = round10(base · growth^(L−1)) for a meta upgrade going to level L (L ≥ 1).</summary>

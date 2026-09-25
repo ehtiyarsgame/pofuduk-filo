@@ -95,10 +95,60 @@ namespace PofudukFilo.Bullets
 
         /// <summary>Queue a player bullet. Safe to call at any time — it joins the simulation next schedule.</summary>
         public void SpawnPlayerBullet(int typeIndex, Vector2 position, Vector2 velocity, float damage,
-            int pierce = 0, float lifetime = 3f)
+            int pierce = 0, float lifetime = 3f, BulletEffect effects = BulletEffect.None)
         {
-            _pendingPlayer.Add(Create(typeIndex, position, velocity, damage, pierce, lifetime));
+            BulletData b = Create(typeIndex, position, velocity, damage, pierce, lifetime);
+            b.Effects = (byte)effects;
+            _pendingPlayer.Add(b);
         }
+
+        public const float ExplodeRadius = 1.0f;
+
+        /// <summary>
+        /// Player-shot traits on hit (hero-guns.md §3.2): each gun level can add one. Resolved on the main thread after
+        /// the collision job; secondary damage never carries effects, so nothing cascades.
+        /// </summary>
+        private void ApplyEffects(in BulletHit hit, Enemy target)
+        {
+            var fx = (BulletEffect)hit.Effects;
+            EnemyManager enemies = EnemyManager.Instance;
+            Vector2 at = hit.Position;
+            Feel.VfxSystem vfx = Feel.VfxSystem.Instance;
+
+            if ((fx & BulletEffect.Explode) != 0)
+            {
+                float radius = ExplodeRadius;
+                _scratch.Clear();
+                int n = enemies.QueryCircle(at, radius, _scratch);
+                for (int i = 0; i < n; i++)
+                    if (_scratch[i] != target) enemies.DamageEnemy(_scratch[i], hit.Damage * 0.5f);
+                if (vfx != null) vfx.Pop(at, radius, new Color(1f, 0.78f, 0.45f, 0.55f), 0.18f);
+            }
+            if ((fx & BulletEffect.Chain) != 0)
+            {
+                _scratch.Clear();
+                if (target != null) _scratch.Add(target);
+                Enemy next = enemies.FindNearest(at, 3.5f, _scratch);
+                if (next != null)
+                {
+                    if (vfx != null) vfx.Segment(at, next.transform.position, new Color(1f, 0.95f, 0.55f), 0.08f, 0.1f);
+                    enemies.DamageEnemy(next, hit.Damage * 0.6f);
+                }
+            }
+            if ((fx & BulletEffect.Slow) != 0 && target != null && !target.IsDead) target.Slow(0.55f, 1.5f);
+            if ((fx & BulletEffect.Split) != 0)
+            {
+                for (int s = -1; s <= 1; s += 2)
+                {
+                    float a = (90f + s * 40f) * Mathf.Deg2Rad;
+                    BulletData shard = Create(hit.TypeIndex, at, new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * 12f, hit.Damage * 0.45f, 0, 0.6f);
+                    shard.LastHitEnemyId = target != null ? target.Id : -1;
+                    _pendingPlayer.Add(shard);
+                }
+            }
+        }
+
+        private readonly System.Collections.Generic.List<Enemy> _scratch = new(16);
 
         public void SpawnEnemyBullet(int typeIndex, Vector2 position, Vector2 velocity, float damage,
             float lifetime = 8f, bool absorbable = true)
@@ -237,7 +287,11 @@ namespace PofudukFilo.Bullets
         {
             EnemyManager enemies = EnemyManager.Instance;
             while (_playerHits.TryDequeue(out BulletHit hit))
+            {
+                Enemy target = hit.Effects != 0 ? enemies.ByProxyIndex(hit.EnemyIndex) : null;
                 enemies.ApplyDamage(hit.EnemyIndex, hit.Damage, hit.Position);
+                if (hit.Effects != 0) ApplyEffects(hit, target);
+            }
 
             PlayerHealth player = PlayerHealth.Instance;
             while (_enemyHits.TryDequeue(out BulletHit hit))
