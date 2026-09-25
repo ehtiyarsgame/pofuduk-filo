@@ -76,7 +76,7 @@ namespace PofudukFilo.Core
             var ui = FindAnyObjectByType<UI.GameUI>();
             if (ui != null)
             {
-                string[] screens = { "research", "armory", "pilots", "settings" };
+                string[] screens = { "research", "armory", "pilots", "settings", "missions" };
                 for (int i = 0; i < screens.Length; i++)
                 {
                     ui.QaShow(screens[i]);

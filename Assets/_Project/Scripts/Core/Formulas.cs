@@ -167,6 +167,9 @@ namespace PofudukFilo.Core
             1f + 0.04f * Math.Max(0, forgePower) + 0.03f * Math.Max(0, forgeSpeed) + 0.02f * Math.Max(0, workshopLevels)
                + 0.02f * Math.Max(0, masteryLevels) + 0.03f * Math.Max(0, pilotLevel - 1);
 
+        /// <summary>Enemy HP multiplier from the player's power: √P (P = 2 → ×1.41), so upgrades always net out stronger.</summary>
+        public static float EnemyHpForPower(float powerRating) => (float)Math.Sqrt(Math.Max(1f, powerRating));
+
         /// <summary>
         /// Coin value = base × P × (1 + 0.08·t), t in run minutes: stronger players earn bigger coins, and staying
         /// alive longer pays more per coin — "her zaman aynı oranda para ile gelişemezler".

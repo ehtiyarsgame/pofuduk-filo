@@ -40,6 +40,18 @@ Each coin's value is computed first (§4). Its look follows from that value (`Pi
 
 All three are collected the same way, and Gold Gain (`GoldGain`) applies on pickup as before.
 
+### 3.3 Enemies keep up, more slowly (2026-09-25)
+
+**Power Match's adaptive HP is switched off** (`EnemyManager.AdaptiveHp = false`). It used to raise enemy HP
+whenever the player killed fast. That hid the effect of upgrades: "geliştirdim, fark etmedi" ("I upgraded and
+noticed no difference"). In QA run 45 it tripled enemy HP.
+
+Enemy HP now scales with **√P** instead (`Formulas.EnemyHpForPower`):
+
+- At P = 2, enemies have ×1.41 HP, while Forge damage alone is ×1.5–2. Upgrades always come out stronger.
+- Coins scale with P, so they grow faster than enemy HP.
+- The threat curve in `threat.md` still decides how long a run lasts.
+
 ## 4. Formulas
 
 - `PowerRating = 1 + 0.04·ForgePower + 0.03·ForgeSpeed + 0.02·ΣWorkshop + 0.02·ΣMastery + 0.03·(PilotLevel − 1)`.

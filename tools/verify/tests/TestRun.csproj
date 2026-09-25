@@ -31,6 +31,8 @@
     <Compile Include="../../../Assets/_Project/Tests/EditMode/PowerMatchTests.cs" />
     <Compile Include="../../../Assets/_Project/Scripts/Meta/AdRules.cs" />
     <Compile Include="../../../Assets/_Project/Tests/EditMode/AdRulesTests.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Meta/Missions.cs" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/MissionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="../.cache/modules/lib/net45/UnityEngine.CoreModule.dll" />

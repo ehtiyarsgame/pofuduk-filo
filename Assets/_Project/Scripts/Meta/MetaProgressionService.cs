@@ -23,6 +23,8 @@ namespace PofudukFilo.Meta
             _data.weaponMastery ??= new List<UpgradeLevelEntry>();
             _data.pilotLevels ??= new List<UpgradeLevelEntry>();
             _data.adProgress ??= new List<UpgradeLevelEntry>();
+            _data.missionProgress ??= new List<int>();
+            _data.missionClaimed ??= new List<int>();
         }
 
         public long Gold => _data.gold;

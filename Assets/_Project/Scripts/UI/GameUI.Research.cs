@@ -29,6 +29,7 @@ namespace PofudukFilo.UI
                 case "armory": OpenLab(); break;
                 case "pilots": OpenHangar(); break;
                 case "settings": OpenSettings(); break;
+                case "missions": OpenMeta(_missions); break;
             }
         }
 

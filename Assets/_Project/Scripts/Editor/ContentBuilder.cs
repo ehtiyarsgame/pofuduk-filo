@@ -697,7 +697,7 @@ namespace PofudukFilo.EditorTools
 
             C("pitir", "Pıtır", "Tavşan. Her 10 seviyede +1 kart seçeneği.", "bunny", "feather_blaster", 0, 0,
                 CharacterPerk.CardEvery10Levels);
-            C("civik", "Cıvık", "Civciv. Patlamalar %20 büyük, can -%10.", "pilot_chick", "egg_mortar", 2500, 10, gun: "chick_cannon",
+            C("civik", "Cıvık", "Civciv. Patlamalar %20 büyük, can -%10.", "pilot_chick", "egg_mortar", 1500, 0, gun: "chick_cannon", // first pilot: reachable in ~4 runs, no Stardust gate
                 mods: new[] { new StatModifier(StatType.Area, 0.2f), new StatModifier(StatType.MaxHp, -0.1f) });
             C("mirnav", "Mırnav", "Kedi. Sersemletme süresi 2 kat.", "pilot_cat", "spark_cat", 6000, 25, gun: "spark_pistol",
                 mods: new StatModifier(StatType.StunDuration, 1f));

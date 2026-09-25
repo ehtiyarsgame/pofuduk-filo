@@ -273,6 +273,14 @@ namespace PofudukFilo.Core
             ["Reklam yarıda kaldı, ödül verilmedi."] = "Ad was skipped, no reward.",
             ["Önce kayıtlı oyununa devam et."] = "Finish your saved run first.",
 
+            // ---- Missions (retention.md)
+            ["Görevler"] = "Missions",
+            ["GÖREVLER"] = "MISSIONS",
+            ["Her gün gir, ödül büyüsün. 7. gün: büyük ödül!"] = "Come back daily and the reward grows. Day 7: big prize!",
+            ["Al"] = "Claim",
+            ["Alındı"] = "Claimed",
+            ["Görevler her gün yenilenir."] = "Missions refresh every day.",
+
             // ---- Hero main guns (hero-guns.md)
             ["Civciv Topu"] = "Chick Cannon",
             ["Ağır civciv topu"] = "Heavy chick shot",
@@ -394,6 +402,14 @@ namespace PofudukFilo.Core
         public static readonly Dictionary<string, string> Templates = new()
         {
             ["Sv. {0}"] = "Lv. {0}",
+            ["Giriş serisi: {0}. gün"] = "Login streak: day {0}",
+            ["{0} düşman yok et"] = "Defeat {0} enemies",
+            ["Tek oyunda {0} dakika dayan"] = "Survive {0} minutes in one run",
+            ["Oyunlardan {0} altın kazan"] = "Earn {0} gold from runs",
+            ["{0} boss yen"] = "Defeat {0} bosses",
+            ["{0} kez Şeker Hücumu yap"] = "Trigger Sugar Rush {0} times",
+            ["{0} oyun oyna"] = "Play {0} runs",
+            ["Sonraki pilot: {0} %{1}"] = "Next pilot: {0} {1}%",
             ["GÜÇ ×{0}"] = "POWER ×{0}",
             ["{0} açıldı!"] = "{0} unlocked!",
             ["Hediye: +{0} altın, +{1} yıldız tozu!"] = "Gift: +{0} gold, +{1} stardust!",

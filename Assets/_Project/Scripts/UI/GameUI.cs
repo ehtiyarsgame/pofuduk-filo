@@ -547,7 +547,7 @@ namespace PofudukFilo.UI
             _endDustGap.AddComponent<LayoutElement>().preferredWidth = 50f;
             _endDust = AddAmount(reward, stardustIcon, "", 72, Palette.Hex(0xC8B6FF));
             _endDustIcon = reward.GetChild(reward.childCount - 2).gameObject;
-            _endGoal = _ui.Label(screen.transform, "", 46, Palette.Mint);
+            _endGoal = _ui.Label(screen.transform, "", 36, Palette.Mint);
             UIFactory.Place(_endGoal, 0.08f, 0.47f, 0.92f, 0.52f);
 
             // One big call to action (game-concept.md §4.5 step 4).
@@ -582,7 +582,7 @@ namespace PofudukFilo.UI
             _goldShown = 0f;
             _goldTarget = s.Gold;
             _endGold.text = "+0";
-            _endGoal.text = Loc.T(NextGoalText());
+            _endGoal.text = NextGoalText();
 
             bool affordable = run.Meta.AnyAffordable(run.Workshop) || run.Meta.CanUpgradeForge(ForgeTrack.Power);
             UIFactory.SetText(_upgradeButton, affordable ? "Geliştir  !" : "Geliştir");
@@ -605,11 +605,24 @@ namespace PofudukFilo.UI
                     best = u;
                 }
             }
-            if (best == null) return "";
-            long missing = bestCost - meta.Gold;
-            return missing <= 0
-                ? $"{best.displayName} geliştirmesi hazır!"
-                : $"{best.displayName} için {missing} altın kaldı";
+            string line = "";
+            if (best != null)
+            {
+                long missing = bestCost - meta.Gold;
+                line = missing <= 0
+                    ? Loc.T($"{best.displayName} geliştirmesi hazır!")
+                    : Loc.T($"{best.displayName} için {missing} altın kaldı");
+            }
+            // The next pilot as a visible goal (retention.md): how close the gold is, in percent.
+            CharacterDefinition next = null;
+            foreach (CharacterDefinition c in run.Characters)
+                if (!meta.IsUnlocked(c) && c.requiresChapterCleared < 0 && (next == null || c.goldCost < next.goldCost)) next = c;
+            if (next != null && next.goldCost > 0)
+            {
+                int pct = Mathf.Clamp(Mathf.FloorToInt(100f * meta.Gold / next.goldCost), 0, 100);
+                line += (line.Length > 0 ? "\n" : "") + Loc.T($"Sonraki pilot: {Loc.T(next.displayName)} %{pct}");
+            }
+            return line;
         }
 
         private void OpenWorkshopFromEnd()

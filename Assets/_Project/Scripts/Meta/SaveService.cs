@@ -43,6 +43,13 @@ namespace PofudukFilo.Meta
         public int adViewsToday;
         public int giftsToday;
         public long lastGiftUtcTicks;
+        // Daily missions and login streak (retention.md).
+        public long missionDay = -1;
+        public List<int> missionProgress = new();
+        public List<int> missionClaimed = new(); // 0/1 per mission (JsonUtility-friendly)
+        public int streak;
+        public long streakLastDay = -1;
+        public long streakClaimedDay = -1;
     }
 
     /// <summary>

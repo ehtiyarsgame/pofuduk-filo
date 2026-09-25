@@ -48,6 +48,12 @@ namespace PofudukFilo.Enemies
 
         /// <summary>Güç Eşleme: enemy HP follows the player's kill speed (power-match.md).</summary>
         public PowerMatch Power { get; } = new();
+
+        /// <summary>Power Match's adaptive HP (off since 2026-09-25: upgrades must be felt).</summary>
+        public bool AdaptiveHp { get; set; }
+
+        /// <summary>√(Güç Katsayısı), set by RunController at run start: enemies keep up, but slower than the player grows.</summary>
+        public float PlayerPowerHpScale { get; set; } = 1f;
         private float _clock;
 
         /// <summary>New run: forget the last run's calibration.</summary>
@@ -80,7 +86,11 @@ namespace PofudukFilo.Enemies
 
             Enemy enemy = GetPool(prefab).Get(position);
             enemy.SourcePrefab = prefab;
-            enemy.Initialize(Formulas.EnemyHp(enemy.BaseHp, RunMinutes, ChapterIndex) * Power.Scale);
+            // Enemy HP follows the run clock, the stage and the player's Güç Katsayısı (√P, economy.md §3.3) — no longer
+            // Power Match: its hidden HP boost cancelled out upgrades ("geliştirdim, fark etmedi"). Power Match still
+            // measures kill speed for telemetry when AdaptiveHp is off.
+            float adaptive = AdaptiveHp ? Power.Scale : 1f;
+            enemy.Initialize(Formulas.EnemyHp(enemy.BaseHp, RunMinutes, ChapterIndex) * PlayerPowerHpScale * adaptive);
             _active.Add(enemy);
             return enemy;
         }

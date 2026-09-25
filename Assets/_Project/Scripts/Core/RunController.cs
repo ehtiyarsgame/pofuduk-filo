@@ -148,6 +148,8 @@ namespace PofudukFilo.Core
 
         /// <summary>The scene's starting weapon (Feather Blaster): every pilot's main gun.</summary>
         private WeaponDefinition _mainGun;
+        private int _bossesKilled;
+        private int _rushesThisRun;
 
         private void Start()
         {
@@ -158,6 +160,7 @@ namespace PofudukFilo.Core
             waveDirector.RunCompleted += OnRunCompleted;
             waveDirector.StageAdvanced += OnStageAdvanced;
             EnemyManager.Instance.EnemyKilled += OnEnemyKilled;
+            if (SugarRush.Instance != null) SugarRush.Instance.RushStarted += () => _rushesThisRun++;
             inventory.PassivesChanged += OnPassivesChanged;
             inventory.WeaponEvolved += OnWeaponEvolved;
             inventory.WeaponFused += OnWeaponFused;
@@ -447,7 +450,11 @@ namespace PofudukFilo.Core
                 if (playerSprite != null && ship != null) playerSprite.sprite = ship;
             }
             inventory.ResetLoadout();
-            if (pickups != null) pickups.CoinPowerMultiplier = Meta.PowerRating(CurrentCharacter != null ? CurrentCharacter.id : "");
+            float power = Meta.PowerRating(CurrentCharacter != null ? CurrentCharacter.id : "");
+            if (pickups != null) pickups.CoinPowerMultiplier = power;
+            EnemyManager.Instance.PlayerPowerHpScale = Formulas.EnemyHpForPower(power);
+            _bossesKilled = 0;
+            _rushesThisRun = 0;
             if (CurrentCharacter != null && CurrentCharacter.startingWeapon != null && CurrentCharacter.startingWeapon != inventory.StartingWeapon
                 && inventory.CanTake(CurrentCharacter.startingWeapon))
                 inventory.AddOrLevelWeapon(CurrentCharacter.startingWeapon);
@@ -587,6 +594,7 @@ namespace PofudukFilo.Core
 
         private void OnBossDefeated(Enemy boss, bool isFinal)
         {
+            _bossesKilled++;
             if (juice != null)
             {
                 juice.Hitstop(0.06f);
@@ -747,6 +755,8 @@ namespace PofudukFilo.Core
 
             // Gold is always kept, even on death (game-concept.md §3.5).
             Meta.GrantRunRewards(gold, stardust, cleared);
+            Meta.RecordRunForMissions(new RunStats(_kills, waveDirector.RunMinutes, gold, _bossesKilled, _rushesThisRun),
+                DateTime.UtcNow.Ticks);
             _lastRunWasVictory = victory;
 
             var summary = new RunSummary(victory, gold, stardust, xpSystem.Level, _kills,

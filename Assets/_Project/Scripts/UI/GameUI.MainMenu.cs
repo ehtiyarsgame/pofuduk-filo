@@ -157,6 +157,7 @@ namespace PofudukFilo.UI
             UIFactory.Place(_credit, 0.1f, 0.176f, 0.9f, 0.19f);
 
             BuildRewards(m, root);
+            BuildMissions(m, root);
         }
 
         // ---------------------------------------------------------------- Pieces
@@ -276,7 +277,9 @@ namespace PofudukFilo.UI
             MetaProgressionService meta = run.Meta;
             _researchTile.Badge.SetActive(ResearchAffordable());
             _armoryTile.Badge.SetActive(ArmoryAffordable());
-            _pilotsTile.Badge.SetActive(false);
+            bool pilotReady = false;
+            foreach (CharacterDefinition c in run.Characters) pilotReady |= meta.CanUnlock(c);
+            _pilotsTile.Badge.SetActive(pilotReady);
 
             float best = meta.BestEndlessSeconds;
             bool saved = run.HasSavedRun;
@@ -295,6 +298,7 @@ namespace PofudukFilo.UI
             _restartButton.gameObject.SetActive(saved);
             _credit.gameObject.SetActive(!saved); // the Yeni Oyun button sits where the credit line is
             RefreshGift();
+            RefreshMissionsBadge();
         }
 
         private bool ArmoryAffordable()
