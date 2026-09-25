@@ -202,7 +202,17 @@ namespace PofudukFilo.UI
                 perk.resizeTextForBestFit = true;
                 perk.resizeTextMinSize = 20;
                 perk.resizeTextMaxSize = 28;
-                UIFactory.Place(perk, 0.22f, 0.3f, 0.64f, 0.68f);
+                UIFactory.Place(perk, 0.22f, 0.44f, 0.64f, 0.68f);
+                // The hero's own guns (hero-guns.md): main gun + signature weapon.
+                WeaponDefinition gun = c.mainGun, second = c.startingWeapon;
+                string arms = gun == null ? "" : second == null || second == gun ? Loc.T(gun.displayName)
+                    : $"{Loc.T(gun.displayName)} + {Loc.T(second.displayName)}";
+                Text armsText = _ui.Label(row.transform, arms, 26, Palette.Honey, TextAnchor.MiddleLeft);
+                armsText.horizontalOverflow = HorizontalWrapMode.Wrap;
+                armsText.resizeTextForBestFit = true;
+                armsText.resizeTextMinSize = 18;
+                armsText.resizeTextMaxSize = 26;
+                UIFactory.Place(armsText, 0.22f, 0.3f, 0.64f, 0.44f);
                 if (meta.IsUnlocked(c))
                 {
                     int bonus = Mathf.RoundToInt(Formulas.PilotBonusPerLevel * (pilotLevel - 1) * 100f);

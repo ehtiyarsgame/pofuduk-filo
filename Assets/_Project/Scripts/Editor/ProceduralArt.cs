@@ -1070,7 +1070,8 @@ namespace PofudukFilo.EditorTools
         public static Painter Icon(string id)
         {
             bool legendary = id is "supernova_omelette" or "galaxy_vortex" or "gum_rings" or "storm_cat" or "prism_beam" or "feather_storm"
-                or "rainbow_storm" or "cosmic_breakfast" or "candy_shield_galaxy" or "shark_swarm" or "cosmic_yarn";
+                or "rainbow_storm" or "cosmic_breakfast" or "candy_shield_galaxy" or "shark_swarm" or "cosmic_yarn"
+                or "mega_chick_cannon" or "thunder_pistol" or "bubble_storm" or "comet_bow" or "glacier_gun" or "yarn_cyclone";
             (Color badge, Painter symbol, float scale) = id switch
             {
                 "feather_blaster" => (Sky, Feather(false), 1.45f),
@@ -1086,6 +1087,19 @@ namespace PofudukFilo.EditorTools
                 "prism_beam" => (Honey, GemSprite(Sky), 1.4f),
                 "feather_storm" => (Honey, Feather(true), 1.2f),
                 "fish_missile" => (Sky, FishSprite(false), 0.9f),
+                // Hero main guns (hero-guns.md): the badge colour of the hero, the gun's own bullet as the symbol.
+                "chick_cannon" => (Coral, PlayerOrb(Chick), 1.5f),
+                "mega_chick_cannon" => (Honey, PlayerOrb(Chick), 1.6f),
+                "spark_pistol" => (Lilac, SparkBolt(), 1.4f),
+                "thunder_pistol" => (Honey, SparkBolt(), 1.5f),
+                "bubble_rifle" => (Mint, PlayerOrb(Sky), 1.5f),
+                "bubble_storm" => (Honey, PlayerOrb(Sky), 1.6f),
+                "star_bow" => (Coral, MiniStar(Cream), 1.45f),
+                "comet_bow" => (Honey, MiniStar(Cream), 1.5f),
+                "ice_gun" => (Sky, IceShard(), 1.4f),
+                "glacier_gun" => (Honey, IceShard(), 1.5f),
+                "yarn_launcher" => (Lilac, YarnSprite(), 0.8f),
+                "yarn_cyclone" => (Honey, YarnSprite(), 0.85f),
                 "shark_swarm" => (Honey, FishSprite(true), 0.9f),
                 "yarn_ball" => (Pink, YarnSprite(), 0.8f),
                 "cosmic_yarn" => (Honey, YarnSprite(), 0.8f),

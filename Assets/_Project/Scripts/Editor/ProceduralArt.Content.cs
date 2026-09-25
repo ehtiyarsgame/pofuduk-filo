@@ -163,5 +163,60 @@ namespace PofudukFilo.EditorTools
             p.Face(128, 116, 90, determined: true, iris: Hex(0xB0306A));
             return p;
         }
+
+        // ---------------------------------------------------------------- Coin tiers (economy.md §3.2)
+
+        /// <summary>A stack of three coins with a sparkle — worth 15–59.</summary>
+        public static Painter CoinStack()
+        {
+            var p = new Painter(64, 64);
+            p.Glow(32, 32, 31, WithAlpha(Honey, 0.5f), 2f);
+            for (int i = 0; i < 3; i++)
+            {
+                float cy = 18 + i * 10;
+                p.Ellipse(32, cy, 22, 9, Painter.Outline);
+                p.Ellipse(32, cy + 1, 19, 7, Hex(i == 2 ? 0xFFE27A : 0xF0A020));
+            }
+            p.Star(32, 40, 6, 2.5f, Hex(0xFFF1B0));
+            p.Star(50, 52, 6, 2f, Color.white, 4);
+            return p;
+        }
+
+        /// <summary>A shiny gold bar — worth 60+.</summary>
+        public static Painter GoldBar()
+        {
+            var p = new Painter(64, 64);
+            p.Glow(32, 32, 31, WithAlpha(Honey, 0.6f), 1.8f);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 8, 16, 56, 44, 6) - 4f, Painter.Outline);
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 8, 16, 56, 44, 6), (x, y) =>
+                Color.Lerp(Hex(0xE08A10), Hex(0xFFE890), Mathf.Clamp01((y - 16f) / 28f)));
+            p.Fill((x, y) => Painter.RoundRectSdf(x, y, 16, 32, 48, 40, 3), WithAlpha(Color.white, 0.45f));
+            p.Star(50, 50, 7, 2.5f, Color.white, 4);
+            return p;
+        }
+
+        // ---------------------------------------------------------------- Hero gun bullets
+
+        /// <summary>A yellow zig-zag spark (Mırnav's Kıvılcım Tabancası).</summary>
+        public static Painter SparkBolt()
+        {
+            var p = new Painter(64, 64);
+            p.Glow(32, 32, 30, WithAlpha(Honey, 0.6f), 1.6f);
+            p.Triangle(new Vector2(36, 60), new Vector2(22, 30), new Vector2(34, 32), Hex(0xFFF3A0));
+            p.Triangle(new Vector2(30, 34), new Vector2(42, 34), new Vector2(28, 4), Hex(0xFFF3A0));
+            p.Circle(32, 32, 5, Color.white);
+            return p;
+        }
+
+        /// <summary>A pale blue ice shard (Pengu's Buz Tabancası).</summary>
+        public static Painter IceShard()
+        {
+            var p = new Painter(64, 64);
+            p.Glow(32, 32, 28, WithAlpha(Hex(0x9FE4FF), 0.6f), 1.8f);
+            p.Triangle(new Vector2(32, 62), new Vector2(22, 24), new Vector2(42, 24), Hex(0xDDF6FF), 2f);
+            p.Triangle(new Vector2(22, 24), new Vector2(42, 24), new Vector2(32, 6), Hex(0x8FD8FF), 2f);
+            p.Triangle(new Vector2(32, 58), new Vector2(28, 26), new Vector2(34, 26), Color.white);
+            return p;
+        }
     }
 }

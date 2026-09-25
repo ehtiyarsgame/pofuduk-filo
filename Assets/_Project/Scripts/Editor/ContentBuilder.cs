@@ -19,7 +19,7 @@ namespace PofudukFilo.EditorTools
     {
         // Bullet type indices (order of BulletSystem.bulletTypes).
         public const int BFeather = 0, BGiantFeather = 1, BChick = 2, BStar = 3, BMeteor = 4,
-            BEnemy = 5, BEnemyBig = 6, BBossSpecial = 7;
+            BEnemy = 5, BEnemyBig = 6, BBossSpecial = 7, BSpark = 8, BIce = 9, BYarn = 10;
 
         public readonly Dictionary<string, Sprite> Sprites = new();
         public Mesh Quad;
@@ -32,6 +32,8 @@ namespace PofudukFilo.EditorTools
         public PickupVisual[] PickupVisuals;
         public readonly List<PassiveDefinition> Passives = new();
         public readonly List<WeaponDefinition> BaseWeapons = new();
+        /// <summary>Each hero's own main gun (hero-guns.md); in the card pool only for that hero.</summary>
+        public readonly List<WeaponDefinition> HeroGuns = new();
         public WeaponDefinition StartingWeapon;
         public readonly Dictionary<string, Enemy> Enemies = new();
         public readonly List<RunDefinition> Runs = new();
@@ -119,6 +121,11 @@ namespace PofudukFilo.EditorTools
             Add("p_magnet", ArtRecipes.MagnetPickup(), 64);
             Add("p_heart", ArtRecipes.HeartPickup(), 64);
             Add("p_bomb", ArtRecipes.BombPickup(), 64);
+            Add("p_coin_big", ArtRecipes.CoinStack(), 64);
+            Add("p_gold_bar", ArtRecipes.GoldBar(), 64);
+            Add("b_spark", ArtRecipes.SparkBolt(), 64);
+            Add("b_ice", ArtRecipes.IceShard(), 64);
+            Add("b_yarn", ArtRecipes.YarnSprite(), 128);
 
             Add("egg", ArtRecipes.Egg(), 64);
             Add("star", ArtRecipes.MiniStar(ArtRecipes.Honey), 64);
@@ -220,7 +227,11 @@ namespace PofudukFilo.EditorTools
                 Type("Meteor", "b_meteor", 0.5f, 0.2f, false, 3000),
                 Type("EnemyRound", "b_enemy", 0.5f, 0.1f, false, 3010),
                 Type("EnemyBig", "b_enemy_big", 0.75f, 0.17f, false, 3010),
-                Type("BossSpecial", "b_boss_special", 0.8f, 0.19f, false, 3011)
+                Type("BossSpecial", "b_boss_special", 0.8f, 0.19f, false, 3011),
+                // Hero guns (hero-guns.md) — appended so the indices above stay put.
+                Type("Spark", "b_spark", 0.5f, 0.13f, true, 3000),
+                Type("Ice", "b_ice", 0.55f, 0.13f, true, 3000),
+                Type("Yarn", "b_yarn", 0.42f, 0.17f, false, 3000)
             };
         }
 
@@ -232,7 +243,8 @@ namespace PofudukFilo.EditorTools
             {
                 // Larger than before (device feedback: gems blended into the star field).
                 V("p_gem_blue", 0.44f), V("p_gem_green", 0.52f), V("p_gem_pink", 0.62f),
-                V("p_coin", 0.44f), V("p_magnet", 0.5f), V("p_heart", 0.5f), V("p_bomb", 0.5f)
+                V("p_coin", 0.44f), V("p_magnet", 0.5f), V("p_heart", 0.5f), V("p_bomb", 0.5f),
+                V("p_coin_big", 0.54f), V("p_gold_bar", 0.6f) // economy.md §3.2 coin tiers
             };
         }
 
@@ -246,6 +258,19 @@ namespace PofudukFilo.EditorTools
             ["bubble_orbit"] = "Geminin etrafında dönen balonlar yakındaki düşmanları ezer.",
             ["spark_cat"] = "Düşmandan düşmana seken zincir şimşek atar.",
             ["fish_missile"] = "Kendi hedefini bulan balık füzeleri; hiç ıskalamaz.",
+            // Hero main guns (hero-guns.md)
+            ["chick_cannon"] = "Cıvık'ın ana silahı: ağır, patlayan civciv topları.",
+            ["spark_pistol"] = "Mırnav'ın ana silahı: çok hızlı kıvılcım yağmuru.",
+            ["bubble_rifle"] = "Balonbaş'ın ana silahı: düşmanları delen balon mermiler.",
+            ["star_bow"] = "Yıldızpati'nin ana silahı: geniş yıldız yelpazesi.",
+            ["ice_gun"] = "Pengu'nun ana silahı: hızlı, delici buz sarkıtları.",
+            ["yarn_launcher"] = "Kuzu'nun ana silahı: iri, ağır yün yumakları.",
+            ["mega_chick_cannon"] = "EVRİM: Dev civciv topları; her 4. atış 3 kat.",
+            ["thunder_pistol"] = "EVRİM: Kıvılcım fırtınası; mermiler 2 düşman deler.",
+            ["bubble_storm"] = "EVRİM: 6 delici balon, geniş yelpaze.",
+            ["comet_bow"] = "EVRİM: 8 yıldızlık yelpaze; her 5. atış kuyruklu yıldız.",
+            ["glacier_gun"] = "EVRİM: Buzul yağmuru; 4 düşman deler.",
+            ["yarn_cyclone"] = "EVRİM: Yün kasırgası; dev yumaklar 2 düşman deler.",
             ["yarn_ball"] = "Ekran kenarlarından seken yün yumağı; değdiği her düşmanı ezer.",
             ["shark_swarm"] = "EVRİM: Dev köpekbalıkları; her vuruşta 2 yavru balık saldırır.",
             ["cosmic_yarn"] = "EVRİM: Dev yumak; her sekmede mini yumaklar saçar.",
@@ -491,6 +516,7 @@ namespace PofudukFilo.EditorTools
                 L(12f, 1f, 3, 0, 8.5f, 0, 0.6f, 8f, "Her sekme hasarı %10 artırır (en çok 5)")
             }, carrot, cosmicDef));
 
+            BuildHeroGuns(crystal);
             BaseWeapons.Insert(0, StartingWeapon);
             _evolved["shark_swarm"] = sharkDef;
             _evolved["cosmic_yarn"] = cosmicDef;
@@ -499,6 +525,82 @@ namespace PofudukFilo.EditorTools
             _evolved["galaxy_vortex"] = starEvoDef;
             _evolved["gum_rings"] = bubbleEvoDef;
             _evolved["storm_cat"] = catEvoDef;
+        }
+
+        /// <summary>
+        /// hero-guns.md: every hero shoots from the ship with a gun of their own (device feedback 2026-09-25: "her
+        /// kahramanın kendine has silahı olmalı"). Straight shooters on the FeatherBlaster behaviour, each with its
+        /// own bullet and pattern, all evolving with Kristal Gözlük like the Feather Blaster.
+        /// </summary>
+        private void BuildHeroGuns(PassiveDefinition key)
+        {
+            void Gun(string id, string name, int bullet, WeaponLevelStats[] levels, string evoId, string evoName, WeaponLevelStats evo)
+            {
+                var evoPrefab = WeaponPrefab<FeatherBlaster>(evoId, b => Set(b, "giantBulletTypeIndex", -1));
+                WeaponDefinition evoDef = Weapon(evoId, evoName, Rarity.Legendary, bullet, evoPrefab, new[] { evo });
+                evoDef.heroOnly = true;
+                EditorUtility.SetDirty(evoDef);
+                var prefab = WeaponPrefab<FeatherBlaster>(id, b => Set(b, "giantBulletTypeIndex", -1));
+                WeaponDefinition def = Weapon(id, name, Rarity.Common, bullet, prefab, levels, key, evoDef);
+                def.heroOnly = true;
+                EditorUtility.SetDirty(def);
+                HeroGuns.Add(def);
+            }
+
+            // Tuned to the Feather Blaster's damage per second (≈95 at Lv1, ≈190 at Lv5); each feels different.
+            Gun("chick_cannon", "Civciv Topu", BChick, new[]
+            {
+                L(26f, 0.28f, 1, 0, 11f, 0, 0, 1.8f, "Ağır civciv topu"),
+                L(26f, 0.28f, 2, 0, 11f, 0, 0, 1.8f, "2 paralel top"),
+                L(30f, 0.26f, 2, 0, 11f, 0, 0, 1.8f, "Hasar +%15, daha sık"),
+                L(30f, 0.26f, 3, 20f, 11f, 0, 0, 1.8f, "3 top, yelpaze"),
+                L(34f, 0.24f, 3, 20f, 11f, 0, 0, 1.8f, "Her 4. atış 3 kat hasar", 4, 3f)
+            }, "mega_chick_cannon", "Dev Civciv Topu", L(44f, 0.22f, 4, 24f, 12f, 1, 0, 1.8f, "4 dev top; her 4. atış 3 kat", 4, 3f));
+
+            Gun("spark_pistol", "Kıvılcım Tabancası", BSpark, new[]
+            {
+                L(8f, 0.13f, 1, 0, 18f, 0, 0, 1.2f, "Çok hızlı kıvılcım"),
+                L(8f, 0.12f, 2, 0, 18f, 0, 0, 1.2f, "2 kıvılcım"),
+                L(9f, 0.11f, 2, 0, 18f, 0, 0, 1.2f, "Daha hızlı, hasar +%12"),
+                L(9f, 0.11f, 3, 12f, 18f, 0, 0, 1.2f, "3 kıvılcım, yelpaze"),
+                L(11f, 0.10f, 3, 12f, 19f, 1, 0, 1.2f, "Kıvılcımlar 1 düşmanı deler")
+            }, "thunder_pistol", "Yıldırım Tabancası", L(13f, 0.09f, 4, 16f, 20f, 2, 0, 1.2f, "Kıvılcım fırtınası, 2 düşman deler"));
+
+            Gun("bubble_rifle", "Balon Tüfeği", BMeteor, new[]
+            {
+                L(16f, 0.30f, 2, 0, 11f, 1, 0, 1.8f, "2 delici balon"),
+                L(16f, 0.28f, 3, 0, 11f, 1, 0, 1.8f, "3 balon"),
+                L(18f, 0.28f, 3, 20f, 11f, 1, 0, 1.8f, "Yelpaze, hasar +%12"),
+                L(18f, 0.26f, 4, 24f, 11f, 2, 0, 1.8f, "4 balon, 2 düşman deler"),
+                L(22f, 0.26f, 4, 24f, 12f, 2, 0, 1.8f, "Hasar +%20")
+            }, "bubble_storm", "Balon Fırtınası", L(24f, 0.24f, 6, 36f, 12f, 3, 0, 1.8f, "6 delici balon, geniş yelpaze"));
+
+            Gun("star_bow", "Yıldız Yayı", BStar, new[]
+            {
+                L(11f, 0.26f, 3, 24f, 14f, 0, 0, 1.4f, "3 yıldızlık yelpaze"),
+                L(11f, 0.24f, 4, 30f, 14f, 0, 0, 1.4f, "4 yıldız"),
+                L(13f, 0.24f, 4, 30f, 14f, 0, 0, 1.4f, "Hasar +%18"),
+                L(13f, 0.22f, 5, 40f, 14f, 0, 0, 1.4f, "5 yıldız, geniş"),
+                L(15f, 0.22f, 6, 44f, 15f, 0, 0, 1.4f, "6 yıldız; her 5. atış 3 kat", 5, 3f)
+            }, "comet_bow", "Kuyruklu Yıldız Yayı", L(17f, 0.2f, 8, 56f, 16f, 1, 0, 1.4f, "8 yıldız; her 5. atış 3 kat", 5, 3f));
+
+            Gun("ice_gun", "Buz Tabancası", BIce, new[]
+            {
+                L(14f, 0.24f, 2, 0, 17f, 1, 0, 1.3f, "2 delici buz sarkıtı"),
+                L(14f, 0.22f, 2, 0, 17f, 2, 0, 1.3f, "2 düşman deler"),
+                L(16f, 0.22f, 3, 0, 17f, 2, 0, 1.3f, "3 sarkıt"),
+                L(16f, 0.20f, 3, 10f, 18f, 2, 0, 1.3f, "Daha hızlı, yelpaze"),
+                L(19f, 0.20f, 4, 14f, 18f, 3, 0, 1.3f, "4 sarkıt, 3 düşman deler")
+            }, "glacier_gun", "Buzul Topu", L(22f, 0.18f, 5, 18f, 19f, 4, 0, 1.3f, "Buzul yağmuru, 4 düşman deler"));
+
+            Gun("yarn_launcher", "Yün Atar", BYarn, new[]
+            {
+                L(22f, 0.34f, 1, 0, 10f, 0, 0, 2f, "İri yün yumağı"),
+                L(22f, 0.32f, 2, 0, 10f, 0, 0, 2f, "2 yumak"),
+                L(26f, 0.30f, 2, 0, 10f, 0, 0, 2f, "Hasar +%18, daha sık"),
+                L(26f, 0.30f, 3, 18f, 10f, 0, 0, 2f, "3 yumak, yelpaze"),
+                L(30f, 0.28f, 3, 18f, 11f, 1, 0, 2f, "Yumaklar 1 düşmanı deler; her 4. atış 3 kat", 4, 3f)
+            }, "yarn_cyclone", "Yün Kasırgası", L(36f, 0.26f, 4, 24f, 11f, 2, 0, 2f, "Dev yumaklar 2 düşman deler; her 4. atış 3 kat", 4, 3f));
         }
 
         // ---------------------------------------------------------------- Lab, fusions, Hangar, Constellation
@@ -564,7 +666,7 @@ namespace PofudukFilo.EditorTools
             }
 
             void C(string id, string name, string perk, string sprite, string weapon, int gold, int dust,
-                CharacterPerk special = CharacterPerk.None, int chapterGate = -1, int ads = 0, params StatModifier[] mods)
+                CharacterPerk special = CharacterPerk.None, int chapterGate = -1, string gun = null, params StatModifier[] mods)
             {
                 var c = ScriptableObject.CreateInstance<CharacterDefinition>();
                 c.id = id;
@@ -583,9 +685,10 @@ namespace PofudukFilo.EditorTools
                     _ => "ship_mystery"
                 }];
                 c.startingWeapon = W(weapon);
+                c.mainGun = gun == null ? StartingWeapon : HeroGuns.Find(g => g.id == gun);
                 c.goldCost = gold;
                 c.stardustCost = dust;
-                c.adsToUnlock = ads;
+                c.adsToUnlock = 0; // pilots are bought, never unlocked by ads (ad-rewards.md, 2026-09-25)
                 c.perk = special;
                 c.requiresChapterCleared = chapterGate;
                 c.modifiers = mods;
@@ -594,17 +697,17 @@ namespace PofudukFilo.EditorTools
 
             C("pitir", "Pıtır", "Tavşan. Her 10 seviyede +1 kart seçeneği.", "bunny", "feather_blaster", 0, 0,
                 CharacterPerk.CardEvery10Levels);
-            C("civik", "Cıvık", "Civciv. Patlamalar %20 büyük, can -%10.", "pilot_chick", "egg_mortar", 2500, 10,
+            C("civik", "Cıvık", "Civciv. Patlamalar %20 büyük, can -%10.", "pilot_chick", "egg_mortar", 2500, 10, gun: "chick_cannon",
                 mods: new[] { new StatModifier(StatType.Area, 0.2f), new StatModifier(StatType.MaxHp, -0.1f) });
-            C("mirnav", "Mırnav", "Kedi. Sersemletme süresi 2 kat.", "pilot_cat", "spark_cat", 6000, 25,
+            C("mirnav", "Mırnav", "Kedi. Sersemletme süresi 2 kat.", "pilot_cat", "spark_cat", 6000, 25, gun: "spark_pistol",
                 mods: new StatModifier(StatType.StunDuration, 1f));
-            C("balonbas", "Balonbaş", "Hamster. Yuttuğu her mermi 1 can.", "pilot_hamster", "bubble_orbit", 10000, 40,
+            C("balonbas", "Balonbaş", "Hamster. Yuttuğu her mermi 1 can.", "pilot_hamster", "bubble_orbit", 10000, 40, gun: "bubble_rifle",
                 mods: new StatModifier(StatType.AbsorbHeal, 1f));
-            C("yildizpati", "Yıldızpati", "Tilki. Her evrim +%15 hasar.", "pilot_fox", "star_boomerang", 16000, 60,
+            C("yildizpati", "Yıldızpati", "Tilki. Her evrim +%15 hasar.", "pilot_fox", "star_boomerang", 16000, 60, gun: "star_bow",
                 mods: new StatModifier(StatType.EvolutionDamage, 0.15f));
-            C("pengu", "Pengu", "Penguen. Mermiler %25 hızlı, +%5 kritik.", "pilot_penguin", "fish_missile", 13000, 50,
+            C("pengu", "Pengu", "Penguen. Mermiler %25 hızlı, +%5 kritik.", "pilot_penguin", "fish_missile", 13000, 50, gun: "ice_gun",
                 mods: new[] { new StatModifier(StatType.ProjectileSpeed, 0.25f), new StatModifier(StatType.CritChance, 0.05f) });
-            C("kuzu", "Kuzu", "Kuzu. Can +%30, alan +%10.", "pilot_lamb", "yarn_ball", 22000, 80,
+            C("kuzu", "Kuzu", "Kuzu. Can +%30, alan +%10.", "pilot_lamb", "yarn_ball", 22000, 80, gun: "yarn_launcher",
                 mods: new[] { new StatModifier(StatType.MaxHp, 0.3f), new StatModifier(StatType.Area, 0.1f) });
             C("gizli", "Gökkuşağı Pıtır", "Gizli. Her koşu rastgele bir pasifle başlar.", "pilot_mystery", "feather_blaster", 0, 0,
                 CharacterPerk.RandomPassive, chapterGate: 2);

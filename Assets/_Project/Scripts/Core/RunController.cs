@@ -162,7 +162,9 @@ namespace PofudukFilo.Core
             inventory.WeaponEvolved += OnWeaponEvolved;
             inventory.WeaponFused += OnWeaponFused;
             // Owned weapons stay offered even if locked in the Lab (a character's starting weapon).
-            draft.WeaponFilter = w => (Meta.IsUnlocked(w) || inventory.Find(w) != null) && !IsRetired(w);
+            // Hero guns are only ever offered to the hero flying with one (hero-guns.md).
+            draft.WeaponFilter = w => (w.heroOnly ? inventory.Find(w) != null : Meta.IsUnlocked(w) || inventory.Find(w) != null)
+                                      && !IsRetired(w);
             draft.PassiveFilter = p => Meta.IsUnlocked(p);
             EnterMenu();
         }
@@ -344,8 +346,12 @@ namespace PofudukFilo.Core
                 for (WeaponDefinition e = f != null ? f.result : null; e != null; e = e.evolvesInto)
                     if (e.id == id) return e;
             foreach (CharacterDefinition c in characters)
+            {
                 for (WeaponDefinition e = c.startingWeapon; e != null; e = e.evolvesInto)
                     if (e.id == id) return e;
+                for (WeaponDefinition e = c.mainGun; e != null; e = e.evolvesInto)
+                    if (e.id == id) return e;
+            }
             return null;
         }
 
@@ -436,12 +442,13 @@ namespace PofudukFilo.Core
                 // Every pilot flies with the Feather Blaster as ANA SİLAH; the pilot's own weapon is added as a second
                 // slot below. Device feedback 2026-09-25: pilots whose only weapon was a mortar or a cat "fired"
                 // (wing-gun flashes) with nothing coming out.
-                inventory.StartingWeapon = _mainGun;
+                inventory.StartingWeapon = CurrentCharacter.mainGun != null ? CurrentCharacter.mainGun : _mainGun;
                 Sprite ship = CurrentCharacter.shipSprite != null ? CurrentCharacter.shipSprite : CurrentCharacter.sprite;
                 if (playerSprite != null && ship != null) playerSprite.sprite = ship;
             }
             inventory.ResetLoadout();
-            if (CurrentCharacter != null && CurrentCharacter.startingWeapon != null && CurrentCharacter.startingWeapon != _mainGun
+            if (pickups != null) pickups.CoinPowerMultiplier = Meta.PowerRating(CurrentCharacter != null ? CurrentCharacter.id : "");
+            if (CurrentCharacter != null && CurrentCharacter.startingWeapon != null && CurrentCharacter.startingWeapon != inventory.StartingWeapon
                 && inventory.CanTake(CurrentCharacter.startingWeapon))
                 inventory.AddOrLevelWeapon(CurrentCharacter.startingWeapon);
             TrialName = null;

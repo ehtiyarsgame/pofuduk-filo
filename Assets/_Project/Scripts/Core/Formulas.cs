@@ -156,6 +156,24 @@ namespace PofudukFilo.Core
         /// <summary>Ateş Hızı: fire rate × (1 + 0.025·L), capped at level 40 (×2) so bullet density stays readable.</summary>
         public static float ForgeSpeedMultiplier(int level) => 1f + ForgeSpeedPerLevel * Math.Clamp(level, 0, MaxForgeSpeedLevel);
 
+        // ---------------------------------------------------------------- Power coefficient & coins (economy.md)
+
+        /// <summary>
+        /// Güç Katsayısı: how far the player has built up outside the run.
+        /// P = 1 + 0.04·ForgePower + 0.03·ForgeSpeed + 0.02·(workshop levels) + 0.02·(weapon mastery levels)
+        ///       + 0.03·(pilot level − 1). Fresh save = ×1.00; Forge 10/10 + 10 workshop levels ≈ ×1.90.
+        /// </summary>
+        public static float PowerRating(int forgePower, int forgeSpeed, int workshopLevels, int masteryLevels, int pilotLevel) =>
+            1f + 0.04f * Math.Max(0, forgePower) + 0.03f * Math.Max(0, forgeSpeed) + 0.02f * Math.Max(0, workshopLevels)
+               + 0.02f * Math.Max(0, masteryLevels) + 0.03f * Math.Max(0, pilotLevel - 1);
+
+        /// <summary>
+        /// Coin value = base × P × (1 + 0.08·t), t in run minutes: stronger players earn bigger coins, and staying
+        /// alive longer pays more per coin — "her zaman aynı oranda para ile gelişemezler".
+        /// </summary>
+        public static float CoinValue(float baseValue, float powerRating, float minutes) =>
+            baseValue * Math.Max(1f, powerRating) * (1f + 0.08f * Math.Max(0f, minutes));
+
         // ---------------------------------------------------------------- Rewarded ads (ad-rewards.md)
 
         /// <summary>

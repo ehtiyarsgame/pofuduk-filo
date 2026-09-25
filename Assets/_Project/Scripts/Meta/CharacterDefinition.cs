@@ -25,6 +25,9 @@ namespace PofudukFilo.Meta
         public Sprite sprite;
         [Tooltip("In-run ship (the shared hull with this pilot in the cockpit). Falls back to the portrait.")]
         public Sprite shipSprite;
+        [Tooltip("The hero's own main gun (ANA SİLAH, fires from the ship). Null = the Feather Blaster.")]
+        public WeaponDefinition mainGun;
+        [Tooltip("The hero's signature second weapon.")]
         public WeaponDefinition startingWeapon;
         public StatModifier[] modifiers = System.Array.Empty<StatModifier>();
         public CharacterPerk perk;

@@ -91,7 +91,9 @@ namespace PofudukFilo.Audio
         {
             switch (kind)
             {
-                case PickupKind.Gold: Play(SfxId.Coin); break;
+                case PickupKind.Gold:
+                case PickupKind.GoldBig:
+                case PickupKind.GoldBar: Play(SfxId.Coin); break;
                 case PickupKind.Heart: Play(SfxId.Heal, 0f); break;
                 case PickupKind.Bomb: Play(SfxId.BigPop, 0f); break;
                 case PickupKind.Magnet: Play(SfxId.LevelUp, 0f); break;

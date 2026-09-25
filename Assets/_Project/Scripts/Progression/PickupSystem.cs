@@ -168,12 +168,12 @@ namespace PofudukFilo.Progression
 
             if (enemy.IsElite)
             {
-                int eliteCoin = Mathf.RoundToInt(enemy.GoldValue * goldPerCoinValue * (1f + Bonus(StatType.EliteGold)));
-                for (int i = 0; i < 5; i++) Spawn(PickupKind.Gold, pos, eliteCoin);
+                int eliteCoin = CoinValue(enemy.GoldValue * goldPerCoinValue * (1f + Bonus(StatType.EliteGold)));
+                for (int i = 0; i < 5; i++) SpawnGold(pos, eliteCoin);
                 return;
             }
 
-            if (Random.value < coinChance) Spawn(PickupKind.Gold, pos, enemy.GoldValue * goldPerCoinValue);
+            if (Random.value < coinChance) SpawnGold(pos, CoinValue(enemy.GoldValue * goldPerCoinValue));
 
             float roll = Random.value;
             if (roll < bombChance) Spawn(PickupKind.Bomb, pos, 0);
@@ -186,8 +186,23 @@ namespace PofudukFilo.Progression
             // "Formation Cleared!" XP shower (game-concept.md §3.3).
             for (int i = 0; i < formationClearGems; i++)
                 Spawn(PickupKind.XpMedium, group.Center + Random.insideUnitCircle, 5);
-            Spawn(PickupKind.Gold, group.Center, goldPerCoinValue * 3);
+            SpawnGold(group.Center, CoinValue(goldPerCoinValue * 3));
         }
+
+        /// <summary>
+        /// Coin value = base × Power coefficient (meta upgrades, set by RunController) × run-time factor, so a stronger
+        /// player deeper in a run picks up bigger coins (economy.md §3.1).
+        /// </summary>
+        private int CoinValue(float baseValue)
+        {
+            float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.RunMinutes : 0f;
+            return Mathf.Max(1, Mathf.RoundToInt(Core.Formulas.CoinValue(baseValue, CoinPowerMultiplier, minutes)));
+        }
+
+        private void SpawnGold(Vector2 pos, int value) => Spawn(PickupRules.GoldKindFor(value), pos, value);
+
+        /// <summary>The player's Power coefficient (Formulas.PowerRating), applied to every coin this run.</summary>
+        public float CoinPowerMultiplier { get; set; } = 1f;
 
         private void OnGrazed(Vector2 position)
         {
@@ -302,6 +317,8 @@ namespace PofudukFilo.Progression
                     if (xpSystem != null) xpSystem.AddXp(c.Value);
                     break;
                 case PickupKind.Gold:
+                case PickupKind.GoldBig:
+                case PickupKind.GoldBar:
                     RunGold += Mathf.RoundToInt(c.Value * (1f + Bonus(StatType.GoldGain)));
                     RunGoldChanged?.Invoke(RunGold);
                     break;

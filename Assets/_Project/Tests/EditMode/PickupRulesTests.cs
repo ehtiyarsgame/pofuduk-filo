@@ -23,5 +23,16 @@ namespace PofudukFilo.Tests
             Assert.That(PickupRules.IsXp(PickupKind.Gold), Is.False);
             Assert.That(PickupRules.IsXp(PickupKind.Bomb), Is.False);
         }
+
+        [TestCase(1, PickupKind.Gold)]
+        [TestCase(14, PickupKind.Gold)]
+        [TestCase(15, PickupKind.GoldBig)]
+        [TestCase(59, PickupKind.GoldBig)]
+        [TestCase(60, PickupKind.GoldBar)]
+        public void test_gold_kind_by_value(int value, PickupKind expected)
+        {
+            Assert.That(PickupRules.GoldKindFor(value), Is.EqualTo(expected));
+            Assert.That(PickupRules.IsGold(expected), Is.True);
+        }
     }
 }

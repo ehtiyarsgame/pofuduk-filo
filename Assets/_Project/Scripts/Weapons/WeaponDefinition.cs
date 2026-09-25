@@ -52,6 +52,9 @@ namespace PofudukFilo.Weapons
         [Tooltip("Weapon Lab price in gold; 0 = in the card pool from the start (meta-economy.md §3.3 C).")]
         public int labCost;
 
+        [Tooltip("A hero's own main gun: only in the card pool for the pilot who flies with it (hero-guns.md).")]
+        public bool heroOnly;
+
         [Tooltip("Rewarded ads that also unlock it (ad-rewards.md); 0 = gold only.")]
         public int adsToUnlock;
 

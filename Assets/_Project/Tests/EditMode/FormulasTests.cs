@@ -162,5 +162,21 @@ namespace PofudukFilo.Tests
             Assert.That(Formulas.EnemyFireRateScale(5f), Is.EqualTo(1.5f).Within(1e-5f));
             Assert.That(Formulas.EnemyFireRateScale(60f), Is.EqualTo(2.2f).Within(1e-5f));
         }
+
+        [Test]
+        public void test_power_rating_starts_at_one_and_grows_with_upgrades()
+        {
+            Assert.That(Formulas.PowerRating(0, 0, 0, 0, 1), Is.EqualTo(1f).Within(1e-5f));
+            Assert.That(Formulas.PowerRating(10, 10, 10, 0, 1), Is.EqualTo(1.9f).Within(1e-4f));
+            Assert.That(Formulas.PowerRating(0, 0, 0, 5, 3), Is.EqualTo(1.16f).Within(1e-4f));
+        }
+
+        [Test]
+        public void test_coin_value_scales_with_power_and_run_time()
+        {
+            Assert.That(Formulas.CoinValue(5f, 1f, 0f), Is.EqualTo(5f).Within(1e-4f));
+            Assert.That(Formulas.CoinValue(5f, 2f, 5f), Is.EqualTo(14f).Within(1e-4f));
+            Assert.That(Formulas.CoinValue(5f, 0.5f, 0f), Is.EqualTo(5f).Within(1e-4f)); // never below base
+        }
     }
 }

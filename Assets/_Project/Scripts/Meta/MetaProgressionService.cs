@@ -114,6 +114,17 @@ namespace PofudukFilo.Meta
             return true;
         }
 
+        // ---------------------------------------------------------------- Power coefficient (economy.md §3.1)
+
+        /// <summary>Güç Katsayısı for a pilot: Forge, workshop, weapon mastery and that pilot's level.</summary>
+        public float PowerRating(string pilotId)
+        {
+            int workshop = 0, mastery = 0;
+            foreach (UpgradeLevelEntry e in _data.upgrades) workshop += Math.Max(0, e.level);
+            foreach (UpgradeLevelEntry e in _data.weaponMastery) mastery += Math.Max(0, e.level);
+            return Core.Formulas.PowerRating(_data.forgePower, _data.forgeSpeed, workshop, mastery, GetPilotLevel(pilotId));
+        }
+
         // ---------------------------------------------------------------- Endless record
 
         public float BestEndlessSeconds => _data.bestEndlessSeconds;

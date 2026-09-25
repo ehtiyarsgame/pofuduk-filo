@@ -1,3 +1,4 @@
+using System.Linq;
 using PofudukFilo.Bullets;
 using PofudukFilo.Core;
 using PofudukFilo.Enemies;
@@ -171,7 +172,7 @@ namespace PofudukFilo.EditorTools
             var xp = playerGo.AddComponent<XpSystem>();
             var draft = playerGo.AddComponent<UpgradeDraft>();
             Set(draft, "inventory", inventory);
-            SetArray(draft, "weaponPool", c.BaseWeapons.ToArray());
+            SetArray(draft, "weaponPool", c.BaseWeapons.Concat(c.HeroGuns).ToArray()); // hero guns: filtered to their hero
             SetArray(draft, "passivePool", c.Passives.ToArray());
 
             // ---- Pickups (needs player-side refs)
