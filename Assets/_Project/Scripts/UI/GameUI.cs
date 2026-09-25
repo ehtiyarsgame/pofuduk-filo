@@ -390,7 +390,8 @@ namespace PofudukFilo.UI
                     title = next == 1 ? $"{p.displayName}  YENİ!" : $"{p.displayName}  Sv.{next}";
                     body = (string.IsNullOrEmpty(p.description) ? "" : Loc.T(p.description) + "\n") +
                            StatLine(p.stat, p.valuePerLevel, next);
-                    if (p.drawbackPerLevel != 0f) body += "\n" + StatLine(p.drawbackStat, p.drawbackPerLevel, next);
+                    // The card's price, in red, so the trade-off reads at a glance.
+                    if (p.drawbackPerLevel != 0f) body += "\n<color=#FF8A8A>" + StatLine(p.drawbackStat, p.drawbackPerLevel, next) + "</color>";
                     // Say which owned weapon this passive can evolve.
                     foreach (WeaponBehaviour owned in inventory.Weapons)
                         if (owned.Definition.evolutionPassive == p && owned.Definition.evolvesInto != null)
