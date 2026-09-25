@@ -50,8 +50,15 @@ namespace PofudukFilo.Weapons
             if (_cooldownTimer > 0f) return;
 
             WeaponLevelStats s = CurrentStats;
-            _cooldownTimer = Stats.FinalCooldown(s.cooldown);
+            // Hero gun mods (hero-guns.md §4): each hero gun's own permanent tracks.
+            Meta.GunMods.Bonus mod = GunModState.For(Definition);
+            _cooldownTimer = Stats.FinalCooldown(s.cooldown) / (1f + mod.FireRate);
             ShotCounter++;
+            s.damage *= 1f + mod.Damage;
+            s.area *= 1f + mod.Area;
+            s.lifetime *= 1f + mod.Duration;
+            if (s.projectileCount > 0) s.projectileCount += mod.Count;
+            s.pierce += mod.Pierce;
             // Build cards (passives.md §3.2): Çift Namlu adds a shot/ball/bounce, Delici Pençe adds pierce.
             if (s.projectileCount > 0) s.projectileCount += Mathf.RoundToInt(Stats.GetBonus(StatType.ExtraProjectiles));
             s.pierce += Mathf.RoundToInt(Stats.GetBonus(StatType.Pierce));

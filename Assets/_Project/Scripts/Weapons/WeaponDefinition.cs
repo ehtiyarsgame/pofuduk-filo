@@ -28,6 +28,8 @@ namespace PofudukFilo.Weapons
         public float specialDamageMultiplier;
         [Tooltip("On-hit traits of this level's shots (straight shooters only): explode, split, chain, slow.")]
         public Bullets.BulletEffect effects;
+        [Tooltip("Extra wing shots fanning out beside the lanes, in pairs (Tüy Blaster, hero-guns.md §3.3).")]
+        public int sideShots;
         [TextArea] public string upgradeText;
     }
 

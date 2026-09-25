@@ -21,6 +21,7 @@ namespace PofudukFilo.Meta
             _persist = persist ?? SaveService.Save;
             // Saves from before mastery/pilot levels existed deserialize these as null.
             _data.weaponMastery ??= new List<UpgradeLevelEntry>();
+            _data.gunMods ??= new List<UpgradeLevelEntry>();
             _data.pilotLevels ??= new List<UpgradeLevelEntry>();
             _data.adProgress ??= new List<UpgradeLevelEntry>();
             _data.missionProgress ??= new List<int>();
@@ -70,6 +71,30 @@ namespace PofudukFilo.Meta
         // ---------------------------------------------------------------- Weapon mastery & pilot levels
 
         public int GetMastery(string weaponId) => FindIn(_data.weaponMastery, weaponId)?.level ?? 0;
+
+        // ---------------------------------------------------------------- Hero gun mods (hero-guns.md §4)
+
+        /// <summary>Level of one gun mod track by its save key ("gun:mod").</summary>
+        public int GetGunMod(string saveKey) => FindIn(_data.gunMods, saveKey)?.level ?? 0;
+
+        public int GetGunMod(string gunId, string modKey) => GetGunMod(GunMods.SaveKey(gunId, modKey));
+
+        public bool CanUpgradeGunMod(string gunId, string modKey)
+        {
+            int level = GetGunMod(gunId, modKey);
+            return level < GunMods.MaxLevel && _data.gold >= GunMods.Cost(level);
+        }
+
+        public bool TryUpgradeGunMod(string gunId, string modKey)
+        {
+            if (!CanUpgradeGunMod(gunId, modKey)) return false;
+            int level = GetGunMod(gunId, modKey);
+            _data.gold -= GunMods.Cost(level);
+            SetIn(_data.gunMods, GunMods.SaveKey(gunId, modKey), level + 1);
+            _persist(_data);
+            WalletChanged?.Invoke();
+            return true;
+        }
 
         public bool CanUpgradeMastery(WeaponDefinition w)
         {
@@ -124,6 +149,7 @@ namespace PofudukFilo.Meta
             int workshop = 0, mastery = 0;
             foreach (UpgradeLevelEntry e in _data.upgrades) workshop += Math.Max(0, e.level);
             foreach (UpgradeLevelEntry e in _data.weaponMastery) mastery += Math.Max(0, e.level);
+            foreach (UpgradeLevelEntry e in _data.gunMods) workshop += Math.Max(0, e.level); // 0.01 per gun mod level
             return Core.Formulas.PowerRating(_data.forgePower, _data.forgeSpeed, workshop, mastery, GetPilotLevel(pilotId));
         }
 

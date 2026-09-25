@@ -95,10 +95,11 @@ namespace PofudukFilo.Bullets
 
         /// <summary>Queue a player bullet. Safe to call at any time — it joins the simulation next schedule.</summary>
         public void SpawnPlayerBullet(int typeIndex, Vector2 position, Vector2 velocity, float damage,
-            int pierce = 0, float lifetime = 3f, BulletEffect effects = BulletEffect.None)
+            int pierce = 0, float lifetime = 3f, BulletEffect effects = BulletEffect.None, float explodeRadius = 0f)
         {
             BulletData b = Create(typeIndex, position, velocity, damage, pierce, lifetime);
             b.Effects = (byte)effects;
+            b.Area = explodeRadius;
             _pendingPlayer.Add(b);
         }
 
@@ -117,7 +118,7 @@ namespace PofudukFilo.Bullets
 
             if ((fx & BulletEffect.Explode) != 0)
             {
-                float radius = ExplodeRadius;
+                float radius = hit.Area > 0f ? hit.Area : ExplodeRadius;
                 _scratch.Clear();
                 int n = enemies.QueryCircle(at, radius, _scratch);
                 for (int i = 0; i < n; i++)

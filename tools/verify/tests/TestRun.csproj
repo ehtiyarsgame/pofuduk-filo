@@ -37,6 +37,8 @@
     <Compile Include="../../../Assets/_Project/Tests/EditMode/SwarmPickerTests.cs" />
     <Compile Include="../../../Assets/_Project/Scripts/Meta/RecordChests.cs" />
     <Compile Include="../../../Assets/_Project/Tests/EditMode/RecordChestsTests.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/Meta/GunMods.cs" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/GunModsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="../.cache/modules/lib/net45/UnityEngine.CoreModule.dll" />

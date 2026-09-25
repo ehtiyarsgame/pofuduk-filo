@@ -31,6 +31,8 @@ namespace PofudukFilo.Meta
         public long lastRespecUtcTicks;
         public int highestChapterCleared = -1;
         public List<UpgradeLevelEntry> weaponMastery = new();
+        /// <summary>Hero gun mod levels, keyed "gun:mod" (hero-guns.md §4).</summary>
+        public List<UpgradeLevelEntry> gunMods = new();
         public List<UpgradeLevelEntry> pilotLevels = new();
         // Forge tracks (power-match.md §3.4) and the Endless record.
         public int forgePower;

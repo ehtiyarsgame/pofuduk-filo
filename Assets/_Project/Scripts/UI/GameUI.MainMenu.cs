@@ -552,6 +552,15 @@ namespace PofudukFilo.UI
             MetaProgressionService meta = run.Meta;
             foreach (WeaponDefinition w in run.LabWeapons)
                 if (w != null && (meta.IsUnlocked(w) ? meta.CanUpgradeMastery(w) : meta.Gold >= w.labCost)) return true;
+            // Hero gun mods (hero-guns.md §4) of the pilots you own.
+            foreach (CharacterDefinition c in run.Characters)
+            {
+                if (c == null || !meta.IsUnlocked(c)) continue;
+                WeaponDefinition gun = run.MainGunOf(c);
+                if (gun == null) continue;
+                foreach (GunMod m in GunMods.For(gun.id))
+                    if (meta.CanUpgradeGunMod(gun.id, m.Key)) return true;
+            }
             return false;
         }
 

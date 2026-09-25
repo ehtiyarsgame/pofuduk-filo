@@ -26,6 +26,8 @@ namespace PofudukFilo.Bullets
         public byte Effects;
         /// <summary>Enemy shot that bursts into three when its fuse (Lifetime) runs out: 1 + the child bullet type, 0 = never.</summary>
         public int SplitInto;
+        /// <summary>Explosion radius of a player shot with the Explode trait; 0 = BulletSystem.ExplodeRadius (hero-guns.md §3.3).</summary>
+        public float Area;
     }
 
     /// <summary>Collision snapshot of one enemy, written by EnemyManager each frame.</summary>
@@ -52,6 +54,7 @@ namespace PofudukFilo.Bullets
         public float2 Position;
         public byte Effects;
         public int TypeIndex;
+        public float Area;
     }
 
     public static class BulletGrid
@@ -148,7 +151,8 @@ namespace PofudukFilo.Bullets
                     Damage = b.Damage,
                     Position = b.Position,
                     Effects = b.Effects,
-                    TypeIndex = b.TypeIndex
+                    TypeIndex = b.TypeIndex,
+                    Area = b.Area
                 });
                 b.LastHitEnemyId = e.Id;
                 b.Pierce--;

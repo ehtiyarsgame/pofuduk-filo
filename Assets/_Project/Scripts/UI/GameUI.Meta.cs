@@ -270,6 +270,9 @@ namespace PofudukFilo.UI
             ClearChildren(_lab.List);
             MetaProgressionService meta = run.Meta;
 
+            HeroGunRows(meta);
+            Section(_lab.List, "LABORATUVAR · kart havuzuna silah ve pasif ekle");
+
             var listed = new HashSet<WeaponDefinition>();
             foreach (WeaponDefinition w in run.LabWeapons)
             {
@@ -343,6 +346,61 @@ namespace PofudukFilo.UI
                     }, 38);
                 b.interactable = !unlocked && meta.Gold >= p.labCost;
                 UIFactory.Place(b, 0.66f, 0.14f, 0.98f, 0.86f);
+            }
+        }
+
+        /// <summary>
+        /// Hero gun mods (hero-guns.md §4): every unlocked pilot's own gun with its three permanent tracks, at the top of
+        /// the Weapons screen ("her silahın kendine özgü geliştirmesi olsun").
+        /// </summary>
+        private void HeroGunRows(MetaProgressionService meta)
+        {
+            Section(_lab.List, "KAHRAMAN SİLAHLARI · her silahın kendi gelişimi");
+            var shown = new HashSet<string>();
+            foreach (CharacterDefinition c in run.Characters)
+            {
+                if (c == null || !meta.IsUnlocked(c)) continue;
+                WeaponDefinition gun = run.MainGunOf(c);
+                if (gun == null || !GunMods.HasMods(gun.id) || !shown.Add(gun.id)) continue;
+
+                Image head = Row(_lab.List, gun.id, 150f);
+                head.color = Palette.Hex(0x4A3478);
+                AddIcon(head.transform, gun.icon != null ? gun.icon : c.sprite, true);
+                Text title = _ui.Label(head.transform, Loc.T($"{Loc.T(gun.displayName)} · {Loc.T(c.displayName)}"), 42, Palette.Honey, TextAnchor.MiddleLeft);
+                UIFactory.Place(title, 0.22f, 0.52f, 0.98f, 0.96f);
+                Text desc = _ui.Label(head.transform, gun.description ?? "", 26, Palette.White, TextAnchor.UpperLeft);
+                desc.horizontalOverflow = HorizontalWrapMode.Wrap;
+                desc.resizeTextForBestFit = true;
+                desc.resizeTextMinSize = 18;
+                desc.resizeTextMaxSize = 26;
+                UIFactory.Place(desc, 0.22f, 0.06f, 0.98f, 0.52f);
+
+                foreach (GunMod m in GunMods.For(gun.id))
+                {
+                    string gunId = gun.id, key = m.Key;
+                    int level = meta.GetGunMod(gunId, key);
+                    bool maxed = level >= GunMods.MaxLevel;
+                    Image row = Row(_lab.List, key, 140f);
+                    Text name = _ui.Label(row.transform, Loc.T($"{Loc.T(m.Name)}  Sv.{level}/{GunMods.MaxLevel}"), 36, Palette.Cream, TextAnchor.MiddleLeft);
+                    UIFactory.Place(name, 0.05f, 0.5f, 0.64f, 0.95f);
+                    Text what = _ui.Label(row.transform, m.Description, 28, Palette.Mint, TextAnchor.MiddleLeft);
+                    UIFactory.Place(what, 0.05f, 0.06f, 0.64f, 0.5f);
+                    Button b;
+                    if (maxed)
+                    {
+                        b = _ui.Button(row.transform, "MAKS", Palette.Mint, null, 40);
+                        b.interactable = false;
+                    }
+                    else
+                    {
+                        b = PriceButton(row.transform, "Geliştir", GunMods.Cost(level), 0, Palette.HotPink, () =>
+                        {
+                            if (run.Meta.TryUpgradeGunMod(gunId, key)) RefreshOpenMetaScreen();
+                        }, 34);
+                        b.interactable = meta.CanUpgradeGunMod(gunId, key);
+                    }
+                    UIFactory.Place(b, 0.66f, 0.12f, 0.98f, 0.88f);
+                }
             }
         }
 

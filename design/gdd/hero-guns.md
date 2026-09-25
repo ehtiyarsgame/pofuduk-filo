@@ -55,8 +55,66 @@ Secondary damage never carries traits, so hits never cascade. Each gun unlocks i
 | Buz Tabancası | slow | + split (shatter) | slow + split |
 | Yün Atar | slow | Lv3 split, Lv4 explode | all three |
 
+### 3.3 Mechanics of their own (2026-09-25, round 2)
+
+Device feedback: *"kahramanların ateşi de ateşlemesi de hepsi farklı şekilde olsun, farklı şekilde güçlensin"*
+("the heroes' fire and the way they fire should all be different, and each should grow in its own way"). Every
+gun now plays differently and grows along its own axis. Round 2 covers four heroes; round 3 will cover
+Balonbaş, Yıldızpati and Kuzu.
+
+| Hero | Gun | How it fires | Grows by | Level path | Evolution |
+|---|---|---|---|---|---|
+| Pıtır | Tüy Blaster (`FeatherBlaster`) | straight parallel lanes | **width** | 1 → 2 → 3 lanes (split at Lv3) → +2 wing feathers → 4 lanes, pierce, giant every 5th | Prism Beam (unchanged) |
+| Cıvık | Civciv Topu (`FeatherBlaster`) | heavy explosive ball | **blast area** | Lv2 explodes, radius 1.0 → 1.15 → 1.3 (+chicks) → 1.45 | Dev Civciv Topu, radius 1.9 |
+| Mırnav | Kıvılcım (`ChainArcGun`) | **no bullet**: an instant arc to the nearest enemy within range, then jumps within 3.5 u (×0.85 per jump) | **chain** | 1 → 2 → 2 (+0.4 s stun) → 3 (+slow, 0.5 s) → 4 jumps (0.6 s); range 4.5 → 5.6 | Yıldırım: 7 jumps, 0.8 s stun, range 6.5 |
+| Pengu | Buz Işını (`IceBeamGun`) | **continuous beam** straight up; hits the first 1 + pierce enemies, slows them | **control** | Lv2: 1.2 s in the beam freezes (0.8 s); wider; Lv4 splits into 2 beams; Lv5 freeze 1.2 s | Buzul Işını: 3 beams, 7 enemies, 1.5 s freeze |
+
+**Stat mapping for the new behaviours:**
+- **Chain:** `projectileCount` = jumps, `area` = range from the ship, `lifetime` = stun seconds.
+- **Beam:** `cooldown` = damage tick, `projectileCount` = beams, `area` = half-width, `pierce` = extra enemies per
+  beam, `lifetime` = freeze seconds.
+- **Explosive shots:** they carry their own blast radius (`BulletData.Area`, from the level's area × area bonuses).
+- **Pıtır's wing feathers:** use the new `WeaponLevelStats.sideShots` and deal 80 % damage.
+
+**Mırnav's range is short on purpose.** He must fly up to the swarm, while Pengu and Pıtır work from below. This
+fits the leak rule (`threat.md` §3.5).
+
+## 4. Gun mods: permanent tracks per gun (hero-guns.md §4)
+
+Owner decision on 2026-09-25: *"her silahın kendine özgü geliştirmesi olsun"* ("every gun should have its own
+development").
+
+**How it works.**
+- Every hero gun has three permanent tracks of its own (`Meta/GunMods.cs`, pure).
+- They are bought at the top of the Weapons screen, under KAHRAMAN SİLAHLARI (HERO GUNS), for every unlocked
+  pilot.
+- Each track goes up to Lv5 at 250·1.6^L gold (250, 400, 640, 1 020, 1 640). That is about 3 950 per track and
+  about 11 850 per gun.
+- Each mod level adds 0.01 to the power coefficient.
+- An evolution keeps its base gun's mods (`GunModState`).
+
+| Gun | Track 1 | Track 2 | Track 3 |
+|---|---|---|---|
+| Tüy Blaster | Ek Akış (Extra Lane): +1 lane at Lv3 and Lv5 | Hızlı Kanat (Quick Wings): fire rate +4 %/lv | Keskin Tüy (Sharp Feather): damage +5 %/lv |
+| Civciv Topu | Büyük Patlama (Big Blast): blast +10 %/lv | Ek Top (Extra Ball): +1 ball at Lv3 and Lv5 | Ağır Top (Heavy Ball): damage +5 %/lv |
+| Kıvılcım | Uzun Zincir (Long Chain): +1 jump at Lv2 and Lv4 | Geniş Menzil (Wide Range): range +8 %/lv | Şok (Shock): stun +15 %/lv |
+| Buz Işını | Kalın Işın (Thick Beam): width +8 %/lv | Derin Donma (Deep Freeze): freeze +12 %/lv | Keskin Soğuk (Biting Cold): damage +5 %/lv |
+| Balon / Yıldız / Yün (until round 3) | +1 count at Lv3 and Lv5 | fire rate +4 %/lv | damage +5 %/lv |
+
+**Application.** `WeaponBehaviour.Update` applies the mods to the level stats before build-card bonuses:
+- damage × (1 + d)
+- cooldown ÷ (1 + r)
+- area × (1 + a)
+- lifetime × (1 + t)
+- count + c
+- pierce + p
+
 ## 8. Acceptance
 
 - Starting a run as any hero gives an ANA SİLAH card track for that hero's own gun, and visible bullets from the
   ship.
 - The hero's signature weapon is in the second slot.
+- `GunModsTests` pass: costs, three tracks per hero gun, whole-level steps, clamping.
+- As Mırnav, arcs jump between enemies with no bullets. As Pengu, a beam holds and enemies freeze (QA plays a
+  Pengu trial).
+- The Weapons screen lists KAHRAMAN SİLAHLARI (HERO GUNS) with three buyable tracks per owned pilot's gun.

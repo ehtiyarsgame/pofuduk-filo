@@ -360,6 +360,16 @@ namespace PofudukFilo.Core
             return null;
         }
 
+        /// <summary>The main gun a pilot flies with: its own, or the starter Tüy Blaster (hero-guns.md).</summary>
+        public WeaponDefinition MainGunOf(CharacterDefinition c) => c != null && c.mainGun != null ? c.mainGun : _mainGun;
+
+        private IEnumerable<WeaponDefinition> HeroMainGuns()
+        {
+            if (_mainGun != null) yield return _mainGun;
+            foreach (CharacterDefinition c in characters)
+                if (c != null && c.mainGun != null) yield return c.mainGun;
+        }
+
         private PassiveDefinition FindPassive(string id)
         {
             foreach (PassiveDefinition p in labPassives)
@@ -433,6 +443,7 @@ namespace PofudukFilo.Core
 
             CurrentCharacter = ResolveCharacter();
             WeaponMastery.Configure(labWeapons, Meta.GetMastery);
+            GunModState.Configure(HeroMainGuns(), Meta.GetGunMod);
             Forge.Configure(Meta.GetForgeLevel(ForgeTrack.Power), Meta.GetForgeLevel(ForgeTrack.Speed));
             if (CurrentCharacter != null)
             {

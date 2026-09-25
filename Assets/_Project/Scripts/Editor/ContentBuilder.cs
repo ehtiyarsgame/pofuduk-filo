@@ -300,24 +300,24 @@ namespace PofudukFilo.EditorTools
 
         private static readonly System.Collections.Generic.Dictionary<string, string> Descriptions = new()
         {
-            ["feather_blaster"] = "Önüne düz tüy mermileri atar. Güvenilir ana silahın.",
+            ["feather_blaster"] = "Pıtır'ın ana silahı: düz tüy akışı; her seviyede yeni bir akış ve kanat tüyleri.",
             ["egg_mortar"] = "Düşman kalabalığına patlayan yumurtalar fırlatır.",
             ["star_boomerang"] = "Gidip geri dönen yıldız; iki yönde de vurur.",
             ["bubble_orbit"] = "Geminin etrafında dönen balonlar yakındaki düşmanları ezer.",
             ["spark_cat"] = "Düşmandan düşmana seken zincir şimşek atar.",
             ["fish_missile"] = "Kendi hedefini bulan balık füzeleri; hiç ıskalamaz.",
             // Hero main guns (hero-guns.md)
-            ["chick_cannon"] = "Cıvık'ın ana silahı: ağır, patlayan civciv topları.",
-            ["spark_pistol"] = "Mırnav'ın ana silahı: çok hızlı kıvılcım yağmuru.",
+            ["chick_cannon"] = "Cıvık'ın ana silahı: ağır, patlayan civciv topları; patlama her seviyede büyür.",
+            ["spark_pistol"] = "Mırnav'ın ana silahı: mermi yok; en yakın düşmana anında elektrik çarpar ve zincirle zıplar. Kısa menzil.",
             ["bubble_rifle"] = "Balonbaş'ın ana silahı: düşmanları delen balon mermiler.",
             ["star_bow"] = "Yıldızpati'nin ana silahı: geniş yıldız yelpazesi.",
-            ["ice_gun"] = "Pengu'nun ana silahı: hızlı, delici buz sarkıtları.",
+            ["ice_gun"] = "Pengu'nun ana silahı: kesintisiz buz ışını; yavaşlatır, uzun tutunca dondurur.",
             ["yarn_launcher"] = "Kuzu'nun ana silahı: iri, ağır yün yumakları.",
             ["mega_chick_cannon"] = "EVRİM: Dev civciv topları; her 4. atış 3 kat.",
-            ["thunder_pistol"] = "EVRİM: Kıvılcım fırtınası; mermiler 2 düşman deler.",
+            ["thunder_pistol"] = "EVRİM: Yıldırım; 8 düşmana zincirlenir ve sersemletir.",
             ["bubble_storm"] = "EVRİM: 6 delici balon, geniş yelpaze.",
             ["comet_bow"] = "EVRİM: 8 yıldızlık yelpaze; her 5. atış kuyruklu yıldız.",
-            ["glacier_gun"] = "EVRİM: Buzul yağmuru; 4 düşman deler.",
+            ["glacier_gun"] = "EVRİM: Buzul Işını; 3 ışın, 7 düşman, uzun donma.",
             ["yarn_cyclone"] = "EVRİM: Yün kasırgası; dev yumaklar 2 düşman deler.",
             ["yarn_ball"] = "Ekran kenarlarından seken yün yumağı; değdiği her düşmanı ezer.",
             ["shark_swarm"] = "EVRİM: Dev köpekbalıkları; her vuruşta 2 yavru balık saldırır.",
@@ -384,6 +384,12 @@ namespace PofudukFilo.EditorTools
                 specialEveryN = specialEvery, specialDamageMultiplier = specialMult, upgradeText = text, effects = fx
             };
 
+        private static WeaponLevelStats Wings(WeaponLevelStats s, int sideShots)
+        {
+            s.sideShots = sideShots;
+            return s;
+        }
+
         private const BulletEffect Boom = BulletEffect.Explode, Split = BulletEffect.Split,
             Chain = BulletEffect.Chain, Slow = BulletEffect.Slow;
 
@@ -444,13 +450,14 @@ namespace PofudukFilo.EditorTools
                 new[] { L(16f, 0.22f, 7, 50f, 16f, 2, 0, 1.6f, "7 tüy; tüyler bölünür ve patlar; her 4. atış dev tüy", 4, 3f, Split | Boom) });
             var feather = WeaponPrefab<FeatherBlaster>("FeatherBlaster", b => Set(b, "giantBulletTypeIndex", BGiantFeather));
             // Every level adds a new trait (hero-guns.md §3.2), not just more feathers.
+            // Pıtır grows by WIDTH (hero-guns.md §3.3): 1 → 2 → 3 → 4 parallel lanes, then wing feathers.
             StartingWeapon = Weapon("feather_blaster", "Tüy Blaster", Rarity.Common, BFeather, feather, new[]
             {
-                L(12f, 0.25f, 2, 0, 14f, 0, 0, 1.5f, "2 paralel tüy, hızlı atış"),
-                L(12f, 0.24f, 2, 0, 14f, 0, 0, 1.5f, "YENİ: tüyler çarpınca ikiye bölünür", fx: Split),
-                L(12f, 0.24f, 3, 16f, 14f, 0, 0, 1.5f, "3 tüylük yelpaze", fx: Split),
-                L(14f, 0.24f, 3, 16f, 14f, 1, 0, 1.5f, "YENİ: tüyler 1 düşmanı deler", fx: Split),
-                L(15f, 0.24f, 3, 16f, 14f, 1, 0, 1.5f, "YENİ: her 5. atış patlayan dev tüy (3×)", 5, 3f, Split)
+                L(18f, 0.25f, 1, 0, 14f, 0, 0, 1.5f, "Tek hat, hızlı tüy akışı"),
+                L(14f, 0.24f, 2, 0, 14f, 0, 0, 1.5f, "YENİ: 2. tüy akışı"),
+                L(13f, 0.24f, 3, 0, 14f, 0, 0, 1.5f, "YENİ: 3. akış; tüyler çarpınca ikiye bölünür", fx: Split),
+                Wings(L(13f, 0.23f, 3, 0, 14f, 0, 0, 1.5f, "YENİ: 2 kanat tüyü çaprazlara uçar", fx: Split), 2),
+                Wings(L(14f, 0.22f, 4, 0, 15f, 1, 0, 1.5f, "YENİ: 4. akış, tüyler 1 düşman deler; her 5. atış dev tüy", 5, 3f, Split), 2)
             }, crystal, prismDef);
 
             // 2) Egg Mortar → Supernova Omelette
@@ -586,13 +593,16 @@ namespace PofudukFilo.EditorTools
         /// </summary>
         private void BuildHeroGuns(PassiveDefinition key)
         {
-            void Gun(string id, string name, int bullet, WeaponLevelStats[] levels, string evoId, string evoName, WeaponLevelStats evo)
+            WeaponBehaviour Blaster(string n) => WeaponPrefab<FeatherBlaster>(n, b => Set(b, "giantBulletTypeIndex", -1));
+            void Gun(string id, string name, int bullet, WeaponLevelStats[] levels, string evoId, string evoName, WeaponLevelStats evo,
+                System.Func<string, WeaponBehaviour> prefabOf = null)
             {
-                var evoPrefab = WeaponPrefab<FeatherBlaster>(evoId, b => Set(b, "giantBulletTypeIndex", -1));
+                prefabOf ??= Blaster;
+                var evoPrefab = prefabOf(evoId);
                 WeaponDefinition evoDef = Weapon(evoId, evoName, Rarity.Legendary, bullet, evoPrefab, new[] { evo });
                 evoDef.heroOnly = true;
                 EditorUtility.SetDirty(evoDef);
-                var prefab = WeaponPrefab<FeatherBlaster>(id, b => Set(b, "giantBulletTypeIndex", -1));
+                var prefab = prefabOf(id);
                 WeaponDefinition def = Weapon(id, name, Rarity.Common, bullet, prefab, levels, key, evoDef);
                 def.heroOnly = true;
                 EditorUtility.SetDirty(def);
@@ -600,23 +610,27 @@ namespace PofudukFilo.EditorTools
             }
 
             // Each level unlocks a new trait (explode / split / chain / slow) so every gun grows differently.
+            // Cıvık grows by AREA (hero-guns.md §3.3): the blast (level area × Büyük Patlama mod) swells every level.
             Gun("chick_cannon", "Civciv Topu", BChick, new[]
             {
                 L(26f, 0.30f, 1, 0, 11f, 0, 0, 1.8f, "Ağır civciv topu"),
-                L(26f, 0.30f, 1, 0, 11f, 0, 0, 1.8f, "YENİ: toplar çarpınca patlar", fx: Boom),
-                L(26f, 0.28f, 2, 0, 11f, 0, 0, 1.8f, "2 patlayan top", fx: Boom),
-                L(28f, 0.28f, 2, 0, 11f, 0, 0, 1.8f, "YENİ: patlamadan 2 yavru civciv fırlar", fx: Boom | Split),
-                L(30f, 0.26f, 3, 20f, 11f, 0, 0, 1.8f, "3 top; her 4. atış 3 kat", 4, 3f, Boom | Split)
-            }, "mega_chick_cannon", "Dev Civciv Topu", L(40f, 0.24f, 4, 24f, 12f, 1, 0, 1.8f, "4 dev top: patlar, yavrular, deler", 4, 3f, Boom | Split));
+                L(26f, 0.30f, 1, 0, 11f, 0, 1.0f, 1.8f, "YENİ: toplar çarpınca patlar", fx: Boom),
+                L(26f, 0.28f, 2, 0, 11f, 0, 1.15f, 1.8f, "2 patlayan top, patlama büyür", fx: Boom),
+                L(28f, 0.28f, 2, 0, 11f, 0, 1.3f, 1.8f, "YENİ: patlamadan 2 yavru civciv fırlar", fx: Boom | Split),
+                L(30f, 0.26f, 3, 20f, 11f, 0, 1.45f, 1.8f, "3 top, dev patlama; her 4. atış 3 kat", 4, 3f, Boom | Split)
+            }, "mega_chick_cannon", "Dev Civciv Topu", L(40f, 0.24f, 4, 24f, 12f, 1, 1.9f, 1.8f, "4 dev top: kocaman patlar, yavrular, deler", 4, 3f, Boom | Split));
 
-            Gun("spark_pistol", "Kıvılcım Tabancası", BSpark, new[]
+            // Mırnav grows by CHAIN (hero-guns.md §3.3): no bullets — an instant arc from the ship that jumps on.
+            // count = jumps, area = range from the ship, life = stun seconds.
+            WeaponBehaviour Arc(string n) => WeaponPrefab<ChainArcGun>(n, null);
+            Gun("spark_pistol", "Kıvılcım", BSpark, new[]
             {
-                L(8f, 0.13f, 1, 0, 18f, 0, 0, 1.2f, "Çok hızlı kıvılcım"),
-                L(8f, 0.13f, 1, 0, 18f, 0, 0, 1.2f, "YENİ: kıvılcım yandaki düşmana sıçrar", fx: Chain),
-                L(8f, 0.12f, 2, 0, 18f, 0, 0, 1.2f, "2 kıvılcım", fx: Chain),
-                L(9f, 0.12f, 2, 0, 18f, 0, 0, 1.2f, "YENİ: elektrik çarpan düşman yavaşlar", fx: Chain | Slow),
-                L(10f, 0.11f, 3, 12f, 19f, 1, 0, 1.2f, "YENİ: kıvılcımlar 1 düşmanı deler", fx: Chain | Slow)
-            }, "thunder_pistol", "Yıldırım Tabancası", L(12f, 0.10f, 4, 16f, 20f, 2, 0, 1.2f, "Kıvılcım fırtınası: sıçrar, yavaşlatır, 2 deler", fx: Chain | Slow));
+                L(16f, 0.34f, 1, 0, 0, 0, 4.5f, 0f, "Anında elektrik: en yakın düşmana çarpar, 1 kez zıplar"),
+                L(16f, 0.32f, 2, 0, 0, 0, 4.8f, 0f, "YENİ: zincir 3 düşmana ulaşır"),
+                L(17f, 0.30f, 2, 0, 0, 0, 5.0f, 0.4f, "YENİ: çarpılan düşman 0.4 sn sersemler"),
+                L(18f, 0.30f, 3, 0, 0, 0, 5.3f, 0.5f, "YENİ: 4 düşmana zincir; çarpılan yavaşlar", fx: Slow),
+                L(20f, 0.28f, 4, 0, 0, 0, 5.6f, 0.6f, "5 düşmana zincir, 0.6 sn sersemletme", fx: Slow)
+            }, "thunder_pistol", "Yıldırım", L(22f, 0.24f, 7, 0, 0, 0, 6.5f, 0.8f, "Yıldırım: 8 düşmana zincir, 0.8 sn sersemletme", fx: Slow), Arc);
 
             Gun("bubble_rifle", "Balon Tüfeği", BMeteor, new[]
             {
@@ -636,14 +650,17 @@ namespace PofudukFilo.EditorTools
                 L(13f, 0.22f, 5, 40f, 15f, 0, 0, 1.4f, "5 yıldız; her 5. atış 3 kat", 5, 3f, Chain | Split)
             }, "comet_bow", "Kuyruklu Yıldız Yayı", L(15f, 0.2f, 7, 52f, 16f, 1, 0, 1.4f, "7 yıldız: sıçrar, bölünür, deler", 5, 3f, Chain | Split));
 
-            Gun("ice_gun", "Buz Tabancası", BIce, new[]
+            // Pengu grows by CONTROL (hero-guns.md §3.3): a continuous beam — wider, longer freezes, then split in two.
+            // count = beams, area = half-width, pierce = extra enemies per beam, life = freeze seconds, cd = damage tick.
+            WeaponBehaviour Beam(string n) => WeaponPrefab<IceBeamGun>(n, null);
+            Gun("ice_gun", "Buz Işını", BIce, new[]
             {
-                L(14f, 0.24f, 2, 0, 17f, 1, 0, 1.3f, "2 delici buz sarkıtı"),
-                L(14f, 0.24f, 2, 0, 17f, 1, 0, 1.3f, "YENİ: buz dondurur, düşman yavaşlar", fx: Slow),
-                L(14f, 0.22f, 3, 0, 17f, 2, 0, 1.3f, "3 sarkıt, 2 düşman deler", fx: Slow),
-                L(15f, 0.22f, 3, 10f, 18f, 2, 0, 1.3f, "YENİ: buz çarpınca parçalara ayrılır", fx: Slow | Split),
-                L(17f, 0.20f, 4, 14f, 18f, 3, 0, 1.3f, "4 sarkıt, 3 düşman deler", fx: Slow | Split)
-            }, "glacier_gun", "Buzul Topu", L(19f, 0.18f, 5, 18f, 19f, 4, 0, 1.3f, "Buzul yağmuru: dondurur, parçalanır, 4 deler", fx: Slow | Split));
+                L(7f, 0.12f, 1, 0, 0, 1, 0.22f, 0f, "Buz ışını: ilk 2 düşmanı yakar ve yavaşlatır"),
+                L(7f, 0.12f, 1, 0, 0, 2, 0.26f, 0.8f, "YENİ: ışında 1.2 sn kalan düşman donar"),
+                L(8f, 0.11f, 1, 0, 0, 3, 0.3f, 0.9f, "Işın kalınlaşır, 4 düşmana ulaşır"),
+                L(8f, 0.11f, 2, 0, 0, 3, 0.3f, 1.0f, "YENİ: ışın ikiye ayrılır"),
+                L(9f, 0.10f, 2, 0, 0, 4, 0.34f, 1.2f, "Kalın çift ışın: 5 düşman, 1.2 sn donma")
+            }, "glacier_gun", "Buzul Işını", L(11f, 0.09f, 3, 0, 0, 6, 0.4f, 1.5f, "Buzul: 3 ışın, 7 düşman, 1.5 sn donma"), Beam);
 
             Gun("yarn_launcher", "Yün Atar", BYarn, new[]
             {

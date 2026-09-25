@@ -12,6 +12,11 @@ namespace PofudukFilo.Weapons
         [SerializeField] private float laneSpacing = 0.25f;
         [SerializeField] private int giantBulletTypeIndex = -1;
         [SerializeField] private Vector2 muzzleOffset = new(0f, 0.5f);
+        [Tooltip("Angle of the first pair of wing feathers from straight up (sideShots).")]
+        [SerializeField] private float sideShotAngle = 22f;
+
+        /// <summary>Explosion radius of Explode shots: the level's area × area bonuses; 0 = the default radius.</summary>
+        private float ExplodeRadiusOf(in WeaponLevelStats s) => s.area > 0f ? AreaOf(s) : 0f;
 
         protected override void Fire(in WeaponLevelStats s)
         {
@@ -46,7 +51,18 @@ namespace PofudukFilo.Weapons
                 }
 
                 bullets.SpawnPlayerBullet(typeIndex, position, direction * speed,
-                    RollDamage(s.damage * damageScale), s.pierce, lifetime, s.effects);
+                    RollDamage(s.damage * damageScale), s.pierce, lifetime, s.effects, ExplodeRadiusOf(s));
+            }
+
+            // Wing feathers (hero-guns.md §3.3): pairs fanning out from the outer lanes.
+            float edge = fan ? 0f : 0.5f * laneSpacing * (count - 1);
+            for (int k = 0; k < s.sideShots; k++)
+            {
+                int side = k % 2 == 0 ? -1 : 1;
+                float angle = (90f + side * (sideShotAngle + 10f * (k / 2))) * Mathf.Deg2Rad;
+                var dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                bullets.SpawnPlayerBullet(typeIndex, origin + new Vector2(side * edge, 0f), dir * speed,
+                    RollDamage(s.damage * damageScale * 0.8f), s.pierce, lifetime, s.effects, ExplodeRadiusOf(s));
             }
         }
     }
