@@ -88,7 +88,7 @@ namespace PofudukFilo.Core
         [SerializeField] private float reviveShockwaveDamage = 60f;
         [SerializeField] private int victoryStardustBase = 3;
         [SerializeField, Range(0f, 1f)] private float victoryGoldBonusFraction = 0.4f;
-        [SerializeField] private float endlessGoldMultiplier = 1.5f;
+        [SerializeField] private float endlessGoldMultiplier = 1.25f; // economy.md §5 (was 1.5)
 
         public event Action<GameState> StateChanged;
         /// <summary>The cards on offer; rerolls and banishes left.</summary>

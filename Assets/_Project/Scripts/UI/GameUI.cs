@@ -565,7 +565,7 @@ namespace PofudukFilo.UI
             // Back to the menu to look around (pilots, missions, gift) — device feedback 2026-09-25.
             Button home = _ui.Button(screen.transform, "Ana Menü", Palette.Outline, () => AfterRunAd(run.EnterMenu), 48);
             UIFactory.Place(home, 0.52f, 0.12f, 0.92f, 0.19f);
-            _endlessButton = _ui.Button(screen.transform, "Sonsuz Mod'a Devam (+%50 altın)", Palette.Honey, run.ContinueEndless, 46);
+            _endlessButton = _ui.Button(screen.transform, "Sonsuz Mod'a Devam (+%25 altın)", Palette.Honey, run.ContinueEndless, 46);
             UIFactory.Place(_endlessButton, 0.12f, 0.345f, 0.88f, 0.395f);
             BuildAdPlacements(screen.transform);
         }

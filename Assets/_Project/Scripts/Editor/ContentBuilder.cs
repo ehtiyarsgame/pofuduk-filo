@@ -1042,16 +1042,17 @@ namespace PofudukFilo.EditorTools
                 Workshop.Add(SaveAsset(u, "Data/Workshop", id));
             }
 
-            U("health", "Can", StatType.MaxHp, 0.08f, 10, 80, 1.32f);
-            U("damage", "Hasar", StatType.Damage, 0.05f, 10, 100, 1.35f);
-            U("fire_rate", "Atış Hızı", StatType.CooldownReduction, 0.03f, 10, 120, 1.36f);
-            U("gold", "Altın Kazancı", StatType.GoldGain, 0.10f, 10, 80, 1.35f); // replaced Mıknatıs (2026-09-25)
-            U("armor", "Zırh", StatType.Armor, 1f, 5, 150, 1.40f);
-            U("luck", "Şans", StatType.Luck, 0.05f, 5, 200, 1.40f);
-            U("experience", "Tecrübe", StatType.Experience, 0.04f, 5, 250, 1.45f);
-            U("reroll", "Yeniden Çek", StatType.Rerolls, 1f, 3, 300, 1.8f);
-            U("banish", "Yasakla", StatType.Banishes, 1f, 3, 400, 1.8f);
-            U("revive", "Diriliş", StatType.Revives, 1f, 2, 1500, 3.0f);
+            // economy.md §5 (2026-09-25): effects halved, costs about doubled — one run buys one or two small steps.
+            U("health", "Can", StatType.MaxHp, 0.04f, 10, 180, 1.35f);
+            U("damage", "Hasar", StatType.Damage, 0.02f, 10, 220, 1.38f);
+            U("fire_rate", "Atış Hızı", StatType.CooldownReduction, 0.015f, 10, 260, 1.38f);
+            U("gold", "Altın Kazancı", StatType.GoldGain, 0.05f, 10, 200, 1.38f); // replaced Mıknatıs (2026-09-25)
+            U("armor", "Zırh", StatType.Armor, 1f, 5, 400, 1.5f);
+            U("luck", "Şans", StatType.Luck, 0.03f, 5, 400, 1.45f);
+            U("experience", "Tecrübe", StatType.Experience, 0.03f, 5, 500, 1.5f);
+            U("reroll", "Yeniden Çek", StatType.Rerolls, 1f, 3, 600, 1.8f);
+            U("banish", "Yasakla", StatType.Banishes, 1f, 3, 800, 1.8f);
+            U("revive", "Diriliş", StatType.Revives, 1f, 2, 3000, 3.0f);
         }
     }
 }

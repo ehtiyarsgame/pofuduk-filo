@@ -54,19 +54,19 @@ namespace PofudukFilo.Tests
         [Test]
         public void test_mastery_cost_grows_and_rounds()
         {
-            Assert.That(Formulas.MasteryCost(0), Is.EqualTo(150));
-            Assert.That(Formulas.MasteryCost(1), Is.EqualTo(230));
+            Assert.That(Formulas.MasteryCost(0), Is.EqualTo(300));
+            Assert.That(Formulas.MasteryCost(1), Is.EqualTo(480));
             Assert.That(Formulas.MasteryCost(9), Is.GreaterThan(7000));
         }
 
         [Test]
         public void test_pilot_level_cost_and_mastery_multiplier()
         {
-            Assert.That(Formulas.PilotLevelCost(1), Is.EqualTo(300));
-            Assert.That(Formulas.PilotLevelCost(2), Is.EqualTo(480));
+            Assert.That(Formulas.PilotLevelCost(1), Is.EqualTo(600));
+            Assert.That(Formulas.PilotLevelCost(2), Is.EqualTo(960));
             Assert.That(Formulas.MasteryMultiplier(0), Is.EqualTo(1f));
-            Assert.That(Formulas.MasteryMultiplier(10), Is.EqualTo(1.8f).Within(1e-5f));
-            Assert.That(Formulas.MasteryMultiplier(99), Is.EqualTo(1.8f).Within(1e-5f));
+            Assert.That(Formulas.MasteryMultiplier(10), Is.EqualTo(1.4f).Within(1e-5f));
+            Assert.That(Formulas.MasteryMultiplier(99), Is.EqualTo(1.4f).Within(1e-5f));
         }
 
         [Test]
@@ -106,13 +106,13 @@ namespace PofudukFilo.Tests
         [Test]
         public void test_forge_cost_and_multipliers()
         {
-            Assert.That(Formulas.ForgeCost(0), Is.EqualTo(40));
-            Assert.That(Formulas.ForgeCost(1), Is.EqualTo(45));
-            Assert.That(Formulas.ForgeCost(10), Is.EqualTo(150));
+            Assert.That(Formulas.ForgeCost(0), Is.EqualTo(120));
+            Assert.That(Formulas.ForgeCost(1), Is.EqualTo(140));
+            Assert.That(Formulas.ForgeCost(10), Is.EqualTo(530));
             Assert.That(Formulas.ForgeCost(1000), Is.GreaterThan(0));
-            Assert.That(Formulas.ForgePowerMultiplier(20), Is.EqualTo(2f).Within(1e-5f));
-            Assert.That(Formulas.ForgeSpeedMultiplier(40), Is.EqualTo(2f).Within(1e-5f));
-            Assert.That(Formulas.ForgeSpeedMultiplier(99), Is.EqualTo(2f).Within(1e-5f));
+            Assert.That(Formulas.ForgePowerMultiplier(20), Is.EqualTo(1.4f).Within(1e-5f));
+            Assert.That(Formulas.ForgeSpeedMultiplier(40), Is.EqualTo(1.4f).Within(1e-5f));
+            Assert.That(Formulas.ForgeSpeedMultiplier(99), Is.EqualTo(1.4f).Within(1e-5f));
         }
 
         [Test]
@@ -142,7 +142,7 @@ namespace PofudukFilo.Tests
         [Test]
         public void test_gift_gold_tracks_forge_depth_with_a_floor()
         {
-            Assert.That(Formulas.GiftGold(0, 0), Is.EqualTo(100));
+            Assert.That(Formulas.GiftGold(0, 0), Is.EqualTo(120));
             Assert.That(Formulas.GiftGold(10, 10), Is.EqualTo(Formulas.ForgeCost(10)));
             Assert.That(Formulas.GiftGold(30, 10), Is.EqualTo(Formulas.ForgeCost(20)));
         }
@@ -178,7 +178,7 @@ namespace PofudukFilo.Tests
         public void test_power_rating_starts_at_one_and_grows_with_upgrades()
         {
             Assert.That(Formulas.PowerRating(0, 0, 0, 0, 1), Is.EqualTo(1f).Within(1e-5f));
-            Assert.That(Formulas.PowerRating(10, 10, 10, 0, 1), Is.EqualTo(1.9f).Within(1e-4f));
+            Assert.That(Formulas.PowerRating(10, 10, 10, 0, 1), Is.EqualTo(1.4f).Within(1e-4f));
             Assert.That(Formulas.PowerRating(0, 0, 0, 5, 3), Is.EqualTo(1.16f).Within(1e-4f));
         }
 
@@ -186,7 +186,7 @@ namespace PofudukFilo.Tests
         public void test_coin_value_scales_with_power_and_run_time()
         {
             Assert.That(Formulas.CoinValue(5f, 1f, 0f), Is.EqualTo(5f).Within(1e-4f));
-            Assert.That(Formulas.CoinValue(5f, 2f, 5f), Is.EqualTo(14f).Within(1e-4f));
+            Assert.That(Formulas.CoinValue(5f, 2f, 5f), Is.EqualTo(8.4853f).Within(1e-4f));
             Assert.That(Formulas.CoinValue(5f, 0.5f, 0f), Is.EqualTo(5f).Within(1e-4f)); // never below base
         }
     }

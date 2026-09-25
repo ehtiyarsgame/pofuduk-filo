@@ -81,22 +81,22 @@ namespace PofudukFilo.Core
         // ---- Permanent progression (meta-economy.md §3.6)
 
         public const int MaxWeaponMastery = 10;
-        public const float MasteryDamagePerLevel = 0.08f;
+        public const float MasteryDamagePerLevel = 0.04f; // was 0.08 (economy.md §5: "yüzdeler çok yüksek")
         public const int MaxPilotLevel = 10;
         public const float PilotBonusPerLevel = 0.03f;
 
-        /// <summary>Gold to raise a weapon's mastery from <paramref name="level"/> to level+1: 150·1.55^L, rounded to 10.</summary>
+        /// <summary>Gold to raise a weapon's mastery from <paramref name="level"/> to level+1: 300·1.6^L, rounded to 10.</summary>
         public static int MasteryCost(int level)
         {
             if (level < 0 || level >= MaxWeaponMastery) throw new ArgumentOutOfRangeException(nameof(level));
-            return (int)(Math.Round(150 * Math.Pow(1.55, level) / 10.0, MidpointRounding.AwayFromZero) * 10);
+            return (int)(Math.Round(300 * Math.Pow(1.6, level) / 10.0, MidpointRounding.AwayFromZero) * 10);
         }
 
-        /// <summary>Gold to raise a pilot from <paramref name="level"/> (1-based) to level+1: 300·1.6^(L−1), rounded to 10.</summary>
+        /// <summary>Gold to raise a pilot from <paramref name="level"/> (1-based) to level+1: 600·1.6^(L−1), rounded to 10.</summary>
         public static int PilotLevelCost(int level)
         {
             if (level < 1 || level >= MaxPilotLevel) throw new ArgumentOutOfRangeException(nameof(level));
-            return (int)(Math.Round(300 * Math.Pow(1.6, level - 1) / 10.0, MidpointRounding.AwayFromZero) * 10);
+            return (int)(Math.Round(600 * Math.Pow(1.6, level - 1) / 10.0, MidpointRounding.AwayFromZero) * 10);
         }
 
         public static float MasteryMultiplier(int level) => 1f + MasteryDamagePerLevel * Math.Clamp(level, 0, MaxWeaponMastery);
@@ -156,44 +156,48 @@ namespace PofudukFilo.Core
             return Math.Clamp(scale * MathF.Exp(rate * error * dt), 1f, maxScale);
         }
 
-        public const float ForgePowerPerLevel = 0.05f;
-        public const float ForgeSpeedPerLevel = 0.025f;
+        // economy.md §5 (2026-09-25): one run's gold used to buy ×1.8 damage ("ilk oyundan sonra herşeyi baya
+        // geliştirdim… yüzdeler çok yüksek, saçma ve ucuz"). Now a level is a small step and costs three times more.
+        public const float ForgePowerPerLevel = 0.02f;
+        public const float ForgeSpeedPerLevel = 0.01f;
         public const int MaxForgeSpeedLevel = 40;
 
-        /// <summary>Gold for the next Forge level (either track, unlimited): 40·1.14^L, rounded to 5.</summary>
+        /// <summary>Gold for the next Forge level (either track, unlimited): 120·1.16^L, rounded to 5.</summary>
         public static int ForgeCost(int level)
         {
             if (level < 0) throw new ArgumentOutOfRangeException(nameof(level));
-            double raw = 40 * Math.Pow(1.14, Math.Min(level, 150));
+            double raw = 120 * Math.Pow(1.16, Math.Min(level, 150));
             return (int)Math.Min(int.MaxValue / 2, Math.Round(raw / 5.0, MidpointRounding.AwayFromZero) * 5);
         }
 
-        /// <summary>Ateş Gücü: damage × (1 + 0.05·L), no cap.</summary>
+        /// <summary>Ateş Gücü: damage × (1 + 0.02·L), no cap.</summary>
         public static float ForgePowerMultiplier(int level) => 1f + ForgePowerPerLevel * Math.Max(0, level);
 
-        /// <summary>Ateş Hızı: fire rate × (1 + 0.025·L), capped at level 40 (×2) so bullet density stays readable.</summary>
+        /// <summary>Ateş Hızı: fire rate × (1 + 0.01·L), capped at level 40 (×1.4) so bullet density stays readable.</summary>
         public static float ForgeSpeedMultiplier(int level) => 1f + ForgeSpeedPerLevel * Math.Clamp(level, 0, MaxForgeSpeedLevel);
 
         // ---------------------------------------------------------------- Power coefficient & coins (economy.md)
 
         /// <summary>
         /// Güç Katsayısı: how far the player has built up outside the run.
-        /// P = 1 + 0.04·ForgePower + 0.03·ForgeSpeed + 0.02·(workshop levels) + 0.02·(weapon mastery levels)
-        ///       + 0.03·(pilot level − 1). Fresh save = ×1.00; Forge 10/10 + 10 workshop levels ≈ ×1.90.
+        /// P = 1 + 0.02·ForgePower + 0.01·ForgeSpeed + 0.01·(workshop levels) + 0.02·(weapon mastery levels)
+        ///       + 0.03·(pilot level − 1), tracking what the levels really add. Fresh save = ×1.00; Forge 10/10 + 10
+        ///       workshop levels = ×1.40.
         /// </summary>
         public static float PowerRating(int forgePower, int forgeSpeed, int workshopLevels, int masteryLevels, int pilotLevel) =>
-            1f + 0.04f * Math.Max(0, forgePower) + 0.03f * Math.Max(0, forgeSpeed) + 0.02f * Math.Max(0, workshopLevels)
+            1f + 0.02f * Math.Max(0, forgePower) + 0.01f * Math.Max(0, forgeSpeed) + 0.01f * Math.Max(0, workshopLevels)
                + 0.02f * Math.Max(0, masteryLevels) + 0.03f * Math.Max(0, pilotLevel - 1);
 
         /// <summary>Enemy HP multiplier from the player's power: √P (P = 2 → ×1.41), so upgrades always net out stronger.</summary>
         public static float EnemyHpForPower(float powerRating) => (float)Math.Sqrt(Math.Max(1f, powerRating));
 
         /// <summary>
-        /// Coin value = base × P × (1 + 0.08·t), t in run minutes: stronger players earn bigger coins, and staying
-        /// alive longer pays more per coin — "her zaman aynı oranda para ile gelişemezler".
+        /// Coin value = base × √P × (1 + 0.04·t), t in run minutes: stronger players still earn bigger coins, but
+        /// √P (was P) and 0.04 (was 0.08) stop the snowball where every upgrade paid for the next one faster
+        /// (economy.md §5: "para bu kadar kolay kazanılmamalı").
         /// </summary>
         public static float CoinValue(float baseValue, float powerRating, float minutes) =>
-            baseValue * Math.Max(1f, powerRating) * (1f + 0.08f * Math.Max(0f, minutes));
+            baseValue * (float)Math.Sqrt(Math.Max(1f, powerRating)) * (1f + 0.04f * Math.Max(0f, minutes));
 
         // ---------------------------------------------------------------- Rewarded ads (ad-rewards.md)
 

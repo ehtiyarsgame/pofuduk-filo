@@ -52,6 +52,39 @@ Enemy HP now scales with **√P** instead (`Formulas.EnemyHpForPower`):
 - Coins scale with P, so they grow faster than enemy HP.
 - The threat curve in `threat.md` still decides how long a run lasts.
 
+### 3.4 Slower meta (2026-09-25, device feedback)
+
+Device feedback: *"ilk geliştirmelerden sonra 26. seviyeye geldim… para bu kadar kolay kazanılmamalı… oyun dışı
+güncellemelerde yüzdeler çok yüksek, saçma ve ucuz"* ("after the first upgrades I reached level 26… money
+shouldn't come this easily… the out-of-game upgrade percentages are far too high, absurd and cheap").
+
+**What was wrong.** A modelled 4-minute run paid about 785 gold, and an ad-doubled one about 1 570. At
+40·1.14^L that bought about Forge 10/9, which is ×1.84 damage from the Forge alone, with the workshop on top.
+Income also snowballed: coin value = base × **P** × (1 + 0.08t), so every upgrade made the next one arrive
+faster.
+
+**Change.**
+
+| What | Before | After |
+|---|---|---|
+| Forge Power per level | +5 % | +2 % |
+| Forge Speed per level | +2.5 % (cap ×2) | +1 % (cap ×1.4) |
+| Forge cost | 40·1.14^L | 120·1.16^L |
+| Workshop Health / Damage / Fire rate / Gold per level | 8 / 5 / 3 / 10 % | 4 / 2 / 1.5 / 5 % |
+| Workshop base costs | 80–1 500 | 180–3 000 (about ×2) |
+| Luck / Experience per level | 5 / 4 % | 3 / 3 % |
+| Weapon mastery | +8 %/level, 150·1.55^L | +4 %/level, 300·1.6^L |
+| Pilot level cost | 300·1.6^(L−1) | 600·1.6^(L−1) |
+| Coin value | base × P × (1 + 0.08t) | base × **√P** × (1 + 0.04t) |
+| Endless gold multiplier | ×1.5 | ×1.25 |
+| P coefficients (Forge P / Forge S / workshop) | 0.04 / 0.03 / 0.02 | 0.02 / 0.01 / 0.01, to track what the levels really add |
+
+**Target.**
+- A 4-minute first run pays about 480 gold, or about 970 with the double-gold ad.
+- That buys about Forge 3/2: +8 % damage, not +84 %.
+- The next run should reach a few tens of seconds further, not minutes.
+- Existing saves keep their levels. Each level is simply worth less now.
+
 ## 4. Formulas
 
 - `PowerRating = 1 + 0.04·ForgePower + 0.03·ForgeSpeed + 0.02·ΣWorkshop + 0.02·ΣMastery + 0.03·(PilotLevel − 1)`.

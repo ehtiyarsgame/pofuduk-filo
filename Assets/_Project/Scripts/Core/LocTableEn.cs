@@ -92,7 +92,7 @@ namespace PofudukFilo.Core
             ["Tekrar Oyna"] = "Play Again",
             ["Geliştir"] = "Upgrade",
             ["Geliştir  !"] = "Upgrade  !",
-            ["Sonsuz Mod'a Devam (+%50 altın)"] = "Continue in Endless (+50% gold)",
+            ["Sonsuz Mod'a Devam (+%25 altın)"] = "Continue in Endless (+25% gold)",
             ["Sonsuz Mod bitti!"] = "Endless run over!",
             ["Zafer!"] = "Victory!",
             ["Az kaldı!"] = "So close!",
