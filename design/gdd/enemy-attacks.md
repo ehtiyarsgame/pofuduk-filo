@@ -22,7 +22,7 @@ the donut, so a laser is coming. That marshmallow ring has a gap, go through it.
 | Enemy | Shot (sprite) | Pattern | Tell | Counter |
 |---|---|---|---|---|
 | Civciv (Chick) | yellow egg `b_egg` | 1 shot straight down, not aimed, slow (2.4) | — | sidestep |
-| Şeker Arı (Candy Bee) | orange stinger `b_stinger`, faces its flight | 1 aimed shot, very fast (7.5) | glows for 0.5 s | move when it glows |
+| Şeker Arı (Candy Bee) | orange stinger `b_stinger`, faces its flight | 1 aimed shot, fast (6.5), 6 damage | glows for 0.6 s | move when it glows |
 | Kurabiye Robot (Cookie Robot) | cookie crumb `b_crumb` | 3-round aimed burst, 0.14 s apart | glows for 0.35 s | move after the burst |
 | Sakız Balonu (Gum Balloon) | gum drop `b_gum` | never shoots; **pops into a ring of 8 when killed** | — | don't pop it next to you |
 | Jöle Ayı (Jelly Bear) | jelly blob `b_jelly` | 1 slow aimed blob that **splits into 3** (±35°) after 1.1 s | the blob itself | get clear before it splits |

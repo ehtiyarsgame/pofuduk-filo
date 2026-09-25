@@ -959,10 +959,10 @@ namespace PofudukFilo.EditorTools
             EnemyPrefab<Enemy>("CandyBee", "candy_bee", 0.8f, e =>
             {
                 // Fast and swervy: glows, then one very fast stinger at the ship — move when it glows.
-                Stats(e, 6, 0.34f, 1, 1, 2.4f, 7f, 1, 0, 7.5f, 8, true, BStinger);
+                Stats(e, 6, 0.34f, 1, 1, 2.4f, 7f, 1, 0, 6.5f, 6, true, BStinger);
                 Set(e, "swayAmplitude", 1.8f);
                 Set(e, "swayFrequency", 2.6f);
-                Set(e, "shotTelegraphSeconds", 0.5f);
+                Set(e, "shotTelegraphSeconds", 0.6f);
             });
             EnemyPrefab<Enemy>("DonutUfo", "donut_ufo", 1.15f, e =>
             {
@@ -1101,8 +1101,9 @@ namespace PofudukFilo.EditorTools
 
             return new[]
             {
-                new RunPhase { label = $"{chapterName} — Dalga 1", startMinute = 0f,
-                    swarm = new[] { S("Chick", 1, 10), S("CandyBee", 1.5f, 5), S("GumBalloon", 4, 2) },
+                // Opening minute: fewer bees and a lighter budget (QA runs 67/68 died at 28 s and 52 s with the horde).
+                new RunPhase { label = $"{chapterName} — Dalga 1", startMinute = 0f, budgetScale = 0.8f,
+                    swarm = new[] { S("Chick", 1, 10), S("CandyBee", 1.5f, 3), S("GumBalloon", 4, 2) },
                     formations = early, formationInterval = 20f },
                 new RunPhase { label = "Dalga 2", startMinute = 1.2f,
                     swarm = new[] { S("Chick", 1, 8), S("CandyBee", 1.5f, 4), S("CookieRobot", 3, 4), S("DonutUfo", 4, 3), S("JellyBear", 5, 2) },
