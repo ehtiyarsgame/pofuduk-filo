@@ -111,5 +111,57 @@ namespace PofudukFilo.EditorTools
             p.Star(206, 222, 18, 7, Color.white, 4);
             return p;
         }
+
+        // ---------------------------------------------------------------- Enemies added 2026-09-25 ("tek düşman tipi var")
+
+        /// <summary>Donut UFO: a frosted donut saucer with a glass dome and a grumpy pilot face.</summary>
+        public static Painter DonutUfo()
+        {
+            var p = new Painter(256, 256);
+            p.Glow(128, 150, 70, WithAlpha(Sky, 0.35f));
+            p.Volume((x, y) => Painter.EllipseSdf(x, y, 128, 150, 54, 50), 128, 150, 54, 50, WithAlpha(Hex(0xBFE8FF), 0.9f), 6f, shadow: false, gloss: 0.9f);
+            p.Face(128, 156, 46, determined: true, iris: Hex(0x3C6FD8));
+            p.Volume((x, y) => Painter.EllipseSdf(x, y, 128, 96, 118, 44), 128, 96, 118, 44, Hex(0xE7B07A), 7f, shadow: false);
+            p.Fill((x, y) => Mathf.Max(Painter.EllipseSdf(x, y, 128, 104, 108, 30), -(y - 96f)), Hex(0xFF8FC2), 2f); // frosting
+            var rng = new System.Random(3);
+            Color[] sprinkles = { Sky, Honey, Mint, Color.white };
+            for (int i = 0; i < 14; i++)
+            {
+                float a = (float)rng.NextDouble() * Mathf.PI;
+                float sx = 128 + Mathf.Cos(a) * (40 + (float)rng.NextDouble() * 58), sy = 110 + Mathf.Sin(a) * 18;
+                p.Fill((x, y) => Painter.RotEllipseSdf(x, y, sx, sy, 6, 2.2f, a * 2f), sprinkles[i % 4]);
+            }
+            for (int s = -1; s <= 1; s++) p.Circle(128 + s * 64, 72, 8, Honey); // landing lights
+            return p;
+        }
+
+        /// <summary>Candy Bee: a small striped bee with lollipop wings — fast and swervy.</summary>
+        public static Painter CandyBee()
+        {
+            var p = new Painter(256, 256);
+            for (int s = -1; s <= 1; s += 2)
+                p.Volume((x, y) => Painter.RotEllipseSdf(x, y, 128 + s * 62, 170, 40, 26, s * -0.5f), 128 + s * 62, 170, 40, 26,
+                    WithAlpha(Hex(0xDDF4FF), 0.85f), 5f, shadow: false, gloss: 0.8f);
+            p.Blob(128, 118, 76, Honey);
+            p.Fill((x, y) => Mathf.Max(Painter.CircleSdf(x, y, 128, 118, 76), Mathf.Abs(Mathf.Repeat(y - 70f, 38f) - 19f) - 7f), Hex(0x5B3C99), 1.5f);
+            p.Face(128, 126, 70, determined: true, iris: Hex(0xD9481E));
+            p.Triangle(new Vector2(118, 46), new Vector2(138, 46), new Vector2(128, 18), Painter.Outline, 3f); // stinger
+            for (int s = -1; s <= 1; s += 2)
+            {
+                p.RoundedRect(128 + s * 26 - 3, 186, 128 + s * 26 + 3, 222, 3, Painter.Outline);
+                p.Circle(128 + s * 26, 226, 10, HotPink);
+            }
+            return p;
+        }
+
+        /// <summary>Marshmallow: a big squishy toasted marshmallow — slow, tanky, sprays rings.</summary>
+        public static Painter Marshmallow()
+        {
+            var p = new Painter(256, 256);
+            p.Volume((x, y) => Painter.RoundRectSdf(x, y, 34, 34, 222, 214, 70), 128, 124, 94, 90, Hex(0xFFF3F7), 7f, shadow: false);
+            p.Fill((x, y) => Mathf.Max(Painter.RoundRectSdf(x, y, 34, 34, 222, 214, 70), 190f - y), WithAlpha(Hex(0xE8A26A), 0.8f), 10f); // toasted top
+            p.Face(128, 116, 90, determined: true, iris: Hex(0xB0306A));
+            return p;
+        }
     }
 }

@@ -75,6 +75,9 @@ namespace PofudukFilo.EditorTools
             Add("cookie_mech", ArtRecipes.CookieRobot(true), 256);
             Add("ice_cream", ArtRecipes.IceCreamTower(), 256);
             Add("gum_balloon", ArtRecipes.GumBalloon(), 256);
+            Add("donut_ufo", ArtRecipes.DonutUfo(), 256);
+            Add("candy_bee", ArtRecipes.CandyBee(), 256);
+            Add("marshmallow", ArtRecipes.Marshmallow(), 256);
             Add("queen_hen", ArtRecipes.QueenHen(), 256);
             Add("cat", ArtRecipes.Cat(), 128);
             Add("pilot_chick", ArtRecipes.ChickPilot(), 256);
@@ -508,14 +511,13 @@ namespace PofudukFilo.EditorTools
         {
             var costs = new Dictionary<string, int>
             {
-                ["star_boomerang"] = 400, ["bubble_orbit"] = 700, ["fish_missile"] = 1200, ["yarn_ball"] = 1600,
+                ["star_boomerang"] = 1200, ["bubble_orbit"] = 2000, ["fish_missile"] = 3500, ["yarn_ball"] = 5000,
                 ["moon_dust"] = 300, ["stretchy_gum"] = 300, ["lucky_clover"] = 500,
                 ["double_barrel"] = 900, ["glass_cannon"] = 600, ["last_stand"] = 450
             };
-            var ads = new Dictionary<string, int>
-            {
-                ["star_boomerang"] = 2, ["bubble_orbit"] = 3, ["fish_missile"] = 3, ["yarn_ball"] = 4
-            };
+            // Pilots and weapons are bought, never unlocked by ads (device feedback 2026-09-25: "karakter açmak
+            // 3-5 video ile olmaz"). Ads pay gold and Stardust instead (ad-rewards.md §3.3).
+            var ads = new Dictionary<string, int>();
             foreach (WeaponDefinition w in BaseWeapons)
             {
                 w.labCost = costs.TryGetValue(w.id, out int c) ? c : 0;
@@ -592,17 +594,17 @@ namespace PofudukFilo.EditorTools
 
             C("pitir", "Pıtır", "Tavşan. Her 10 seviyede +1 kart seçeneği.", "bunny", "feather_blaster", 0, 0,
                 CharacterPerk.CardEvery10Levels);
-            C("civik", "Cıvık", "Civciv. Patlamalar %20 büyük, can -%10.", "pilot_chick", "egg_mortar", 600, 5, ads: 2,
+            C("civik", "Cıvık", "Civciv. Patlamalar %20 büyük, can -%10.", "pilot_chick", "egg_mortar", 2500, 10,
                 mods: new[] { new StatModifier(StatType.Area, 0.2f), new StatModifier(StatType.MaxHp, -0.1f) });
-            C("mirnav", "Mırnav", "Kedi. Sersemletme süresi 2 kat.", "pilot_cat", "spark_cat", 1500, 12, ads: 3,
+            C("mirnav", "Mırnav", "Kedi. Sersemletme süresi 2 kat.", "pilot_cat", "spark_cat", 6000, 25,
                 mods: new StatModifier(StatType.StunDuration, 1f));
-            C("balonbas", "Balonbaş", "Hamster. Yuttuğu her mermi 1 can.", "pilot_hamster", "bubble_orbit", 3000, 20, ads: 4,
+            C("balonbas", "Balonbaş", "Hamster. Yuttuğu her mermi 1 can.", "pilot_hamster", "bubble_orbit", 10000, 40,
                 mods: new StatModifier(StatType.AbsorbHeal, 1f));
-            C("yildizpati", "Yıldızpati", "Tilki. Her evrim +%15 hasar.", "pilot_fox", "star_boomerang", 5000, 35, ads: 6,
+            C("yildizpati", "Yıldızpati", "Tilki. Her evrim +%15 hasar.", "pilot_fox", "star_boomerang", 16000, 60,
                 mods: new StatModifier(StatType.EvolutionDamage, 0.15f));
-            C("pengu", "Pengu", "Penguen. Mermiler %25 hızlı, +%5 kritik.", "pilot_penguin", "fish_missile", 4000, 25, ads: 5,
+            C("pengu", "Pengu", "Penguen. Mermiler %25 hızlı, +%5 kritik.", "pilot_penguin", "fish_missile", 13000, 50,
                 mods: new[] { new StatModifier(StatType.ProjectileSpeed, 0.25f), new StatModifier(StatType.CritChance, 0.05f) });
-            C("kuzu", "Kuzu", "Kuzu. Can +%30, alan +%10.", "pilot_lamb", "yarn_ball", 6000, 40, ads: 6,
+            C("kuzu", "Kuzu", "Kuzu. Can +%30, alan +%10.", "pilot_lamb", "yarn_ball", 22000, 80,
                 mods: new[] { new StatModifier(StatType.MaxHp, 0.3f), new StatModifier(StatType.Area, 0.1f) });
             C("gizli", "Gökkuşağı Pıtır", "Gizli. Her koşu rastgele bir pasifle başlar.", "pilot_mystery", "feather_blaster", 0, 0,
                 CharacterPerk.RandomPassive, chapterGate: 2);
@@ -704,7 +706,8 @@ namespace PofudukFilo.EditorTools
         {
             ["chick"] = ArtRecipes.Chick, ["chick_elite"] = ArtRecipes.Honey, ["jelly_bear"] = ArtRecipes.Lilac,
             ["jelly_king"] = ArtRecipes.Lilac, ["cookie_robot"] = ArtRecipes.Cookie, ["cookie_mech"] = ArtRecipes.Cookie,
-            ["ice_cream"] = ArtRecipes.Mint, ["gum_balloon"] = ArtRecipes.Hex(0xFF7AC2), ["queen_hen"] = ArtRecipes.Coral
+            ["ice_cream"] = ArtRecipes.Mint, ["gum_balloon"] = ArtRecipes.Hex(0xFF7AC2), ["queen_hen"] = ArtRecipes.Coral,
+            ["donut_ufo"] = ArtRecipes.Hex(0xFF8FC2), ["candy_bee"] = ArtRecipes.Honey, ["marshmallow"] = ArtRecipes.Hex(0xFFF3F7)
         };
 
         private static void Stats(Enemy e, float hp, float radius, int xp, int gold, float fall, float fire,
@@ -731,6 +734,27 @@ namespace PofudukFilo.EditorTools
             EnemyPrefab<Enemy>("CookieRobot", "cookie_robot", 1f, e => Stats(e, 25, 0.45f, 3, 1, 1f, 3.4f, 1, 0, 4f, 12, true));
             EnemyPrefab<Enemy>("IceCreamTower", "ice_cream", 1.3f, e => Stats(e, 70, 0.6f, 4, 3, 0.6f, 3.5f, 8, 315, 2.4f, 10, false));
             EnemyPrefab<Enemy>("GumBalloon", "gum_balloon", 1f, e => Stats(e, 20, 0.45f, 3, 1, 1.2f, 6f, 6, 300, 2.5f, 10, false));
+            // Added 2026-09-25 (device feedback: "tek düşman tipi var"): each moves and shoots differently.
+            EnemyPrefab<Enemy>("CandyBee", "candy_bee", 0.8f, e =>
+            {
+                // Fast and swervy, one quick aimed shot: hard to track, easy to kill.
+                Stats(e, 8, 0.34f, 1, 1, 2.4f, 4f, 1, 0, 4.2f, 8, true);
+                Set(e, "swayAmplitude", 1.8f);
+                Set(e, "swayFrequency", 2.6f);
+            });
+            EnemyPrefab<Enemy>("DonutUfo", "donut_ufo", 1.15f, e =>
+            {
+                // Slides wide across the screen and drops a 3-shot fan straight down.
+                Stats(e, 30, 0.55f, 3, 2, 0.7f, 3f, 3, 40, 3.2f, 10, false);
+                Set(e, "swayAmplitude", 2.6f);
+                Set(e, "swayFrequency", 0.9f);
+            });
+            EnemyPrefab<Enemy>("Marshmallow", "marshmallow", 1.35f, e =>
+            {
+                // Slow tank: soaks damage and sprays a slow ring you must weave through.
+                Stats(e, 110, 0.65f, 6, 4, 0.45f, 4.5f, 10, 360, 2f, 10, false, BEnemyBig);
+                Set(e, "swayAmplitude", 0.3f);
+            });
             EnemyPrefab<Enemy>("EliteChick", "chick_elite", 1.3f, e =>
             {
                 Stats(e, 180, 0.6f, 25, 5, 0.7f, 1.8f, 3, 25, 3.6f, 12, true);
@@ -831,28 +855,38 @@ namespace PofudukFilo.EditorTools
         private RunPhase[] BuildTimeline(string chapterName)
         {
             SwarmEntry S(string enemy, float cost, float weight) => new() { prefab = Enemies[enemy], threatCost = cost, weight = weight };
-            FormationEntry F(FormationShape shape, int rows, int cols, float weight) =>
-                new() { prefab = Enemies["Chick"], shape = shape, rows = rows, columns = cols, spacing = 0.95f, weight = weight };
+            FormationEntry F(string enemy, FormationShape shape, int rows, int cols, float weight, float spacing = 0.95f) =>
+                new() { prefab = Enemies[enemy], shape = shape, rows = rows, columns = cols, spacing = spacing, weight = weight };
 
-            FormationEntry[] early = { F(FormationShape.Grid, 3, 5, 1) };
-            FormationEntry[] mixed = { F(FormationShape.Grid, 3, 5, 1), F(FormationShape.V, 1, 7, 1), F(FormationShape.Arc, 1, 6, 1) };
+            // Formations are not all chicks any more: bees, robots, donuts and bears arrive in their own shapes.
+            FormationEntry[] early = { F("Chick", FormationShape.Grid, 3, 5, 1), F("CandyBee", FormationShape.V, 1, 7, 1) };
+            FormationEntry[] mixed =
+            {
+                F("Chick", FormationShape.Grid, 3, 5, 1), F("CandyBee", FormationShape.V, 1, 7, 1),
+                F("CookieRobot", FormationShape.Arc, 1, 6, 1, 1.05f), F("DonutUfo", FormationShape.Grid, 1, 3, 0.7f, 1.6f),
+                F("JellyBear", FormationShape.Grid, 2, 3, 0.6f, 1.25f)
+            };
 
             return new[]
             {
-                new RunPhase { label = $"{chapterName} — Dalga 1", startMinute = 0f, swarm = new[] { S("Chick", 1, 10) },
+                new RunPhase { label = $"{chapterName} — Dalga 1", startMinute = 0f,
+                    swarm = new[] { S("Chick", 1, 10), S("CandyBee", 1.5f, 5), S("GumBalloon", 4, 2) },
                     formations = early, formationInterval = 20f },
-                new RunPhase { label = "Dalga 2", startMinute = 1.5f,
-                    swarm = new[] { S("Chick", 1, 10), S("CookieRobot", 3, 4) }, formations = mixed, formationInterval = 18f },
+                new RunPhase { label = "Dalga 2", startMinute = 1.2f,
+                    swarm = new[] { S("Chick", 1, 8), S("CandyBee", 1.5f, 4), S("CookieRobot", 3, 4), S("DonutUfo", 4, 3), S("JellyBear", 5, 2) },
+                    formations = mixed, formationInterval = 18f },
                 new RunPhase { label = "Mini-Boss: Jöle Kral!", kind = PhaseKind.MiniBoss, startMinute = 3f,
                     swarm = new[] { S("Chick", 1, 10) }, budgetScale = 0.3f, formationInterval = 0f, bossPrefab = Enemies["JellyKing"] },
                 new RunPhase { label = "Dalga 3", startMinute = 3.2f,
-                    swarm = new[] { S("Chick", 1, 10), S("CookieRobot", 3, 4), S("JellyBear", 5, 3), S("GumBalloon", 4, 2), S("EliteChick", 25, 0.4f) },
+                    swarm = new[] { S("Chick", 1, 8), S("CandyBee", 1.5f, 4), S("CookieRobot", 3, 4), S("DonutUfo", 4, 3),
+                        S("JellyBear", 5, 3), S("GumBalloon", 4, 2), S("Marshmallow", 8, 1.5f), S("EliteChick", 25, 0.4f) },
                     formations = mixed, formationInterval = 16f },
                 new RunPhase { label = "Mini-Boss: Kurabiye Robot Ana!", kind = PhaseKind.MiniBoss, startMinute = 6f,
                     swarm = new[] { S("Chick", 1, 10) }, budgetScale = 0.3f, formationInterval = 0f, bossPrefab = Enemies["CookieMech"] },
                 new RunPhase { label = "Dalga 5: Kaos", startMinute = 6.2f, budgetScale = 1.2f,
-                    swarm = new[] { S("Chick", 1, 10), S("CookieRobot", 3, 4), S("JellyBear", 5, 3), S("GumBalloon", 4, 2),
-                        S("IceCreamTower", 6, 2), S("EliteChick", 25, 0.6f) },
+                    swarm = new[] { S("Chick", 1, 8), S("CandyBee", 1.5f, 4), S("CookieRobot", 3, 4), S("DonutUfo", 4, 3),
+                        S("JellyBear", 5, 3), S("GumBalloon", 4, 2), S("Marshmallow", 8, 2), S("IceCreamTower", 6, 2),
+                        S("EliteChick", 25, 0.6f) },
                     formations = mixed, formationInterval = 12f },
                 new RunPhase { label = "Final: Kraliçe Tavuk!", kind = PhaseKind.FinalBoss, startMinute = 8f,
                     swarm = new[] { S("Chick", 1, 6) }, budgetScale = 0.2f, formationInterval = 0f, bossPrefab = Enemies["QueenHen"] }

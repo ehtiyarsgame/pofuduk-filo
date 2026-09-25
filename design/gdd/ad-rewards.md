@@ -3,6 +3,12 @@
 > Status: implemented 2026-09-24 · Owner: economy · Related: `meta-economy.md` §3.5 (ad placements),
 > `weapon-system.md` §3.2 (weapons 6–7), `run-resume.md`
 
+> **Revised 2026-09-25 (device feedback):** "karakter açmak 3-5 video ile olmaz… para için sürekli izlesinler"
+> — pilots and weapons are **no longer unlockable with ads** (`adsToUnlock` = 0 everywhere; the progress UI is
+> gone) and their prices went up (pilots 2 500–22 000 gold + 10–80 Stardust, Lab weapons 1 200–5 000). Ads now
+> pay currency: the gift is claimable **10× a day, 5 min apart**, from the menu box and from a "📺 +" button beside
+> every meta screen's wallet. **Dene** (one ad → one trial run) stays. §3.1 below is kept for history only.
+
 ## 1. Overview
 
 Outside the run, the game offers three opt-in rewarded-ad placements:

@@ -10,9 +10,12 @@ namespace PofudukFilo.Meta
     {
         /// <summary>Unlock/trial views per UTC day: a new pilot takes a few days of ads, not one sitting.</summary>
         public const int UnlockViewsPerDay = 8;
-        /// <summary>Daily gifts, spaced out so there is a reason to come back later.</summary>
-        public const int GiftsPerDay = 3;
-        public static readonly TimeSpan GiftCooldown = TimeSpan.FromMinutes(20);
+        /// <summary>
+        /// Ads for gold and Stardust — the main ad placement (device feedback 2026-09-25: "para için sürekli
+        /// izlesinler"): up to 10 a day, 5 minutes apart, so a player can top up between runs.
+        /// </summary>
+        public const int GiftsPerDay = 10;
+        public static readonly TimeSpan GiftCooldown = TimeSpan.FromMinutes(5);
         public const int GiftStardust = 2;
 
         public static long DayOf(long utcTicks) => utcTicks / TimeSpan.TicksPerDay;

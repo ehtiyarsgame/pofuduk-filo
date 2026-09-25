@@ -94,6 +94,10 @@ namespace PofudukFilo.UI
             LogoLine(screen.Root.transform, title, 88, Palette.Hex(0xFFF6C8), Palette.Honey, 0.9f, 0.97f).GetComponent<UIWave>().amplitude = 2f;
             Image walletCap = Capsule(screen.Root.transform, 0.2f, 0.855f, 0.8f, 0.895f);
             screen.Wallet = MakeWallet(walletCap.transform, 0.05f, 0.1f, 0.95f, 0.9f, 40);
+            // "[TV] +" beside the wallet: an ad for gold and Stardust right where the player is short of it.
+            Button more = AdButton(screen.Root.transform, "", "+", Palette.Mint, ClaimGift, 34);
+            UIFactory.Place(more, 0.82f, 0.855f, 0.97f, 0.895f);
+            _walletAdButtons.Add(more);
 
             screen.List = ScrollList(screen.Root.transform, 0.04f, 0.13f, 0.96f, 0.85f);
 
@@ -248,13 +252,8 @@ namespace PofudukFilo.UI
                         if (meta.TryUnlock(captured)) RefreshOpenMetaScreen();
                     }, 36);
                     action.interactable = meta.CanUnlock(c);
-                    if (c.adsToUnlock > 0)
-                    {
-                        // Gold on top, or the same pilot for a few ads below (ad-rewards.md §3.1).
-                        UIFactory.Place(action, 0.66f, 0.54f, 0.98f, 0.94f);
-                        AddPilotAdControls(row.transform, c);
-                        continue;
-                    }
+                    // Try it for one run after an ad (ad-rewards.md §3.2); buying it is gold and Stardust only.
+                    AddTrialButton(row.transform, () => TryPilot(captured));
                 }
                 UIFactory.Place(action, 0.66f, 0.14f, 0.98f, 0.86f);
             }
@@ -289,8 +288,7 @@ namespace PofudukFilo.UI
                 string state = unlocked
                     ? Loc.T($"Ustalık {mastery}/{Formulas.MaxWeaponMastery}: +%{Mathf.RoundToInt(Formulas.MasteryDamagePerLevel * mastery * 100f)} hasar")
                     : Loc.T("Kilitli: açınca oyunda kartı çıkmaya başlar");
-                bool adUnlock = !unlocked && w.adsToUnlock > 0;
-                if (!adUnlock)
+                if (unlocked)
                 {
                     Text stateText = _ui.Label(row.transform, state, 28, unlocked ? Palette.Mint : Palette.Honey, TextAnchor.MiddleLeft);
                     UIFactory.Place(stateText, 0.22f, 0.04f, 0.65f, 0.3f);
@@ -304,12 +302,7 @@ namespace PofudukFilo.UI
                         if (meta.TryUnlock(captured)) RefreshOpenMetaScreen();
                     }, 38);
                     b.interactable = meta.Gold >= w.labCost;
-                    if (adUnlock)
-                    {
-                        UIFactory.Place(b, 0.66f, 0.54f, 0.98f, 0.94f);
-                        AddWeaponAdControls(row.transform, w);
-                        continue;
-                    }
+                    AddTrialButton(row.transform, () => TryWeapon(captured));
                 }
                 else if (maxed)
                 {

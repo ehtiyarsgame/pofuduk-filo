@@ -171,7 +171,7 @@ namespace PofudukFilo.Enemies
             // panel (Playfield.TopY). Device feedback 2026-09-25: enemies showed through the old see-through plate
             // but could not be hit — now they are hidden there, so what you see you can hit.
             _screenMin = new Vector2(c.x - w - 0.3f, c.y - h - 2f);
-            _screenMax = new Vector2(c.x + w + 0.3f, Playfield.TopY(_camera) - 0.15f);
+            _screenMax = new Vector2(c.x + w + 0.3f, Playfield.TopY(_camera)); // hittable once half of it shows
         }
 
         /// <summary>Returns every enemy to its pool without kill events (new run / back to menu).</summary>

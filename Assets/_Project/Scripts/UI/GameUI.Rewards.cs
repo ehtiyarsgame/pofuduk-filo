@@ -18,6 +18,7 @@ namespace PofudukFilo.UI
         [SerializeField] private Sprite giftIcon;
 
         private Button _giftButton;
+        private readonly System.Collections.Generic.List<Button> _walletAdButtons = new();
         private Text _giftText;
         private Text _menuToast;
         private float _menuToastUntil;
@@ -57,6 +58,7 @@ namespace PofudukFilo.UI
             _giftText.text = label;
             _giftText.color = ready ? Palette.Honey : Palette.Lavender;
             _giftButton.interactable = ready;
+            foreach (Button b in _walletAdButtons) b.interactable = ready;
         }
 
         private void ClaimGift()
@@ -75,9 +77,19 @@ namespace PofudukFilo.UI
         {
             if (_menuToast != null && _menuToast.gameObject.activeSelf && Time.unscaledTime > _menuToastUntil)
                 _menuToast.gameObject.SetActive(false);
-            if (_giftButton == null || _menu == null || !_menu.activeSelf) return;
-
+            if (_giftButton == null || _menu == null) return;
             float t = Time.unscaledTime;
+            if (!_menu.activeSelf)
+            {
+                // Meta screens: keep their wallet ad buttons in step with the cooldown.
+                if (t >= _nextGiftRefresh && run.State == GameState.MainMenu)
+                {
+                    _nextGiftRefresh = t + 1f;
+                    RefreshGift();
+                }
+                return;
+            }
+
             bool ready = _giftButton.interactable;
             // A ready gift wiggles now and then — a nudge, not a nag.
             float wiggle = ready ? Mathf.Sin(t * 14f) * 8f * Mathf.Clamp01(Mathf.Sin(t * 1.3f) * 4f - 3f) : 0f;
@@ -134,51 +146,10 @@ namespace PofudukFilo.UI
 
         // ---------------------------------------------------------------- Hangar & Lab rows
 
-        /// <summary>Progress button for a pilot: one ad per press, unlocked after <c>adsToUnlock</c>.</summary>
-        private void AddPilotAdControls(Transform row, CharacterDefinition c)
+        /// <summary>"Dene [TV]" under a locked item's text: one ad buys one run with it.</summary>
+        private void AddTrialButton(Transform row, Action onClick)
         {
-            MetaProgressionService meta = run.Meta;
-            long now = Now;
-            bool left = meta.AdViewsLeftToday(now) > 0;
-            Button watch = AdButton(row, left ? "" : "Yarın", $"{meta.AdProgress(c.id)}/{c.adsToUnlock}", Palette.Mint, () =>
-            {
-                WatchAd(() =>
-                {
-                    if (run.Meta.RecordAdView(c, Now))
-                    {
-                        run.Meta.SelectCharacter(c);
-                        MenuToast(Loc.T($"{Loc.T(c.displayName)} açıldı!"));
-                    }
-                    RefreshOpenMetaScreen();
-                    RefreshPilot();
-                });
-            }, 34);
-            watch.interactable = meta.CanWatchForUnlock(c, now);
-            UIFactory.Place(watch, 0.66f, 0.06f, 0.98f, 0.46f);
-
-            Button trial = AdButton(row, "Dene", "", Palette.Lavender, () => TryPilot(c), 30);
-            trial.interactable = left;
-            UIFactory.Place(trial, 0.22f, 0.04f, 0.46f, 0.3f);
-        }
-
-        private void AddWeaponAdControls(Transform row, WeaponDefinition w)
-        {
-            MetaProgressionService meta = run.Meta;
-            long now = Now;
-            bool left = meta.AdViewsLeftToday(now) > 0;
-            Button watch = AdButton(row, left ? "" : "Yarın", $"{meta.AdProgress(w.id)}/{w.adsToUnlock}", Palette.Mint, () =>
-            {
-                WatchAd(() =>
-                {
-                    if (run.Meta.RecordAdView(w, Now)) MenuToast(Loc.T($"{Loc.T(w.displayName)} açıldı!"));
-                    RefreshOpenMetaScreen();
-                });
-            }, 34);
-            watch.interactable = meta.CanWatchForUnlock(w, now);
-            UIFactory.Place(watch, 0.66f, 0.06f, 0.98f, 0.46f);
-
-            Button trial = AdButton(row, "Dene", "", Palette.Lavender, () => TryWeapon(w), 30);
-            trial.interactable = left;
+            Button trial = AdButton(row, "Dene", "", Palette.Lavender, onClick, 30);
             UIFactory.Place(trial, 0.22f, 0.04f, 0.46f, 0.3f);
         }
 
@@ -188,7 +159,6 @@ namespace PofudukFilo.UI
             if (!CanStartTrial()) return;
             WatchAd(() =>
             {
-                run.Meta.RecordAdView(c, Now);
                 HideMetaScreens();
                 run.StartTrial(c);
             });
@@ -199,7 +169,6 @@ namespace PofudukFilo.UI
             if (!CanStartTrial()) return;
             WatchAd(() =>
             {
-                run.Meta.RecordAdView(w, Now);
                 HideMetaScreens();
                 run.StartTrial(w);
             });

@@ -117,7 +117,8 @@ namespace PofudukFilo.EditorTools
             var enemies = systems.AddComponent<EnemyManager>();
             SetArray(enemies, "prewarmPrefabs", new Object[]
             {
-                c.Enemies["Chick"], c.Enemies["CookieRobot"], c.Enemies["JellyBear"], c.Enemies["GumBalloon"]
+                c.Enemies["Chick"], c.Enemies["CookieRobot"], c.Enemies["JellyBear"], c.Enemies["GumBalloon"],
+                c.Enemies["CandyBee"], c.Enemies["DonutUfo"]
             });
             Set(enemies, "despawnBelowY", -12.5f);
 

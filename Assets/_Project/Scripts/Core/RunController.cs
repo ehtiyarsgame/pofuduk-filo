@@ -146,8 +146,12 @@ namespace PofudukFilo.Core
             Meta = new MetaProgressionService(SaveService.Load());
         }
 
+        /// <summary>The scene's starting weapon (Feather Blaster): every pilot's main gun.</summary>
+        private WeaponDefinition _mainGun;
+
         private void Start()
         {
+            _mainGun = inventory.StartingWeapon;
             xpSystem.LevelUpQueued += OnLevelUpQueued;
             player.Died += OnPlayerDied;
             waveDirector.BossDefeated += OnBossDefeated;
@@ -429,11 +433,17 @@ namespace PofudukFilo.Core
                     stats.AddRunBonus(StatType.MaxHp, pilotBonus);
                 }
                 foreach (StatModifier m in CurrentCharacter.modifiers) stats.AddRunBonus(m.stat, m.value);
-                if (CurrentCharacter.startingWeapon != null) inventory.StartingWeapon = CurrentCharacter.startingWeapon;
+                // Every pilot flies with the Feather Blaster as ANA SİLAH; the pilot's own weapon is added as a second
+                // slot below. Device feedback 2026-09-25: pilots whose only weapon was a mortar or a cat "fired"
+                // (wing-gun flashes) with nothing coming out.
+                inventory.StartingWeapon = _mainGun;
                 Sprite ship = CurrentCharacter.shipSprite != null ? CurrentCharacter.shipSprite : CurrentCharacter.sprite;
                 if (playerSprite != null && ship != null) playerSprite.sprite = ship;
             }
             inventory.ResetLoadout();
+            if (CurrentCharacter != null && CurrentCharacter.startingWeapon != null && CurrentCharacter.startingWeapon != _mainGun
+                && inventory.CanTake(CurrentCharacter.startingWeapon))
+                inventory.AddOrLevelWeapon(CurrentCharacter.startingWeapon);
             TrialName = null;
             if (_trialWeapon != null && inventory.Find(_trialWeapon) == null && inventory.CanTake(_trialWeapon))
                 inventory.AddOrLevelWeapon(_trialWeapon);

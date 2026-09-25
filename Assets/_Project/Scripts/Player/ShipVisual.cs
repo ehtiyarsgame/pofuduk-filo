@@ -86,7 +86,8 @@ namespace PofudukFilo.Player
 
         private void OnFired(Weapons.WeaponBehaviour weapon)
         {
-            if (_guns == null || !_shown) return;
+            // Only the main gun fires from the wing barrels; orbiters, cats and mortars have their own visuals.
+            if (_guns == null || !_shown || !(weapon is Weapons.FeatherBlaster)) return;
             _recoil = 1f;
             if (Time.time < _nextFlash || Feel.VfxSystem.Instance == null) return;
             _nextFlash = Time.time + 0.08f;

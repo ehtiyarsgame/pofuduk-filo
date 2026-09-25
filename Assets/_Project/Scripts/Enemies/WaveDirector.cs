@@ -29,9 +29,9 @@ namespace PofudukFilo.Enemies
         [SerializeField] private float spawnAboveScreen = 1f;
         [Tooltip("Top of a formation's highest slot below the screen top. Must stay below EnemyManager's hittable line " +
                  "(top − 24 % of the half-height ≈ 2.6 u at size 10.8) or members would hover untouchable under the HUD.")]
-        [SerializeField] private float formationTopPadding = 3.4f;
+        [SerializeField] private float formationTopPadding = 1.3f; // below the HUD panel rim, not the camera top
         [SerializeField] private float firstFormationDelay = 4f;
-        [SerializeField] private float bossSlotBelowTop = 3.8f;
+        [SerializeField] private float bossSlotBelowTop = 2.0f;
 
         [Header("Endless (power-match.md §3.3)")]
         [Tooltip("In Endless, a boss from the chapter's roster returns this long after the previous one dies.")]
@@ -426,7 +426,9 @@ namespace PofudukFilo.Enemies
             Vector3 c = _camera.transform.position;
             left = c.x - halfW;
             right = c.x + halfW;
-            top = c.y + halfH;
+            // The visible top: the HUD panel's bottom edge (design/ux/hud.md §2). Formations and bosses hold below
+            // it on every screen — on tall-notch phones the old camera-top anchor left the first row under the rim.
+            top = Core.Playfield.TopY(_camera);
         }
     }
 }
