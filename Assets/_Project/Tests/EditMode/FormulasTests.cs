@@ -205,18 +205,11 @@ namespace PofudukFilo.Tests
             Assert.That(Formulas.PowerDeficit(1.25f, 1f), Is.EqualTo(1.25f).Within(1e-5f));
             Assert.That(Formulas.PowerDeficit(50f, 1f), Is.EqualTo(Formulas.MaxPowerDeficit));
             Assert.That(Formulas.DeficitHpScale(1f), Is.EqualTo(1f));
-            Assert.That(Formulas.DeficitHpScale(1.25f), Is.EqualTo(1.4614f).Within(1e-3f));
-            Assert.That(Formulas.DeficitDamageScale(1.25f), Is.EqualTo(1.25f).Within(1e-5f));
-        }
-
-        [Test]
-        public void test_power_lasts_minutes_inverts_required_power()
-        {
-            Assert.That(Formulas.PowerLastsMinutes(1f), Is.EqualTo(2.5f).Within(1e-3f));
-            Assert.That(Formulas.PowerLastsMinutes(0.9f), Is.EqualTo(0f));
-            foreach (float p in new[] { 1.3f, 2f, 3.5f })
-                Assert.That(Formulas.RequiredPower(Formulas.PowerLastsMinutes(p)), Is.EqualTo(p).Within(1e-3f));
-            Assert.That(Formulas.PowerLastsMinutes(3f, 1.5f), Is.EqualTo(Formulas.PowerLastsMinutes(2f)).Within(1e-3f));
+            Assert.That(Formulas.DeficitHpScale(1.25f), Is.EqualTo(1.3668f).Within(1e-3f));
+            Assert.That(Formulas.DeficitDamageScale(1.25f), Is.EqualTo(1.1433f).Within(1e-3f));
+            // The ceiling stays beatable: at most HP ×2.64, damage ×1.52.
+            Assert.That(Formulas.DeficitHpScale(Formulas.MaxPowerDeficit), Is.LessThan(2.7f));
+            Assert.That(Formulas.DeficitDamageScale(Formulas.MaxPowerDeficit), Is.LessThan(1.55f));
         }
 
         [Test]

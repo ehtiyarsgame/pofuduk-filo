@@ -64,7 +64,6 @@ namespace PofudukFilo.UI
         private Text _endStats;
         private Text _endGold;
         private Text _endGoal;
-        private Text _endPower;
         private Button _upgradeButton;
         private Button _endlessButton;
         private float _goldShown;
@@ -560,12 +559,6 @@ namespace PofudukFilo.UI
             _endDustIcon = reward.GetChild(reward.childCount - 2).gameObject;
             _endGoal = _ui.Label(screen.transform, "", 36, Palette.Mint);
             UIFactory.Place(_endGoal, 0.08f, 0.47f, 0.92f, 0.52f);
-            // Power wall verdict (power-wall.md §3.3): why the run ended and what fixes it.
-            _endPower = _ui.Label(screen.transform, "", 38, Palette.Coral);
-            UIFactory.Place(_endPower, 0.06f, 0.405f, 0.94f, 0.465f);
-            _endPower.resizeTextForBestFit = true;
-            _endPower.resizeTextMinSize = 22;
-            _endPower.resizeTextMaxSize = 38;
 
             // One big call to action (game-concept.md §4.5 step 4).
             Button again = _ui.Button(screen.transform, "Tekrar Oyna", Palette.HotPink, () => AfterRunAd(() =>
@@ -603,11 +596,6 @@ namespace PofudukFilo.UI
             _goldTarget = s.Gold;
             _endGold.text = "+0";
             _endGoal.text = NextGoalText();
-            EnemyManager em = EnemyManager.Instance;
-            bool shortOfPower = em != null && em.PowerDeficit > 1.01f;
-            _endPower.gameObject.SetActive(shortOfPower);
-            if (shortOfPower)
-                _endPower.text = Loc.T($"Güç ×{em.PlayerPower:0.00} · gereken ×{em.RequiredPower:0.00} → AR-GE'de güçlen!");
 
             bool affordable = run.Meta.AnyAffordable(run.Workshop) || run.Meta.CanUpgradeForge(ForgeTrack.Power);
             UIFactory.SetText(_upgradeButton, affordable ? "Geliştir  !" : "Geliştir");

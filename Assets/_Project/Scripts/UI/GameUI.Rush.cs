@@ -19,7 +19,6 @@ namespace PofudukFilo.UI
         private Image _leakGlow;
         private Text _leakText;
         private float _leakFlash;
-        private Text _powerWarn;
         private Button _rushButton;
         private Image _rushButtonTimer;
         private GameObject _bossBanner;
@@ -61,14 +60,6 @@ namespace PofudukFilo.UI
             _leakText = _ui.Label(hud, "", 46, Palette.Coral);
             UIFactory.Place(_leakText, 0.35f, 0.13f, 0.65f, 0.17f);
             _leakText.gameObject.SetActive(false);
-
-            // Power wall (power-wall.md §3.3): the run clock has outgrown the player's Güç — say so while it lasts.
-            _powerWarn = _ui.Label(hud, "", 44, Palette.Coral);
-            UIFactory.Place(_powerWarn, 0.08f, 0.715f, 0.92f, 0.755f);
-            _powerWarn.resizeTextForBestFit = true;
-            _powerWarn.resizeTextMinSize = 24;
-            _powerWarn.resizeTextMaxSize = 44;
-            _powerWarn.gameObject.SetActive(false);
 
             // Sugar Bomb button: bottom-left corner, appears when the meter is full.
             _rushButton = _ui.Button(hud, "ŞEKER!", Palette.HotPink, () => { if (_rush != null) _rush.Activate(); }, 50);
@@ -167,8 +158,6 @@ namespace PofudukFilo.UI
                     Color.HSVToRGB(Mathf.Repeat(Time.unscaledTime * 0.5f, 1f), 0.45f, 1f);
             }
 
-            UpdatePowerWarning();
-
             _leakFlash = Mathf.MoveTowards(_leakFlash, 0f, dt * 1.6f);
             if (_leakGlow != null)
             {
@@ -215,27 +204,6 @@ namespace PofudukFilo.UI
                 cc.a = 0.5f + 0.5f * _rush.ComboTimeLeft01;
                 _comboText.color = cc;
             }
-        }
-
-        private int _powerWarnShown = -1;
-
-        private void UpdatePowerWarning()
-        {
-            if (_powerWarn == null) return;
-            Enemies.EnemyManager em = Enemies.EnemyManager.Instance;
-            float deficit = em != null && run.State == GameState.Playing ? em.PowerDeficit : 1f;
-            bool on = deficit > 1.03f;
-            if (_powerWarn.gameObject.activeSelf != on) _powerWarn.gameObject.SetActive(on);
-            if (!on) return;
-            // Enemy HP multiplier the wall adds, in tenths: the text only changes when the number does.
-            int tenths = Mathf.RoundToInt(Formulas.DeficitHpScale(deficit) * 10f);
-            if (tenths != _powerWarnShown)
-            {
-                _powerWarnShown = tenths;
-                _powerWarn.text = Loc.T($"GÜÇ YETERSİZ! Düşmanlar ×{tenths / 10f:0.0}");
-            }
-            Color c = _powerWarn.color;
-            _powerWarn.color = new Color(c.r, c.g, c.b, 0.65f + 0.35f * Mathf.Abs(Mathf.Sin(Time.unscaledTime * 4f)));
         }
 
         private float _leakSum;

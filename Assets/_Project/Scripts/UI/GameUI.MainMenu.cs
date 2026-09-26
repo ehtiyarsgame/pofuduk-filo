@@ -539,15 +539,9 @@ namespace PofudukFilo.UI
                 (int stage, float minutes) = run.SavedRunInfo();
                 _playSub.text = Loc.T($"Kayıt: Bölüm {stage} · {Mathf.FloorToInt(minutes)}:{Mathf.FloorToInt(minutes * 60f % 60f):00}");
             }
-            else
-            {
-                // Map name plus how long the player's Güç holds on it (power-wall.md §3.3): the upgrade target.
-                MapDef map = Maps.All[_viewMap < 0 ? meta.SelectedMap : _viewMap];
-                float lasts = Formulas.PowerLastsMinutes(meta.PowerRating(meta.SelectedCharacterId), map.PowerScale);
-                _playSub.text = !meta.IsMapUnlocked(_viewMap < 0 ? meta.SelectedMap : _viewMap) ? Loc.T("KİLİTLİ HARİTA")
-                    : lasts <= 0f ? Loc.T($"{map.Name} · Güç yetmiyor!")
-                    : Loc.T($"{map.Name} · Güç yeter: {Clock(lasts * 60f)}");
-            }
+            else _playSub.text = meta.IsMapUnlocked(_viewMap < 0 ? meta.SelectedMap : _viewMap)
+                ? Loc.T(Maps.All[_viewMap < 0 ? meta.SelectedMap : _viewMap].Name)
+                : Loc.T("KİLİTLİ HARİTA");
             RefreshMapSelector();
             _restartButton.gameObject.SetActive(saved);
             RefreshChests(best);

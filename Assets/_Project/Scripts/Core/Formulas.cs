@@ -227,13 +227,18 @@ namespace PofudukFilo.Core
         public const float RequiredPowerGraceMinutes = 2.5f;
         public const float RequiredPowerLinear = 0.08f;
         public const float RequiredPowerQuadratic = 0.01f;
-        /// <summary>Enemy HP × deficit^this when the player is under-powered (deficit 1.25 → HP ×1.46).</summary>
-        public const float DeficitHpExponent = 1.7f;
-        /// <summary>Largest deficit that still scales: beyond it the wall is already unbeatable.</summary>
-        public const float MaxPowerDeficit = 3f;
+        /// <summary>Enemy HP × deficit^this when the player is under-powered (deficit 1.25 → HP ×1.37).</summary>
+        public const float DeficitHpExponent = 1.4f;
+        /// <summary>Enemy damage × deficit^this (deficit 1.25 → ×1.14): mostly a DPS race, so dodging still counts.</summary>
+        public const float DeficitDamageExponent = 0.6f;
+        /// <summary>
+        /// Largest deficit that still scales (HP ×2.64, damage ×1.52): the wall stays hard but beatable — owner
+        /// 2026-09-26: "becerisi gerçekten çok çok iyiyse zorlansa da geçsin".
+        /// </summary>
+        public const float MaxPowerDeficit = 2f;
 
         /// <summary>
-        /// Gereken Güç (owner 2026-09-26: "belli bir dakika sonra o çarpana gelmezse oyun çok zorlaşsın, o çarpandaysa
+        /// Gereken Güç, hidden from the player (owner 2026-09-26: "belli bir dakika sonra o çarpana gelmezse oyun çok zorlaşsın, o çarpandaysa
         /// normal oynasın"): R(t) = s · (1 + 0.08x + 0.01x²), x = max(0, t − 2.5), t in run minutes, s the map's scale.
         /// ×1.00 until 2:30, ×1.14 at 4, ×1.26 at 5, ×2.16 at 10, ×3.56 at 15 (map 1).
         /// </summary>
@@ -247,22 +252,12 @@ namespace PofudukFilo.Core
         public static float PowerDeficit(float required, float powerRating) =>
             Math.Clamp(required / Math.Max(0.01f, powerRating), 1f, MaxPowerDeficit);
 
-        /// <summary>Enemy HP × deficit^1.7: the wall. 1 when the player has the power.</summary>
+        /// <summary>Enemy HP × deficit^1.4: the wall. 1 when the player has the power.</summary>
         public static float DeficitHpScale(float deficit) => (float)Math.Pow(Math.Max(1f, deficit), DeficitHpExponent);
 
-        /// <summary>Enemy damage × deficit (the 35 % hit cap still applies).</summary>
-        public static float DeficitDamageScale(float deficit) => Math.Max(1f, deficit);
+        /// <summary>Enemy damage × deficit^0.6 (the 35 % hit cap still applies).</summary>
+        public static float DeficitDamageScale(float deficit) => (float)Math.Pow(Math.Max(1f, deficit), DeficitDamageExponent);
 
-        /// <summary>Run minute at which <paramref name="powerRating"/> stops being enough — the inverse of <see cref="RequiredPower"/>.</summary>
-        public static float PowerLastsMinutes(float powerRating, float mapScale = 1f)
-        {
-            float ratio = powerRating / Math.Max(0.01f, mapScale);
-            if (ratio < 1f) return 0f;
-            // 0.01x² + 0.08x + (1 − ratio) = 0
-            double disc = RequiredPowerLinear * RequiredPowerLinear - 4.0 * RequiredPowerQuadratic * (1.0 - ratio);
-            double x = (-RequiredPowerLinear + Math.Sqrt(disc)) / (2.0 * RequiredPowerQuadratic);
-            return RequiredPowerGraceMinutes + (float)x;
-        }
 
         /// <summary>
         /// Coin value = base × √P × (1 + 0.04·t), t in run minutes: stronger players still earn bigger coins, but
