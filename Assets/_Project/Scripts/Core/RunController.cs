@@ -473,7 +473,7 @@ namespace PofudukFilo.Core
             inventory.ResetLoadout();
             float power = Meta.PowerRating(CurrentCharacter != null ? CurrentCharacter.id : "");
             if (pickups != null) pickups.CoinPowerMultiplier = power;
-            EnemyManager.Instance.PlayerPowerHpScale = Formulas.EnemyHpForPower(power);
+            EnemyManager.Instance.PlayerPower = power; // Gereken Güç compares against this (power-wall.md)
             _bossesKilled = 0;
             _rushesThisRun = 0;
             if (CurrentCharacter != null && CurrentCharacter.startingWeapon != null && CurrentCharacter.startingWeapon != inventory.StartingWeapon

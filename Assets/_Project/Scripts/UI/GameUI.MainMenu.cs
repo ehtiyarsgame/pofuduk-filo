@@ -314,6 +314,9 @@ namespace PofudukFilo.UI
             _playSub = InkText(_playButton.transform, "", 42, Palette.White, 4f);
             _playSub.GetComponent<UIStroke>().color = Palette.Hex(0x7A3A00);
             UIFactory.Place(_playSub, 0.02f, 0.12f, 0.98f, 0.4f);
+            _playSub.resizeTextForBestFit = true;
+            _playSub.resizeTextMinSize = 24;
+            _playSub.resizeTextMaxSize = 42;
             Image shine = Kit(_playButton.transform, shineSprite, "Shine", 1f, Image.Type.Simple);
             shine.color = new Color(1f, 1f, 1f, 0.5f);
             _shine = shine.rectTransform;
@@ -536,9 +539,15 @@ namespace PofudukFilo.UI
                 (int stage, float minutes) = run.SavedRunInfo();
                 _playSub.text = Loc.T($"Kayıt: Bölüm {stage} · {Mathf.FloorToInt(minutes)}:{Mathf.FloorToInt(minutes * 60f % 60f):00}");
             }
-            else _playSub.text = meta.IsMapUnlocked(_viewMap < 0 ? meta.SelectedMap : _viewMap)
-                ? Loc.T(Maps.All[_viewMap < 0 ? meta.SelectedMap : _viewMap].Name)
-                : Loc.T("KİLİTLİ HARİTA");
+            else
+            {
+                // Map name plus how long the player's Güç holds on it (power-wall.md §3.3): the upgrade target.
+                MapDef map = Maps.All[_viewMap < 0 ? meta.SelectedMap : _viewMap];
+                float lasts = Formulas.PowerLastsMinutes(meta.PowerRating(meta.SelectedCharacterId), map.PowerScale);
+                _playSub.text = !meta.IsMapUnlocked(_viewMap < 0 ? meta.SelectedMap : _viewMap) ? Loc.T("KİLİTLİ HARİTA")
+                    : lasts <= 0f ? Loc.T($"{map.Name} · Güç yetmiyor!")
+                    : Loc.T($"{map.Name} · Güç yeter: {Clock(lasts * 60f)}");
+            }
             RefreshMapSelector();
             _restartButton.gameObject.SetActive(saved);
             RefreshChests(best);

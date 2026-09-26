@@ -46,7 +46,10 @@ All three are collected the same way, and Gold Gain (`GoldGain`) applies on pick
 whenever the player killed fast. That hid the effect of upgrades: "geliştirdim, fark etmedi" ("I upgraded and
 noticed no difference"). In QA run 45 it tripled enemy HP.
 
-Enemy HP now scales with **√P** instead (`Formulas.EnemyHpForPower`):
+> **Superseded 2026-09-26 by `power-wall.md`.** Enemy HP no longer scales with √P. It now scales with the gap
+> between the player's P and the Required Power for the current minute, and is untouched while P is enough.
+
+Enemy HP used to scale with **√P** instead (`Formulas.EnemyHpForPower`, removed):
 
 - At P = 2, enemies have ×1.41 HP, while Forge damage alone is ×1.5–2. Upgrades always come out stronger.
 - Coins scale with √P (since §3.4), the same pace as enemy HP.

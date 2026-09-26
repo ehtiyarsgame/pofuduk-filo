@@ -31,6 +31,7 @@ namespace PofudukFilo.Tests
                 Assert.That(Maps.All[i].HpMultiplier, Is.GreaterThan(Maps.All[i - 1].HpMultiplier));
                 Assert.That(Maps.All[i].GoldMultiplier, Is.GreaterThan(Maps.All[i - 1].GoldMultiplier));
                 Assert.That(Maps.All[i].ThreatOffsetMinutes, Is.GreaterThan(Maps.All[i - 1].ThreatOffsetMinutes));
+                Assert.That(Maps.All[i].PowerScale, Is.GreaterThan(Maps.All[i - 1].PowerScale));
             }
         }
 

@@ -145,7 +145,7 @@ namespace PofudukFilo.Core
 
                     case GameState.Dead:
                         _deaths++;
-                        Line($"[QA] Died at {gameTime:0}s (death {_deaths}).");
+                        Line($"[QA] Died at {gameTime:0}s (death {_deaths}). power ×{EnemyManager.Instance?.PlayerPower:0.00} required ×{EnemyManager.Instance?.RequiredPower:0.00}");
                         if (_deaths == 1) yield return Shot("90_dead");
                         yield return new WaitForSecondsRealtime(0.5f);
                         if (run.FreeReviveAvailable) run.Revive(true);

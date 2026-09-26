@@ -17,10 +17,12 @@ namespace PofudukFilo.Meta
         public readonly float ThreatOffsetMinutes;
         /// <summary>Coin value × this.</summary>
         public readonly float GoldMultiplier;
+        /// <summary>Gereken Güç × this (power-wall.md §3.4): a harder map asks for more power from minute 0.</summary>
+        public readonly float PowerScale;
         /// <summary>Background tint (0xRRGGBB) so each map looks like a different place.</summary>
         public readonly int Tint;
 
-        public MapDef(string id, string name, float hp, float spawn, float damage, float threatOffset, float gold, int tint)
+        public MapDef(string id, string name, float hp, float spawn, float damage, float threatOffset, float gold, float powerScale, int tint)
         {
             Id = id;
             Name = name;
@@ -29,6 +31,7 @@ namespace PofudukFilo.Meta
             DamageMultiplier = damage;
             ThreatOffsetMinutes = threatOffset;
             GoldMultiplier = gold;
+            PowerScale = powerScale;
             Tint = tint;
         }
     }
@@ -45,9 +48,9 @@ namespace PofudukFilo.Meta
 
         public static readonly MapDef[] All =
         {
-            new("candy", "Şekerkamışı", 1f, 1f, 1f, 0f, 1f, 0xFFFFFF),
-            new("jelly", "Jöle Nebulası", 1.8f, 1.3f, 1.4f, 3f, 2.5f, 0xB8FFD0),
-            new("cookie", "Kurabiye Kuşağı", 3f, 1.6f, 1.8f, 6f, 5f, 0xFFD2A0)
+            new("candy", "Şekerkamışı", 1f, 1f, 1f, 0f, 1f, 1f, 0xFFFFFF),
+            new("jelly", "Jöle Nebulası", 1.8f, 1.3f, 1.4f, 3f, 2.5f, 1.5f, 0xB8FFD0),
+            new("cookie", "Kurabiye Kuşağı", 3f, 1.6f, 1.8f, 6f, 5f, 2.5f, 0xFFD2A0)
         };
 
         public static int Count => All.Length;

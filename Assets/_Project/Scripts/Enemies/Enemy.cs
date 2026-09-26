@@ -442,8 +442,8 @@ namespace PofudukFilo.Enemies
                 Vector2 pp = player.transform.position;
                 if (pp.y < top.y && Mathf.Abs(pp.x - top.x) < laserHalfWidth + player.HitRadius)
                 {
-                    float minutes = EnemyManager.Instance != null ? EnemyManager.Instance.ThreatMinutes : 0f;
-                    player.TakeDamage(bulletDamage * Formulas.EnemyDamageScale(minutes) * Meta.Maps.Current.DamageMultiplier); // i-frames: once per ~0.9 s
+                    float scale = EnemyManager.Instance != null ? EnemyManager.Instance.EnemyDamageMultiplier : 1f;
+                    player.TakeDamage(bulletDamage * scale); // i-frames: once per ~0.9 s
                 }
             }
         }

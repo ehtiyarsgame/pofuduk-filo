@@ -61,8 +61,21 @@ namespace PofudukFilo.Enemies
         /// <summary>Power Match's adaptive HP (off since 2026-09-25: upgrades must be felt).</summary>
         public bool AdaptiveHp { get; set; }
 
-        /// <summary>√(Güç Katsayısı), set by RunController at run start: enemies keep up, but slower than the player grows.</summary>
-        public float PlayerPowerHpScale { get; set; } = 1f;
+        /// <summary>The player's Güç Katsayısı, set by RunController at run start (power-wall.md).</summary>
+        public float PlayerPower { get; set; } = 1f;
+
+        /// <summary>Gereken Güç right now: the required-power curve on the run clock, × the map's scale.</summary>
+        public float RequiredPower => Formulas.RequiredPower(RunMinutes, Meta.Maps.Current.PowerScale);
+
+        /// <summary>max(1, required / power): 1 while the player has the power, above 1 once they hit the wall.</summary>
+        public float PowerDeficit => Formulas.PowerDeficit(RequiredPower, PlayerPower);
+
+        /// <summary>
+        /// Every enemy hit (bullets, lasers, body contact) × this: the threat clock, the map and the power wall
+        /// (threat.md §3.1, maps.md, power-wall.md). Read when the hit is created.
+        /// </summary>
+        public float EnemyDamageMultiplier =>
+            Formulas.EnemyDamageScale(ThreatMinutes) * Meta.Maps.Current.DamageMultiplier * Formulas.DeficitDamageScale(PowerDeficit);
         private float _clock;
 
         /// <summary>New run: forget the last run's calibration.</summary>
@@ -95,12 +108,13 @@ namespace PofudukFilo.Enemies
 
             Enemy enemy = GetPool(prefab).Get(position);
             enemy.SourcePrefab = prefab;
-            // Enemy HP follows the run clock, the stage and the player's Güç Katsayısı (√P, economy.md §3.3) — no longer
-            // Power Match: its hidden HP boost cancelled out upgrades ("geliştirdim, fark etmedi"). Power Match still
-            // measures kill speed for telemetry when AdaptiveHp is off.
+            // Enemy HP follows the run clock, the stage, the map and the power wall (power-wall.md): nothing while the
+            // player has the Gereken Güç, deficit^1.7 once they fall short. No longer √P or Power Match — both scaled
+            // enemies up with the player and ate the upgrades ("geliştirdim, fark etmedi"). Power Match still measures
+            // kill speed for telemetry when AdaptiveHp is off.
             float adaptive = AdaptiveHp ? Power.Scale : 1f;
-            enemy.Initialize(Formulas.EnemyHp(enemy.BaseHp, ThreatMinutes, ChapterIndex) * PlayerPowerHpScale * adaptive
-                * Meta.Maps.Current.HpMultiplier);
+            enemy.Initialize(Formulas.EnemyHp(enemy.BaseHp, ThreatMinutes, ChapterIndex) * Formulas.DeficitHpScale(PowerDeficit)
+                * adaptive * Meta.Maps.Current.HpMultiplier);
             _active.Add(enemy);
             return enemy;
         }
@@ -245,8 +259,7 @@ namespace PofudukFilo.Enemies
                     if (((Vector2)e.transform.position - playerPos).sqrMagnitude < r * r)
                     {
                         bool big = e.IsElite || e is BossEnemy;
-                        player.TakeDamage(contactDamage * (big ? 1.5f : 1f) * Formulas.EnemyDamageScale(ThreatMinutes)
-                            * Meta.Maps.Current.DamageMultiplier);
+                        player.TakeDamage(contactDamage * (big ? 1.5f : 1f) * EnemyDamageMultiplier);
                         if (!big) DamageEnemy(e, e.CurrentHp + 0.01f);
                     }
                 }
