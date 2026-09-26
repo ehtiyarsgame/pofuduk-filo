@@ -18,6 +18,9 @@ namespace PofudukFilo.Core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Install()
         {
+#if PF_RELEASE
+            return; // store builds never show raw errors to players (CiBuild.BuildAndroidRelease)
+#endif
             Lines.Clear();
             var go = new GameObject("[ErrorOverlay]");
             DontDestroyOnLoad(go);

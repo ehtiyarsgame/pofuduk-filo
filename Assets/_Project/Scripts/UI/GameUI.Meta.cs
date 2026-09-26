@@ -527,6 +527,12 @@ namespace PofudukFilo.UI
             LanguageButton(card.transform, "English", Language.English, 0.73f, 0.94f);
 
             UIFactory.Place(_ui.Button(card.transform, "Kapat", Palette.HotPink, () => _settings.SetActive(false), 52), 0.3f, 0.02f, 0.7f, 0.13f);
+
+            // Version and studio under the card, for bug reports and store support.
+            Text about = _ui.Label(_settings.transform, $"{Loc.GameTitle} v{Application.version} · Ehtiyars Game", 30,
+                new Color(1f, 1f, 1f, 0.55f));
+            UIFactory.Place(about, 0.08f, 0.155f, 0.92f, 0.19f);
+            about.raycastTarget = false;
             _settings.SetActive(false);
         }
 

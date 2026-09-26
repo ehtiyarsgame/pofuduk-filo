@@ -132,6 +132,8 @@ namespace PofudukFilo.UI
         private void Update()
         {
             MeasurePlayfield();
+            UpdateBackButton();
+            UpdateTutorial();
             UpdateRushHud();
             UpdateLoadoutStrip();
             UpdateMenuAnim();
@@ -240,6 +242,7 @@ namespace PofudukFilo.UI
             _bossBar.SetActive(false);
 
             BuildRushHud(_hud.transform);
+            BuildTutorial(_hud.transform);
             BuildLoadoutStrip(_hud.transform);
 
             _toast = _ui.Label(_hud.transform, "", 80, Palette.Cream);

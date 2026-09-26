@@ -6,7 +6,14 @@
 set -uo pipefail
 
 PROJECT="${PROJECT_PATH:-/project}"
-APK="$PROJECT/build/Android/PofudukFilo.apk"
+# BUILD_KIND=release → signed Google Play bundle (release.yml); anything else → the side-load test APK.
+if [ "${BUILD_KIND:-apk}" = "release" ]; then
+  APK="$PROJECT/build/Android/PofudukFilo.aab"
+  METHOD=PofudukFilo.EditorTools.CiBuild.BuildAndroidRelease
+else
+  APK="$PROJECT/build/Android/PofudukFilo.apk"
+  METHOD=PofudukFilo.EditorTools.CiBuild.BuildAndroid
+fi
 CLIENT=/opt/unity/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client
 
 if [ -z "${UNITY_EMAIL:-}" ] || [ -z "${UNITY_PASSWORD:-}" ]; then
@@ -72,13 +79,13 @@ summarize() {
   tail -n 40 "$1"
 }
 
-echo "Building Android APK…"
+echo "Building Android ($METHOD)…"
 unity-editor \
   -batchmode -nographics \
   -logFile "$LOGS/android.log" \
   -projectPath "$PROJECT" \
   -buildTarget Android \
-  -executeMethod PofudukFilo.EditorTools.CiBuild.BuildAndroid \
+  -executeMethod "$METHOD" \
   -customBuildPath "$APK"
 BUILD_EXIT=$?
 summarize "$LOGS/android.log"
@@ -88,6 +95,7 @@ if [ $BUILD_EXIT -ne 0 ] || [ ! -f "$APK" ]; then
   exit 1
 fi
 ls -lh "$APK"
+[ "${BUILD_KIND:-apk}" = "release" ] && exit 0 # store builds skip the QA player
 
 # QA player (non-fatal): the workflow runs it under Xvfb for screenshots and telemetry.
 echo "Building Linux QA player…"

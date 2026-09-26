@@ -162,3 +162,21 @@ It is shown for the whole MainMenu state and hidden in a run.
   Constellation.
 - Lists now run down to the top of the tab bar (y 0.125).
 - The Constellation's Aç (Unlock) and Sıfırla (Reset) buttons moved above the tab bar.
+
+## 8. Android back button (2026-09-26)
+
+In the Input System the back button arrives as Escape (`GameUI.Back.cs`). It does the one obvious thing for
+whatever is on top, checked in this order:
+
+| On top | Back does |
+|---|---|
+| Settings | Closes it |
+| Workshop | Closes it |
+| Run playing | Pauses |
+| Pause screen | Resumes |
+| Level-up cards, death screen | Nothing: a choice is required |
+| Run results | Goes to the menu, after the interstitial rule (`AfterRunAd`) |
+| A tab screen (Ar-Ge, Silahlar, Pilotlar, Görevler, Yıldızlar) | Home |
+| Home | A toast, "Çıkmak için tekrar bas" ("Press again to quit"). A second press within 2 s quits. |
+
+The settings card also shows "Galaxy Paws v{version} · Ehtiyars Game" underneath, for bug reports.

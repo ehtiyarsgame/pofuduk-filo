@@ -268,6 +268,10 @@ namespace PofudukFilo.Core
             // ---- Rewarded ads: gift, unlock-by-ads, trials (ad-rewards.md)
             ["HEDİYE"] = "GIFT",
             ["Yarın"] = "Tomorrow",
+            ["Çıkmak için tekrar bas"] = "Press again to quit",
+            ["Parmağını ekranda sürükle — gemi seni takip eder"] = "Drag your finger — the ship follows it",
+            ["Aşağıdan kaçan canavarlar can yakar — hepsini vur!"] = "Monsters that slip past the bottom hurt you — shoot them all!",
+            ["Şeker Bombası hazır! Sol alttaki ŞEKER! tuşuna bas"] = "Sugar Bomb ready! Tap SUGAR! at the bottom left",
             ["SONSUZ GALAKSİ"] = "ENDLESS GALAXY",
             ["Zırh her darbenin bir yüzdesini emer (en çok %60)."] = "Armour absorbs a share of every hit (up to 60%).",
             ["+2 zırh: her darbenin bir yüzdesini emer; ama silahlar biraz yavaşlar."] = "+2 armour: absorbs a share of every hit, but weapons fire a bit slower.",

@@ -1,0 +1,90 @@
+# Signed Google Play bundle (.aab), run by hand when a version is ready for the store.
+# Needs, besides UNITY_EMAIL / UNITY_PASSWORD, the upload key as repository secrets:
+#   ANDROID_KEYSTORE_BASE64  (base64 of the .keystore file)
+#   ANDROID_KEYSTORE_PASS, ANDROID_KEY_ALIAS, ANDROID_KEY_PASS
+# The keystore must be kept forever: Google Play only accepts updates signed with the same upload key.
+name: Play Store bundle
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: android-build # shares the single Unity Personal seat with android.yml
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  UNITY_IMAGE: unityci/editor:ubuntu-6000.3.24f1-android-3
+
+jobs:
+  bundle:
+    name: Build signed AAB
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Free disk space (the Android editor image is large)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+
+      - uses: actions/checkout@v4
+
+      - name: Check signing secrets
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KS" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 secret is missing — add the upload keystore before building for the store."
+            exit 1
+          fi
+
+      - name: Fetch UI font (Paytone One, SIL OFL 1.1)
+        run: |
+          mkdir -p Assets/_Project/Fonts
+          base="https://raw.githubusercontent.com/google/fonts/main/ofl/paytoneone"
+          curl -fsSL -o Assets/_Project/Fonts/PaytoneOne.ttf "$base/PaytoneOne-Regular.ttf"
+          curl -fsSL -o Assets/_Project/Fonts/PaytoneOne-OFL.txt "$base/OFL.txt"
+
+      - name: Add Google Mobile Ads (OpenUPM, latest)
+        run: python3 tools/ci/add-admob.py
+
+      - name: Pull Unity image
+        run: docker pull "$UNITY_IMAGE"
+
+      - name: Activate license, build AAB, return license
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
+        run: |
+          mkdir -p build/signing
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > build/signing/upload.keystore
+          docker run --rm \
+            -e UNITY_EMAIL -e UNITY_PASSWORD -e PROJECT_PATH=/project \
+            -e BUILD_KIND=release -e BUILD_NUMBER=$((10000 + ${{ github.run_number }})) \
+            -e ANDROID_KEYSTORE_PATH=/project/build/signing/upload.keystore \
+            -e ANDROID_KEYSTORE_PASS -e ANDROID_KEY_ALIAS -e ANDROID_KEY_PASS \
+            -v "$GITHUB_WORKSPACE":/project \
+            "$UNITY_IMAGE" \
+            bash /project/tools/ci/build-android.sh
+
+      - name: Remove the keystore from the workspace
+        if: always()
+        run: sudo rm -f build/signing/upload.keystore
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: GalaxyPaws-aab
+          path: build/Android/*.aab
+          if-no-files-found: error

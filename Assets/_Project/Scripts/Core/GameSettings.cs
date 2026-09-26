@@ -51,6 +51,13 @@ namespace PofudukFilo.Core
             }
         }
 
+        /// <summary>First-run coach marks already shown (tutorial.md). Off by default, unlike the toggles above.</summary>
+        public static bool TutorialDone
+        {
+            get => PlayerPrefs.GetInt("pf.tutorial", 0) == 1;
+            set => Set("tutorial", value);
+        }
+
         private static bool Get(string key) => PlayerPrefs.GetInt("pf." + key, 1) == 1;
 
         private static void Set(string key, bool value)

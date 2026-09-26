@@ -14,13 +14,27 @@ namespace PofudukFilo.EditorTools
     {
         public const string PackageName = "com.ehtiyarsgame.pofudukfilo";
 
-        public static void BuildAndroid()
+        /// <summary>Installable test APK (the "apk" release the owner side-loads).</summary>
+        public static void BuildAndroid() => BuildAndroidPlayer(release: false);
+
+        /// <summary>
+        /// Store build (release.yml): a signed .aab for Google Play, with PF_RELEASE defined so on-screen error
+        /// reporting is off. Keystore comes from ANDROID_KEYSTORE_PATH / _PASS / ANDROID_KEY_ALIAS / _PASS.
+        /// </summary>
+        public static void BuildAndroidRelease() => BuildAndroidPlayer(release: true);
+
+        private static void BuildAndroidPlayer(bool release)
         {
             try
             {
                 PofudukFiloSetup.BuildEverythingNonInteractive();
                 ConfigureAndroid();
                 AdsBuildSetup.PrepareAndroid();
+                if (release && !ConfigureRelease())
+                {
+                    EditorApplication.Exit(1);
+                    return;
+                }
 
                 int missing = SmokeCheck.CountUnassignedReferences();
                 if (missing > 0)
@@ -30,8 +44,9 @@ namespace PofudukFilo.EditorTools
                     return;
                 }
 
-                string path = Arg("-customBuildPath") ?? "build/Android/PofudukFilo.apk";
-                if (!path.EndsWith(".apk", StringComparison.OrdinalIgnoreCase)) path = System.IO.Path.Combine(path, "PofudukFilo.apk");
+                string ext = release ? ".aab" : ".apk";
+                string path = Arg("-customBuildPath") ?? "build/Android/PofudukFilo" + ext;
+                if (!path.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) path = System.IO.Path.Combine(path, "PofudukFilo" + ext);
 
                 var options = new BuildPlayerOptions
                 {
@@ -43,7 +58,7 @@ namespace PofudukFilo.EditorTools
 
                 BuildReport report = BuildPipeline.BuildPlayer(options);
                 Debug.Log($"[CiBuild] {report.summary.result}: {path} ({report.summary.totalSize / (1024 * 1024)} MB, " +
-                          $"{report.summary.totalErrors} errors)");
+                          $"{report.summary.totalErrors} errors, versionCode {PlayerSettings.Android.bundleVersionCode})");
                 EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
             }
             catch (Exception e)
@@ -51,6 +66,33 @@ namespace PofudukFilo.EditorTools
                 Debug.LogException(e);
                 EditorApplication.Exit(1);
             }
+        }
+
+        /// <summary>App bundle, upload-key signing and PF_RELEASE. False (with an error logged) if the keystore is missing.</summary>
+        private static bool ConfigureRelease()
+        {
+            string keystore = Environment.GetEnvironmentVariable("ANDROID_KEYSTORE_PATH");
+            if (string.IsNullOrEmpty(keystore) || !System.IO.File.Exists(keystore))
+            {
+                Debug.LogError("[CiBuild] Release build needs ANDROID_KEYSTORE_PATH pointing at the upload keystore.");
+                return false;
+            }
+            EditorUserBuildSettings.buildAppBundle = true;
+            PlayerSettings.Android.useCustomKeystore = true;
+            PlayerSettings.Android.keystoreName = keystore;
+            PlayerSettings.Android.keystorePass = Environment.GetEnvironmentVariable("ANDROID_KEYSTORE_PASS") ?? "";
+            PlayerSettings.Android.keyaliasName = Environment.GetEnvironmentVariable("ANDROID_KEY_ALIAS") ?? "";
+            PlayerSettings.Android.keyaliasPass = Environment.GetEnvironmentVariable("ANDROID_KEY_PASS") ?? "";
+#if UNITY_6000_0_OR_NEWER
+            string defines = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.Android);
+            if (!defines.Contains("PF_RELEASE"))
+                PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.Android, string.IsNullOrEmpty(defines) ? "PF_RELEASE" : defines + ";PF_RELEASE");
+#else
+            string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Android);
+            if (!defines.Contains("PF_RELEASE"))
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Android, string.IsNullOrEmpty(defines) ? "PF_RELEASE" : defines + ";PF_RELEASE");
+#endif
+            return true;
         }
 
         /// <summary>
@@ -94,7 +136,11 @@ namespace PofudukFilo.EditorTools
             PlayerSettings.SetApplicationIdentifier(android, PackageName);
             PlayerSettings.companyName = "Ehtiyars Game";
             PlayerSettings.productName = "Galaxy Paws"; // global store name; package id kept so installs and saves carry over
-            PlayerSettings.bundleVersion = "0.1.0";
+            PlayerSettings.bundleVersion = "1.0.0";
+            // Every CI build gets a higher versionCode (the workflow's run number), so each APK installs over
+            // the last one and Google Play accepts each upload.
+            if (int.TryParse(Environment.GetEnvironmentVariable("BUILD_NUMBER"), out int buildNumber) && buildNumber > 0)
+                PlayerSettings.Android.bundleVersionCode = buildNumber;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
 
             // Many current phones are 64-bit only, which requires IL2CPP.
